@@ -93,6 +93,9 @@ GIE (Global Investment Evaluation) 框架是一套系统化的价值投资方法
 
 ## 使用流程
 
+默认执行模式：**自由写作优先**（按本 `SKILL.md` + `references/` + `assets/analysis-template.md` 产出完整报告）。
+仅在批处理、自动化保存或上层编排需要稳定落盘时，才使用脚本模式。
+
 ### Step 1: 明确分析目标
 确定是发现新标的、分析产业还是深度分析公司。
 
@@ -133,6 +136,13 @@ GIE (Global Investment Evaluation) 框架是一套系统化的价值投资方法
 5. 如果存在，按序号递增规则生成新文件名
 6. 将报告内容写入文件
 7. 向用户确认报告已保存的路径
+
+---
+
+## 执行方式说明
+
+- 交互式分析：优先按本 `SKILL.md` 做自由写作，结合 `references/` 与 `assets/analysis-template.md` 输出完整报告。
+- 上层调度（Chief）：Chief 负责汇总，不要求 GIE 依赖本地脚本入口。
 
 ---
 

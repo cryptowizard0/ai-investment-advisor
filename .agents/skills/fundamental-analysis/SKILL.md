@@ -7,52 +7,48 @@ description: "基础分析 (Fundamental Analysis) - 针对个股的深度基本�
 
 ## Overview
 
-This skill enables Claude to act as a senior investment analyst, providing deep-dive reports on stocks and companies. It follows a structured workflow that integrates fundamental analysis, technical analysis, and strategic investment guidance.
+本 skill 提供一个标准化的基本面分析流程，按模板生成结构化研究报告。
 
-**Output**: Markdown reports saved to `./output/fundamental-analysis/`
+- 输出目录：`./output/fundamental-analysis/`
+- 输出格式：Markdown（`.md`）
 
-## Workflow
+## Quick Start
 
-To perform a high-quality investment analysis, follow these steps:
+1. 确认分析目标（Ticker + 公司名）。
+2. 按 Workflow 收集数据并完成分析。
+3. 使用 `references/report-template.md` 输出报告并保存到 `./output/fundamental-analysis/`。
 
-### 1. Identify the Target
-- Determine the **Ticker Symbol** and **Company Name**.
-- Identify the primary exchange and currency.
+## Workflow（可执行）
 
-### 2. Data Gathering (Parallel Research)
-Use search tools to gather the following context:
-- **Company Profile**: Industry, business model, core products, and market positioning.
-- **Financials (TTM & Latest Quarter)**: Revenue, Net Income, EPS, Profit Margins (Gross, Operating, Net), ROE/ROA.
-- **Operational Metrics**: User growth, GMV, production capacity, or other sector-specific KPIs.
-- **Valuation**: Current Market Cap, P/E, P/S, P/B, EV/Revenue.
-- **Technical Data**: Current price, 52-week range, 50-day and 200-day Moving Averages, RSI(14), MACD.
-- **News & Catalysts**: Recent earnings calls, product launches, regulatory changes, or macroeconomic impacts.
+### 1. 输入识别
+- 判断 `target` 是 `ticker` 还是 `theme`。
+- `ticker` 规则：`^[A-Za-z0-9][A-Za-z0-9.\\-=]{0,19}$`。
 
-### 3. Analysis & Drafting
-Use the provided template to structure the findings.
-- **Template Location**: `references/report-template.md`
-- Replace placeholders like `{{股票代码}}`, `{{公司名称}}`, `{{date}}`.
+### 2. 数据收集
+- 公司与行业：业务模式、竞争格局、行业位置。
+- 财务与估值：TTM/最新季度、利润率、ROE/ROA、P/E/P/S/P/B/EV-Rev。
+- 技术指标：价格位置、52周区间、MA50/MA200、RSI、MACD。
+- 事件催化：财报、指引、产品、监管、宏观。
 
-### 4. Evaluation & Strategy
-Synthesize the data into actionable insights:
-- Define the **Stock Type** (Growth, Value, Cyclical, etc.).
-- Provide specific **Trading** and **Investment Strategies** based on the combined fundamental/technical view.
+### 3. 分析与策略
+- 从增长、盈利质量、估值、技术结构四个维度形成综合判断。
+- 输出适合投资者类型、交易/中线策略、失效条件与复核点。
 
-### 5. Save Report
-- **Output Directory**: `./output/fundamental-analysis/`
-- **Filename Format**: `{ticker}-{company-name}-{date}.md` (e.g., `AAPL-Apple-2026-01-28.md`)
-- **Conflict Handling**: If a file with the same name exists, append a numbered suffix: `{ticker}-{company-name}-{date}(1).md`
-- Ensure the output directory exists before saving (create if needed)
-- Confirm to user with the actual saved path
+### 4. 报告落盘
+- 目录不存在时自动创建。
+- 命名规范：
+  - 单票：`{TICKER}-{company-name}-{YYYY-MM-DD}.md`
+  - 主题：`{theme}-theme-{YYYY-MM-DD}.md`
+  - 降级：`{target}-fallback-{YYYY-MM-DD}.md`
+- 重名自动追加 `(1)`, `(2)`。
 
-## Guidelines
+## Manual Deep Dive（可选）
 
-- **Objectivity**: Maintain a neutral, analytical tone. Highlight both risks and opportunities.
-- **Data Freshness**: Always check for the latest available data (TTM and latest quarterly report).
-- **Sector Context**: Adjust "Core Operating Metrics" based on the industry (e.g., IFP for Fintech, GMV for E-commerce, Delivery numbers for Auto).
-- **Risk Assessment**: Don't just list metrics; interpret what they mean for the company's future.
+当需要比自动脚本更细粒度的研究时，使用模板扩展：
+- 模板：`references/report-template.md`
+- 按模板补充公司定位、催化剂、风险、交易策略等定性内容。
 
 ## Resources
 
 ### references/
-- **report-template.md**: The primary Markdown template for generating investment reports.
+- `report-template.md`: 人工深度扩写模板

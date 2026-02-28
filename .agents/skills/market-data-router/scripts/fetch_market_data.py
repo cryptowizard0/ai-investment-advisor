@@ -31,6 +31,7 @@ DEFAULT_TIMEOUT = 20
 BASE_INTERVAL_MINUTES = 5
 SUPPORTED_INTERVALS = {"5m": 5, "1h": 60, "1d": 1440}
 DEFAULT_INTERVAL = "5m"
+HTTP_RETRY_DELAYS_SECONDS = (1, 2)
 ERROR_LOG: List[str] = []
 
 
@@ -114,19 +115,30 @@ def _parse_dt(value: Optional[str]) -> Optional[datetime]:
 
 def _http_get_json(url: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     req = Request(url, headers=headers or {})
-    try:
-        with urlopen(req, timeout=DEFAULT_TIMEOUT) as resp:
-            data = resp.read()
-        return json.loads(data.decode("utf-8"))
-    except HTTPError as e:
-        body = ""
+    attempts = 1 + len(HTTP_RETRY_DELAYS_SECONDS)
+    last_exc: Optional[Exception] = None
+
+    for attempt in range(attempts):
         try:
-            body = e.read().decode("utf-8")
-        except Exception:
+            with urlopen(req, timeout=DEFAULT_TIMEOUT) as resp:
+                data = resp.read()
+            return json.loads(data.decode("utf-8"))
+        except HTTPError as e:
             body = ""
-        raise HTTPError(e.url, e.code, f"{e.reason} {body}".strip(), e.headers, e.fp)
-    except URLError:
-        raise
+            try:
+                body = e.read().decode("utf-8")
+            except Exception:
+                body = ""
+            last_exc = HTTPError(e.url, e.code, f"{e.reason} {body}".strip(), e.headers, e.fp)
+        except URLError as e:
+            last_exc = e
+
+        if attempt < len(HTTP_RETRY_DELAYS_SECONDS):
+            time.sleep(HTTP_RETRY_DELAYS_SECONDS[attempt])
+
+    if last_exc:
+        raise last_exc
+    raise RuntimeError("HTTP request failed without explicit exception")
 
 
 def _iso(ts: int | float) -> str:

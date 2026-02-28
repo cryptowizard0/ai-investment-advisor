@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is an AI-driven Investment Analysis Multi-Agent System built on the OpenCode "Skill + Subagent" architecture. The system combines multiple specialized AI agents to perform comprehensive investment analysis from different dimensions: fundamental analysis, institutional flow detection, GIE investment framework evaluation, and gold market bubble risk assessment.
+This is an AI-driven Investment Analysis Multi-Agent System built on a local "Skill + Subagent" architecture. The system combines multiple specialized AI agents to perform comprehensive investment analysis from different dimensions: fundamental analysis, institutional flow detection, GIE investment framework evaluation, and gold market bubble risk assessment.
 
 The project uses a modular skill-based design where each skill encapsulates domain expertise for specific financial analysis tasks. Skills are reusable packages that extend AI agent capabilities.
 
@@ -11,7 +11,7 @@ The project uses a modular skill-based design where each skill encapsulates doma
 ## Technology Stack
 
 - **Python**: 3.12.10 (virtual environment at `.venv/`)
-- **Node.js**: OpenCode framework runtime
+- **Runtime**: Local Python skill scripts (no external orchestrator dependency)
 - **Key Python Libraries**: 
   - `yfinance` - Market data fetching from Yahoo Finance
   - `pandas` - Data processing
@@ -23,11 +23,11 @@ The project uses a modular skill-based design where each skill encapsulates doma
 ```
 .
 ├── .agents/skills/              # Core skill definitions
+│   ├── chief-investment-advisor/  # Chief advisor orchestration
 │   ├── fundamental-analysis/    # Stock fundamental analysis
 │   ├── institutional-accumulation-analysis/  # Whale detection
 │   ├── gold-trend-analysis/     # Gold bubble risk assessment
 │   ├── gie-investment-framework/  # "Golden shovel" asset discovery
-│   ├── multi-agent-stock-analysis/  # Multi-agent orchestration
 │   └── skill-creator/           # Skill development utilities
 ├── .claude/skills/              # Claude-specific skill copies
 ├── .claude/settings.local.json  # Claude permissions config
@@ -37,7 +37,7 @@ The project uses a modular skill-based design where each skill encapsulates doma
 │   ├── gie-investment-framework/
 │   ├── gold-analysis/
 │   └── summary/
-├── .agents/skills/multi-agent-stock-analysis/scripts/orchestrator.py  # Core orchestrator
+├── .agents/skills/chief-investment-advisor/SKILL.md                   # Chief advisor orchestration
 ├── .agents/skills/market-data-router/scripts/fetch_market_data.py     # Market data router
 ├── .agents/skills/institutional-accumulation-analysis/scripts/save_report.py
 └── AGENTS.md
@@ -50,16 +50,6 @@ Pre-configured permissions for:
 - WebSearch and WebFetch capabilities
 - Bash commands: python3, pip install, curl, tree
 - Financial data domains whitelist (yahoo.com, investing.com, cftc.gov, cmegroup.com, and Chinese financial sites)
-
-### `.opencode/package.json`
-OpenCode framework dependency:
-```json
-{
-  "dependencies": {
-    "@opencode-ai/plugin": "1.1.53"
-  }
-}
-```
 
 ### `.venv/pyvenv.cfg`
 Python 3.12.10 virtual environment with `include-system-site-packages = false` for isolation.
@@ -75,8 +65,8 @@ source .venv/bin/activate
 # Run market data router script
 python .agents/skills/market-data-router/scripts/fetch_market_data.py --help
 
-# Run multi-agent orchestrator
-python .agents/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --execution-mode command
+# Run chief investment advisor (skill trigger)
+/chief-investment-advisor TSLA
 
 # Validate skill structure
 python .agents/skills/skill-creator/scripts/quick_validate.py <skill-directory>
@@ -101,6 +91,9 @@ skill-name/
 ```
 
 **Active Skills:**
+- `chief-investment-advisor`: Two-layer advisor pipeline (analysis layer + decision layer)
+  - Output: `./output/summary/advisor-{target}-{YYYYMMDD}.md` and `.json`
+  - Orchestrates market data, fundamental/institutional/GIE analysis, and final decisioning
 - `fundamental-analysis`: Deep-dive stock analysis combining financials, valuation, and technicals
   - Output: `./output/fundamental-analysis/{ticker}-{company-name}-{date}.md`
   - Template: `references/report-template.md`
@@ -118,29 +111,7 @@ skill-name/
   - Output: `./output/gie-investment-framework/gie-{title}-{date}.md`
   - Four-dimensional analysis: macro, supply-demand, financial, timing
   
-- `multi-agent-stock-analysis`: Orchestrates multiple agents with retry mechanism
-  - Output: `./output/summary/综合分析-{TICKER}-{date}.md`
-  - References: `workflow-guide.md`, `data-structure.md`
-
-### 2. Multi-Agent Orchestrator (`.agents/skills/multi-agent-stock-analysis/scripts/orchestrator.py`)
-Core components:
-- `AgentExecutor`: Handles individual agent execution with retry logic
-- `MultiAgentOrchestrator`: Coordinates multiple agents in parallel
-- `SubAgentResult`: Dataclass for agent execution results
-- `OrchestrationConfig`: Configuration for retry behavior and timeouts
-
-**Failure Detection:**
-- Empty output (< 100 characters)
-- Timeout (> 240 seconds)
-- Exception during execution
-- Missing required keywords ("分析", "报告", "结论")
-
-**Retry Strategy:**
-- Immediate retry (no exponential backoff)
-- Max 1 retry per agent
-- Continue with other agents if one fails
-
-### 3. Market Data Router (`.agents/skills/market-data-router/scripts/fetch_market_data.py`)
+### 2. Market Data Router (`.agents/skills/market-data-router/scripts/fetch_market_data.py`)
 Unified market data fetcher with routing and fallback:
 - Multi-market bars (`5m/1h/1d`, `auto` interval support)
 - US options and dark pool routing via Polygon
@@ -230,16 +201,12 @@ This project has **no formal test suite**. Testing is done by:
 
 ## Retry Mechanism
 
-The multi-agent system implements automatic retry for failed agents:
+The chief advisor pipeline supports retry for sub-skill execution:
 
 ```python
-# Configuration
-OrchestrationConfig(
-    max_retries=1,           # Maximum retry attempts
-    timeout_seconds=240,     # Per-agent timeout
-    retry_on_empty=True,     # Retry on empty output
-    retry_on_timeout=True,   # Retry on timeout
-    parallel_execution=True  # Execute agents in parallel
+AdvisorConfig(
+    max_retries=1,     # Maximum retry attempts per sub-skill
+    timeout=240,       # Per-sub-skill timeout in seconds
 )
 ```
 
@@ -250,7 +217,7 @@ OrchestrationConfig(
 - **Institutional analysis**: `机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - **GIE framework**: `gie-{title}-{date}.md`
 - **Gold analysis**: `gold-bubble-risk-{date}.md`
-- **Summary report**: `综合分析-{TICKER}-{date}.md`
+- **Advisor summary report**: `advisor-{target}-{YYYYMMDD}.md`
 
 ### Duplicate Handling
 If file exists, append numbered suffix:
@@ -279,28 +246,11 @@ python scripts/init_skill.py <skill-name> --path ../
 python scripts/package_skill.py ../<skill-name>
 ```
 
-### Running Multi-Agent Analysis
+### Running Chief Investment Advisor
 
-```python
-from pathlib import Path
-import sys
-
-orchestrator_dir = Path(".agents/skills/multi-agent-stock-analysis/scripts").resolve()
-sys.path.append(str(orchestrator_dir))
-
-from orchestrator import analyze_stock_with_retry
-
-result = analyze_stock_with_retry(
-    ticker="TSLA",
-    max_retries=1,
-    timeout=240,
-    execution_mode="command",  # or "mock"
-)
-
-print(f"状态: {result['status']}")
-print(f"成功: {result['completed_count']}/{result['total_count']}")
-print(f"重试次数: {result['retried_count']}")
-```
+使用 skill trigger：
+- `/chief-investment-advisor TSLA`
+- `/chief-investment-advisor "AI电力基础设施"`
 
 ### Running Analysis Manually
 
@@ -344,11 +294,11 @@ pip install yfinance pandas requests pyyaml
 ## Version Information
 
 - **Python**: 3.12.10
-- **OpenCode Plugin**: 1.1.53
+- **Skill Runtime**: Local Python scripts
 - **Last Updated**: 2026-02-10
 
 ## Additional Documentation
 
 - `CLAUDE.md` - Claude Code specific guidance
 - `RETRY_MECHANISM.md` - Detailed retry mechanism design document
-- `.agents/skills/multi-agent-stock-analysis/scripts/orchestrator.py` - Command-driven orchestrator implementation
+- `.agents/skills/chief-investment-advisor/SKILL.md` - Chief advisor workflow definition
