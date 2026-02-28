@@ -1,0 +1,12 @@
+{
+  "agents": {
+    "multi-agent-stock-orchestrator": {
+      "name": "multi-agent-stock-orchestrator",
+      "type": "orchestrator",
+      "version": "1.0.0",
+      "path": "./agents/multi-agent-orchestrator",
+      "enabled": true,
+      "description": "并行执行多维度股票分析，自动协调Sub-Agent并生成综合报告"
+    }
+  }
+}
