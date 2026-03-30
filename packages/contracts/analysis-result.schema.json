@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-investment-advisor.local/contracts/analysis-result.schema.json",
+  "title": "AnalysisResult",
+  "type": "object",
+  "required": [
+    "run_id",
+    "status",
+    "events",
+    "artifacts",
+    "report_summary"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["queued", "running", "completed", "failed", "canceled"]
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "event", "message", "created_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "event": { "type": "string" },
+          "message": { "type": "string" },
+          "created_at": { "type": "string" }
+        }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "path"],
+        "properties": {
+          "kind": { "type": "string" },
+          "path": { "type": "string" }
+        }
+      }
+    },
+    "report_summary": {
+      "type": "object",
+      "required": ["title", "summary", "rating"],
+      "properties": {
+        "title": { "type": "string" },
+        "summary": { "type": "string" },
+        "rating": { "type": "string" },
+        "confidence": { "type": "number" }
+      }
+    },
+    "raw_markdown_path": {
+      "type": ["string", "null"]
+    },
+    "raw_json_path": {
+      "type": ["string", "null"]
+    },
+    "error_code": {
+      "type": ["string", "null"]
+    },
+    "error_message": {
+      "type": ["string", "null"]
+    }
+  }
+}

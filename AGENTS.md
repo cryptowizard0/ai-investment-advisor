@@ -1,304 +1,134 @@
 # Agent Guidelines
 
-## Project Overview
+## Purpose
 
-This is an AI-driven Investment Analysis Multi-Agent System built on a local "Skill + Subagent" architecture. The system combines multiple specialized AI agents to perform comprehensive investment analysis from different dimensions: fundamental analysis, institutional flow detection, GIE investment framework evaluation, and gold market bubble risk assessment.
+This file is the repo index for human contributors and coding agents. Keep it short.
+Put detailed rules in dedicated documents and link to them from here.
 
-The project uses a modular skill-based design where each skill encapsulates domain expertise for specific financial analysis tasks. Skills are reusable packages that extend AI agent capabilities.
+## Project Summary
 
-**Project Language**: Documentation and investment reports are primarily in Chinese (中文). Code comments are in English. Financial terms remain in English (RSI, MACD, P/E, OBV, etc.).
+AI-driven investment analysis system built around local skills plus a three-layer product app:
 
-## Technology Stack
+- `apps/web`: frontend layer
+- `apps/backend`: product backend layer
+- `apps/agent`: agent runtime layer
+- `.agents/skills/`: reusable investment analysis skills
+- `packages/contracts/`: shared backend-agent contracts
+- `output/`: generated reports and run artifacts
 
-- **Python**: 3.12.10 (virtual environment at `.venv/`)
-- **Runtime**: Local Python skill scripts (no external orchestrator dependency)
-- **Key Python Libraries**: 
-  - `yfinance` - Market data fetching from Yahoo Finance
-  - `pandas` - Data processing
-  - `requests` - HTTP requests for CFTC COT data
-  - Standard library for technical indicator calculations
+Project language rules:
 
-## Project Structure
+- Documentation and investment reports: Chinese
+- Code comments: English
+- Financial terms: keep standard English terms such as `RSI`, `MACD`, `P/E`, `OBV`
 
-```
+## Start Here
+
+Read only what matches your task:
+
+1. Repo architecture: `ARCHITECTURE.md`
+2. Code style and authoring rules: `docs/code-style.md`
+3. App layer boundaries and runbook: `docs/apps-guide.md`
+4. Container notes: `apps/container-runtime.md`
+5. Claude-specific notes: `CLAUDE.md`
+6. Skill-specific workflow: the target skill's `SKILL.md`
+
+## Key Paths
+
+```text
 .
-├── .agents/skills/              # Core skill definitions
-│   ├── chief-investment-advisor/  # Chief advisor orchestration
-│   ├── fundamental-analysis/    # Stock fundamental analysis
-│   ├── institutional-accumulation-analysis/  # Whale detection
-│   ├── gold-trend-analysis/     # Gold bubble risk assessment
-│   ├── gie-investment-framework/  # "Golden shovel" asset discovery
-│   └── skill-creator/           # Skill development utilities
-├── .claude/skills/              # Claude-specific skill copies
-├── .claude/settings.local.json  # Claude permissions config
-├── output/                      # Generated reports
+├── .agents/skills/
+│   ├── chief-investment-advisor/
 │   ├── fundamental-analysis/
 │   ├── institutional-accumulation-analysis/
 │   ├── gie-investment-framework/
-│   ├── gold-analysis/
-│   └── summary/
-├── .agents/skills/chief-investment-advisor/SKILL.md                   # Chief advisor orchestration
-├── .agents/skills/market-data-router/scripts/fetch_market_data.py     # Market data router
-├── .agents/skills/institutional-accumulation-analysis/scripts/save_report.py
+│   ├── gold-trend-analysis/
+│   └── market-data-router/
+├── apps/
+│   ├── web/
+│   ├── backend/
+│   └── agent/
+├── packages/contracts/
+├── output/
+├── ARCHITECTURE.md
+├── CLAUDE.md
 └── AGENTS.md
 ```
 
-## Key Configuration Files
+## Available Skills
 
-### `.claude/settings.local.json`
-Pre-configured permissions for:
-- WebSearch and WebFetch capabilities
-- Bash commands: python3, pip install, curl, tree
-- Financial data domains whitelist (yahoo.com, investing.com, cftc.gov, cmegroup.com, and Chinese financial sites)
+Use the target skill's `SKILL.md` for workflow details. This section is only a capability index.
 
-### `.venv/pyvenv.cfg`
-Python 3.12.10 virtual environment with `include-system-site-packages = false` for isolation.
+- `chief-investment-advisor`: 多 skill 汇总决策入口，适合单票或主题的日常投顾结论
+- `fundamental-analysis`: 个股基本面、估值、财务与技术面深度分析
+- `institutional-accumulation-analysis`: 主力吸筹/派发、量价和资金行为分析
+- `gie-investment-framework`: 1 到 3 年视角的“金铲子”资产发现与评估
+- `gold-trend-analysis`: 黄金市场泡沫风险与交易风险分析
+- `market-data-router`: 金融行情数据抓取、路由与降级兜底
+- `reflexivity-quick-scan`: 反身性 5 分钟快速阶段判断
+- `reflexivity-deep-analysis`: 反身性完整周期深度研究
+- `reportify-stock-analysis`: 固定模板的结构化个股投研报告
+- `skill-creator`: 创建或更新 skill 的规范与脚手架指南
+- `ui-ux-pro-max`: Web 或产品界面的 UI/UX 设计与评审辅助
 
-## Build/Test/Lint Commands
+## Working Rules
 
-This is an AI agent project with **no formal test suite**. Testing is done by executing skills on real tasks.
+### Skills
+
+- Each skill must keep its own workflow, scripts, references, and assets inside its directory.
+- Each skill requires a `SKILL.md` with YAML frontmatter.
+- Do not duplicate large skill instructions into this file.
+- When editing or creating a skill, also read `.agents/skills/skill-creator/SKILL.md`.
+
+### Apps
+
+- `apps/web` must not call `.agents/skills` or `opencode` directly.
+- `apps/backend` owns browser-facing APIs, jobs, threads, SSE, and report metadata.
+- `apps/agent` owns skill routing, runtime orchestration, and artifact generation.
+- Shared request and response schemas belong in `packages/contracts`.
+
+### Output
+
+- Generated reports must live under `output/`.
+- Use the existing naming convention already defined by the relevant skill.
+- If a naming rule changes, update that skill's `SKILL.md` or its local reference docs, not this file.
+
+## Common Commands
 
 ```bash
-# Activate virtual environment
 source .venv/bin/activate
 
-# Run market data router script
 python .agents/skills/market-data-router/scripts/fetch_market_data.py --help
 
-# Run chief investment advisor (skill trigger)
-/chief-investment-advisor TSLA
+uvicorn app.main:app --app-dir apps/agent --reload --port 9002
+AGENT_SERVICE_URL=http://127.0.0.1:9002 uvicorn app.main:app --app-dir apps/backend --reload --port 8000
+BACKEND_API_URL=http://127.0.0.1:8000 pnpm --dir apps/web dev
 
-# Validate skill structure
-python .agents/skills/skill-creator/scripts/quick_validate.py <skill-directory>
-
-# Package a skill
-python .agents/skills/skill-creator/scripts/package_skill.py <skill-folder>
-
-# Initialize new skill
-python .agents/skills/skill-creator/scripts/init_skill.py <skill-name> --path ../
+python -m compileall apps/backend/app apps/agent/app
+bash -n apps/start-entrypoint.sh
 ```
 
-## Code Organization
+## Testing
 
-### 1. Skill-Based Analysis System (`.agents/skills/`)
-Each skill follows a standard structure:
-```
-skill-name/
-├── SKILL.md              # Required - skill definition with YAML frontmatter
-├── scripts/              # Executable Python/shell scripts
-├── references/           # Documentation (loaded on demand)
-└── assets/               # Templates, files for output
-```
+There is no formal test suite yet. Default verification:
 
-**Active Skills:**
-- `chief-investment-advisor`: Two-layer advisor pipeline (analysis layer + decision layer)
-  - Output: `./output/summary/advisor-{target}-{YYYYMMDD}.md` and `.json`
-  - Orchestrates market data, fundamental/institutional/GIE analysis, and final decisioning
-- `fundamental-analysis`: Deep-dive stock analysis combining financials, valuation, and technicals
-  - Output: `./output/fundamental-analysis/{ticker}-{company-name}-{date}.md`
-  - Template: `references/report-template.md`
-  
-- `institutional-accumulation-analysis`: Detect institutional (whale) buying/selling patterns
-  - Output: `./output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
-  - Uses scoring system: -100 to +100 with classification thresholds
-  - References: `scoring-system.md`, `scoring-quickref.md`, `analysis-template.md`
-  
-- `gold-trend-analysis`: Gold market bubble risk assessment with 0-100 risk scores
-  - Output: `./output/gold-analysis/gold-bubble-risk-{date}.md`
-  - Analyzes: real interest rates, COT positioning, gold-silver ratio, gold/SPX ratio
-  
-- `gie-investment-framework`: "Golden Shovel" asset discovery for 1-3 year investment horizons
-  - Output: `./output/gie-investment-framework/gie-{title}-{date}.md`
-  - Four-dimensional analysis: macro, supply-demand, financial, timing
-  
-### 2. Market Data Router (`.agents/skills/market-data-router/scripts/fetch_market_data.py`)
-Unified market data fetcher with routing and fallback:
-- Multi-market bars (`5m/1h/1d`, `auto` interval support)
-- US options and dark pool routing via Polygon
-- Fallback and quality flags (`fallback_to_yahoo`, `partial_data`, etc.)
-- Optional cache control (`--cache-dir`, `--cache-ttl`)
+1. Run the smallest relevant command for the changed layer.
+2. For backend or agent Python code, run `python -m compileall apps/backend/app apps/agent/app`.
+3. For shell startup changes, run `bash -n apps/start-entrypoint.sh`.
+4. For skill changes, execute the smallest realistic workflow or validator for that skill.
 
-## Code Style Guidelines
+## Source Documents
 
-### Python
+Use these files as the canonical home for details:
 
-**Imports**:
-- Standard library first, then third-party
-- No wildcard imports
-- Group imports with blank line separation
+- `docs/code-style.md`: Python, TypeScript, comments, naming, skill authoring
+- `docs/apps-guide.md`: layer ownership, run commands, change routing for `apps/`
+- `apps/web/README.md`: frontend quick start
+- `apps/backend/README.md`: backend quick start
+- `apps/agent/README.md`: agent quick start
+- `apps/container-runtime.md`: container behavior
 
-```python
-import csv
-import math
-from datetime import datetime
+## Maintenance Rule
 
-import yfinance as yf
-import pandas as pd
-import requests
-```
-
-**Naming**:
-- Functions/variables: `snake_case`
-- Constants: `UPPER_SNAKE_CASE`
-- Classes: `PascalCase`
-- Skill directories: `hyphen-case`
-
-**Formatting**:
-- f-strings preferred for string formatting
-- Max line length: 100 characters (soft limit)
-- 4 spaces for indentation
-- Two blank lines between top-level functions/classes
-
-**Error Handling**:
-- Explicit try-except blocks
-- Meaningful error messages
-- Avoid bare `except:` clauses
-
-```python
-try:
-    data = yf.download(tickers, period="5d")
-except Exception as e:
-    print(f"Error fetching data: {e}")
-    return
-```
-
-**Comments**:
-- Chinese for domain concepts, English for technical terms
-- Docstrings for modules and functions
-- Inline comments for complex logic
-
-### Skill Development
-
-**SKILL.md Structure**:
-```yaml
----
-name: skill-name
-description: "Clear description with WHEN to use this skill"
----
-```
-
-- Frontmatter required: `name` (hyphen-case), `description`
-- Progressive disclosure: metadata → SKILL.md → references/
-- Keep SKILL.md under 500 lines
-- Use references/ for detailed documentation
-
-**File Organization**:
-- Required: `SKILL.md` with YAML frontmatter
-- Optional: `scripts/`, `references/`, `assets/`
-- No extraneous docs (README.md, CHANGELOG.md, etc.)
-
-**Output Handling**:
-- Check for existing files before writing
-- Use numbered suffixes `(1)`, `(2)` for duplicates
-- Create directories: `os.makedirs(exist_ok=True)`
-
-## Testing Strategy
-
-This project has **no formal test suite**. Testing is done by:
-1. Executing skills on real analysis tasks
-2. Validating skill structure with `quick_validate.py`
-3. Testing scripts manually before packaging
-
-## Retry Mechanism
-
-The chief advisor pipeline supports retry for sub-skill execution:
-
-```python
-AdvisorConfig(
-    max_retries=1,     # Maximum retry attempts per sub-skill
-    timeout=240,       # Per-sub-skill timeout in seconds
-)
-```
-
-## Output Conventions
-
-### Report Naming
-- **Fundamental analysis**: `{ticker}-{company-name}-{date}.md` (e.g., `TSLA-Tesla-2026-02-06.md`)
-- **Institutional analysis**: `机构操作分析-{YYYYMMDD}-{TICKER}.md`
-- **GIE framework**: `gie-{title}-{date}.md`
-- **Gold analysis**: `gold-bubble-risk-{date}.md`
-- **Advisor summary report**: `advisor-{target}-{YYYYMMDD}.md`
-
-### Duplicate Handling
-If file exists, append numbered suffix:
-- First: `report.md`
-- Second: `report(1).md`
-- Third: `report(2).md`
-
-### Directory Structure
-```
-./output/
-├── fundamental-analysis/       # Stock fundamental reports
-├── institutional-accumulation-analysis/  # Whale flow reports
-├── gie-investment-framework/   # Golden shovel analysis
-├── gold-analysis/              # Gold risk assessments
-└── summary/                    # Multi-agent aggregated reports
-```
-
-## Key Workflows
-
-### Creating a New Skill
-
-```bash
-cd .agents/skills/skill-creator
-python scripts/init_skill.py <skill-name> --path ../
-# Edit SKILL.md, customize scripts/references/assets
-python scripts/package_skill.py ../<skill-name>
-```
-
-### Running Chief Investment Advisor
-
-使用 skill trigger：
-- `/chief-investment-advisor TSLA`
-- `/chief-investment-advisor "AI电力基础设施"`
-
-### Running Analysis Manually
-
-1. Load appropriate skill from `.agents/skills/`
-2. Read SKILL.md for workflow instructions
-3. Search for latest financial data
-4. Generate report using templates from `references/`
-5. Save to `./output/{skill-type}/` with unique filename
-
-## Security Considerations
-
-- Virtual environment isolated (`include-system-site-packages = false`)
-- WebFetch limited to whitelisted financial domains
-- Bash commands restricted to python, pip, curl, tree
-- No sensitive credentials stored in repository
-
-## Data Sources
-
-**Primary**:
-- Yahoo Finance (yfinance) - Real-time quotes and historical data
-- CFTC COT reports - Institutional positioning
-- Web search - Latest news and market data
-
-**Reference Only**:
-- `./output/cache/market-data/` - Router cache artifacts for reproducible analysis
-
-## Dependencies
-
-Core scripts use only Python standard library. External packages used in specific scripts:
-- `yfinance` - Market data
-- `pandas` - Data processing
-- `requests` - HTTP requests
-- `PyYAML` - YAML parsing
-
-Install with:
-```bash
-source .venv/bin/activate
-pip install yfinance pandas requests pyyaml
-```
-
-## Version Information
-
-- **Python**: 3.12.10
-- **Skill Runtime**: Local Python scripts
-- **Last Updated**: 2026-02-10
-
-## Additional Documentation
-
-- `CLAUDE.md` - Claude Code specific guidance
-- `RETRY_MECHANISM.md` - Detailed retry mechanism design document
-- `.agents/skills/chief-investment-advisor/SKILL.md` - Chief advisor workflow definition
+Keep `AGENTS.md` under 200 lines and index-oriented.
+If a section starts accumulating examples, edge cases, or policy detail, move it into a dedicated doc and leave only a short summary plus link here.

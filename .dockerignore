@@ -1,0 +1,10 @@
+.git
+.gitignore
+.DS_Store
+.ruff_cache
+.venv
+__pycache__
+*.pyc
+node_modules
+apps/web/.next
+output

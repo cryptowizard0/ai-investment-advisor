@@ -1,0 +1,14 @@
+[project]
+name = "investment-platform-agent"
+version = "0.1.0"
+description = "Agent service for opencode-backed investment analysis"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115.0,<1.0.0",
+  "pydantic>=2.10.0,<3.0.0",
+  "uvicorn>=0.34.0,<1.0.0"
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
