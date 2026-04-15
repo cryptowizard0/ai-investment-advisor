@@ -1,0 +1,48 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "fastapi>=0.115.0,<1.0.0" "httpx>=0.28.0,<1.0.0" "pydantic>=2.10.0,<3.0.0" "uvicorn>=0.34.0,<1.0.0"
+
+      - name: Compile Python apps
+        run: python -m compileall apps/backend/app apps/agent/app
+
+      - name: Run backend tests
+        run: PYTHONPATH=apps/backend python -m unittest discover -s apps/backend/tests
+
+      - name: Run agent tests
+        run: PYTHONPATH=apps/agent python -m unittest discover -s apps/agent/tests
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.3
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install web dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build web app
+        run: pnpm --dir apps/web build

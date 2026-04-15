@@ -10,11 +10,11 @@ from app.models.schemas import (
     ReportRecord,
 )
 from app.services.agent_gateway import AgentGateway
-from app.services.repository import InMemoryRepository
+from app.services.repository import Repository
 
 
 class JobService:
-    def __init__(self, repository: InMemoryRepository, gateway: AgentGateway) -> None:
+    def __init__(self, repository: Repository, gateway: AgentGateway) -> None:
         self.repository = repository
         self.gateway = gateway
 

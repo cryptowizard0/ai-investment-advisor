@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
+from pathlib import Path
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +13,7 @@ from app.models.schemas import MessageCreateRequest, ThreadCreateRequest, Thread
 from app.services.agent_gateway import AgentGateway
 from app.services.job_service import JobService
 from app.services.report_service import ReportService
-from app.services.repository import InMemoryRepository
+from app.services.repository import Repository, SqliteRepository
 
 
 app = FastAPI(title="Investment Platform Backend", version="0.1.0")
@@ -23,19 +25,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-repository = InMemoryRepository()
+default_database_path = Path(
+    os.getenv("BACKEND_STATE_DB_PATH", Path.cwd() / "output" / "app-state" / "backend.sqlite3")
+)
+repository = SqliteRepository(default_database_path)
 gateway = AgentGateway()
 
 
-def get_repository() -> InMemoryRepository:
+def get_repository() -> Repository:
     return repository
 
 
-def get_job_service(repo: InMemoryRepository = Depends(get_repository)) -> JobService:
+def get_job_service(repo: Repository = Depends(get_repository)) -> JobService:
     return JobService(repo, gateway)
 
 
-def get_report_service(repo: InMemoryRepository = Depends(get_repository)) -> ReportService:
+def get_report_service(repo: Repository = Depends(get_repository)) -> ReportService:
     return ReportService(repo)
 
 
@@ -45,13 +50,13 @@ async def healthcheck() -> dict[str, str]:
 
 
 @app.post("/api/threads", response_model=ThreadSummary)
-async def create_thread(payload: ThreadCreateRequest, repo: InMemoryRepository = Depends(get_repository)) -> ThreadSummary:
+async def create_thread(payload: ThreadCreateRequest, repo: Repository = Depends(get_repository)) -> ThreadSummary:
     thread = ThreadSummary(title=payload.title, user_id=payload.user_id)
     return repo.create_thread(thread)
 
 
 @app.get("/api/threads")
-async def list_threads(repo: InMemoryRepository = Depends(get_repository)) -> list[dict]:
+async def list_threads(repo: Repository = Depends(get_repository)) -> list[dict]:
     return [thread.model_dump(mode="json") for thread in repo.list_threads()]
 
 
@@ -78,7 +83,7 @@ async def get_job(job_id: str, service: JobService = Depends(get_job_service)) -
 
 
 @app.get("/api/jobs/{job_id}/stream")
-async def stream_job(job_id: str, repo: InMemoryRepository = Depends(get_repository)) -> StreamingResponse:
+async def stream_job(job_id: str, repo: Repository = Depends(get_repository)) -> StreamingResponse:
     if repo.get_job(job_id) is None:
         raise HTTPException(status_code=404, detail="Job not found")
 

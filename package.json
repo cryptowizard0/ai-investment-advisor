@@ -3,8 +3,11 @@
   "private": true,
   "packageManager": "pnpm@10.6.3",
   "scripts": {
+    "check:python": "python -m compileall apps/backend/app apps/agent/app",
     "dev:web": "pnpm --dir apps/web dev",
     "build:web": "pnpm --dir apps/web build",
-    "lint:web": "pnpm --dir apps/web lint"
+    "lint:web": "pnpm --dir apps/web lint",
+    "test:backend": "PYTHONPATH=apps/backend python -m unittest discover -s apps/backend/tests",
+    "test:agent": "PYTHONPATH=apps/agent python -m unittest discover -s apps/agent/tests"
   }
 }

@@ -3,11 +3,11 @@ from __future__ import annotations
 from fastapi import HTTPException
 
 from app.models.schemas import ReportRecord
-from app.services.repository import InMemoryRepository
+from app.services.repository import Repository
 
 
 class ReportService:
-    def __init__(self, repository: InMemoryRepository) -> None:
+    def __init__(self, repository: Repository) -> None:
         self.repository = repository
 
     def get_report(self, report_id: str) -> ReportRecord:
