@@ -20,6 +20,9 @@
 │           ├── institutional-accumulation-analysis/
 │           ├── gie-investment-framework/
 │           ├── gold-trend-analysis/
+│           ├── reflexivity-quick-scan/
+│           ├── reflexivity-deep-analysis/
+│           ├── reportify-stock-analysis/
 │           ├── multi-agent-stock-analysis/
 │           └── market-data-router/
 └── output/
@@ -37,6 +40,9 @@
 - `institutional-accumulation-analysis`
 - `gie-investment-framework`
 - `gold-trend-analysis`
+- `reflexivity-quick-scan`
+- `reflexivity-deep-analysis`
+- `reportify-stock-analysis`
 - `multi-agent-stock-analysis`
 - `market-data-router`
 
@@ -57,6 +63,9 @@ Examples:
 - `Use InvestFlow to run a multi-agent analysis for TSLA.`
 - `Use InvestFlow to analyze institutional accumulation in AAPL over the last 3 months.`
 - `Use InvestFlow to assess gold bubble risk this week.`
+- `Use InvestFlow to perform a reflexivity quick scan on NVIDIA.`
+- `Use InvestFlow to run a deep reflexivity analysis on AI power infrastructure.`
+- `Use InvestFlow to generate a structured stock report for TSLA.`
 - `Use InvestFlow to fetch 5m market data for TSLA with market-data-router.`
 - `Use InvestFlow to evaluate whether NVIDIA is a GIE-style golden shovel asset.`
 
@@ -95,6 +104,9 @@ Generated analysis files are written under `output/`:
 - `output/institutional-accumulation-analysis/`
 - `output/gie-investment-framework/`
 - `output/gold-analysis/`
+- `output/reflexivity-quick-scan/`
+- `output/reflexivity-deep-analysis/`
+- `output/reportify-stock-analysis/`
 - `output/summary/`
 - `output/cache/market-data/`
 

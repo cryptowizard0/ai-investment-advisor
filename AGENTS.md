@@ -34,6 +34,9 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── institutional-accumulation-analysis/
 │           ├── gie-investment-framework/
 │           ├── gold-trend-analysis/
+│           ├── reflexivity-quick-scan/
+│           ├── reflexivity-deep-analysis/
+│           ├── reportify-stock-analysis/
 │           ├── multi-agent-stock-analysis/
 │           └── market-data-router/
 ├── output/
@@ -41,6 +44,9 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── institutional-accumulation-analysis/
 │   ├── gie-investment-framework/
 │   ├── gold-analysis/
+│   ├── reflexivity-quick-scan/
+│   ├── reflexivity-deep-analysis/
+│   ├── reportify-stock-analysis/
 │   ├── summary/
 │   └── cache/market-data/
 └── .venv/
@@ -95,6 +101,9 @@ Active packaged skills:
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
 - `gie-investment-framework` - 1-3 year golden-shovel style investment framework
 - `gold-trend-analysis` - gold bubble risk and macro signal analysis
+- `reflexivity-quick-scan` - fast stage judgment with a Soros-style reflexivity lens
+- `reflexivity-deep-analysis` - full-cycle reflexivity research on stocks, sectors, and narratives
+- `reportify-stock-analysis` - fixed-template structured stock research report generation
 - `multi-agent-stock-analysis` - orchestration across multiple analysis skills
 - `market-data-router` - routed market data fetch and fallback logic
 
@@ -114,6 +123,9 @@ Active packaged skills:
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - GIE framework: `output/gie-investment-framework/gie-{title}-{date}.md`
 - Gold analysis: `output/gold-analysis/gold-{analysis-type}-{date}.md`
+- Reflexivity quick scan: `output/reflexivity-quick-scan/`
+- Reflexivity deep analysis: `output/reflexivity-deep-analysis/`
+- Reportify stock analysis: `output/reportify-stock-analysis/reportify-stock-analysis-{TICKER}-{YYYY-MM-DD}.md`
 - Summary report: `output/summary/综合分析-{TICKER}-{date}.md`
 - Market data cache: `output/cache/market-data/`
 
