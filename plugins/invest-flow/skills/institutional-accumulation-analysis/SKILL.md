@@ -177,6 +177,7 @@ Structure the output according to the report template in `references/analysis-te
 
 **新增要求：**
 - 报告末尾需标注**分析师**字段，格式：`{工具}-{模型}`，例如 `ClaudeCode-gemini3`、`codex-GPT-5.2`
+- 所有输出报告必须包含固定作者字段：`InvestmentFlow`
 
 #### Automatic Report Saving
 

@@ -32,6 +32,7 @@ Use search tools to gather the following context:
 Use the provided template to structure the findings.
 - **Template Location**: `references/report-template.md`
 - Replace placeholders like `{{股票代码}}`, `{{公司名称}}`, `{{date}}`.
+- Every generated report must include `作者：InvestmentFlow`.
 
 ### 4. Evaluation & Strategy
 Synthesize the data into actionable insights:

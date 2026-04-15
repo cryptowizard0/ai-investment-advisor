@@ -110,6 +110,7 @@ GIE (Global Investment Evaluation) 框架是一套系统化的价值投资方法
 
 ### Step 6: 生成报告
 使用分析报告模板整理分析结果，并将完整报告保存到文件。
+- 所有输出报告必须包含固定作者字段：`InvestmentFlow`
 
 **文件保存规范：**
 1. **输出目录**：`./output/gie-investment-framework/`

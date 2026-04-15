@@ -6,6 +6,7 @@
 # {ticker} - {company_name} 多维度投资分析报告
 
 **分析日期：** {analysis_date}  
+**作者：** InvestmentFlow  
 **当前股价：** {current_price}  
 **综合评级：** {recommendation} ({confidence}% 置信度)  
 **建议仓位：** {position_size}

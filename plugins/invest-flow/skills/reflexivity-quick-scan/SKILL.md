@@ -81,6 +81,7 @@ description: "反身性快速扫描分析。基于索罗斯反身性框架，对
 ### 8) 套模板并保存
 - 严格按 `assets/report-template.md` 输出，不删除章节。
 - 信息不足时写“数据暂缺”或“需进一步验证”，不要留空。
+- 所有输出报告必须包含固定作者字段：`InvestmentFlow`
 - 生成最终 Markdown 后，用下面命令保存：
 
 ```bash
@@ -100,6 +101,7 @@ python plugins/invest-flow/skills/reflexivity-quick-scan/scripts/save_report.py 
 - 语言：中文，金融术语可保留英文。
 - 格式：Markdown。
 - 必须包含：
+  - 作者：InvestmentFlow
   - 市场叙事
   - 资金是否已经行动
   - 价格状态

@@ -1,5 +1,6 @@
 # {{公司名}}（{{Ticker}}）综合分析报告
 **分析日期：{{YYYY年MM月DD日}}**
+**作者：InvestmentFlow**
 
 ## 一、公司概况
 
