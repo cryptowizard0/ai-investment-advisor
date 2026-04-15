@@ -1,0 +1,20 @@
+{
+  "name": "investflow-local",
+  "interface": {
+    "displayName": "InvestFlow Local"
+  },
+  "plugins": [
+    {
+      "name": "invest-flow",
+      "source": {
+        "source": "local",
+        "path": "./plugins/invest-flow"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
