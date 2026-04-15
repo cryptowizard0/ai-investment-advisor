@@ -2,353 +2,165 @@
 
 ## Project Overview
 
-This is an AI-driven Investment Analysis Multi-Agent System built on the OpenCode "Skill + Subagent" architecture. The system combines multiple specialized AI agents to perform comprehensive investment analysis from different dimensions: fundamental analysis, institutional flow detection, GIE investment framework evaluation, and gold market bubble risk assessment.
-
-The project uses a modular skill-based design where each skill encapsulates domain expertise for specific financial analysis tasks. Skills are reusable packages that extend AI agent capabilities.
+This repository is an AI-driven investment analysis system packaged as a repo-local Codex plugin. The canonical runtime surface is `plugins/invest-flow/`, which contains the plugin manifest, assets, and all investment skills.
 
 **Project Language**: Documentation and investment reports are primarily in Chinese (中文). Code comments are in English. Financial terms remain in English (RSI, MACD, P/E, OBV, etc.).
 
 ## Technology Stack
 
 - **Python**: 3.12.10 (virtual environment at `.venv/`)
-- **Node.js**: OpenCode framework runtime
-- **Key Python Libraries**: 
-  - `yfinance` - Market data fetching from Yahoo Finance
-  - `pandas` - Data processing
-  - `requests` - HTTP requests for CFTC COT data
-  - Standard library for technical indicator calculations
+- **Node.js**: Codex/OpenCode runtime environment
+- **Key Python Libraries**:
+  - `yfinance`
+  - `pandas`
+  - `requests`
+  - `PyYAML`
 
-## Project Structure
+## Current Repository Structure
 
-```
+```text
 .
-├── .agents/skills/              # Core skill definitions
-│   ├── fundamental-analysis/    # Stock fundamental analysis
-│   ├── institutional-accumulation-analysis/  # Whale detection
-│   ├── gold-trend-analysis/     # Gold bubble risk assessment
-│   ├── gie-investment-framework/  # "Golden shovel" asset discovery
-│   ├── multi-agent-stock-analysis/  # Multi-agent orchestration
-│   └── skill-creator/           # Skill development utilities
-├── .claude/skills/              # Claude-specific skill copies
-├── .claude/settings.local.json  # Claude permissions config
-├── output/                      # Generated reports
+├── AGENTS.md
+├── README.md
+├── .agents/
+│   └── plugins/
+│       └── marketplace.json
+├── plugins/
+│   └── invest-flow/
+│       ├── .codex-plugin/plugin.json
+│       ├── assets/
+│       └── skills/
+│           ├── fundamental-analysis/
+│           ├── institutional-accumulation-analysis/
+│           ├── gie-investment-framework/
+│           ├── gold-trend-analysis/
+│           ├── multi-agent-stock-analysis/
+│           └── market-data-router/
+├── output/
 │   ├── fundamental-analysis/
 │   ├── institutional-accumulation-analysis/
 │   ├── gie-investment-framework/
 │   ├── gold-analysis/
-│   └── summary/
-├── .agents/skills/multi-agent-stock-analysis/scripts/orchestrator.py  # Core orchestrator
-├── .agents/skills/market-data-router/scripts/fetch_market_data.py     # Market data router
-├── .agents/skills/institutional-accumulation-analysis/scripts/save_report.py
-└── AGENTS.md
+│   ├── summary/
+│   └── cache/market-data/
+└── .venv/
 ```
 
-## Key Configuration Files
+## Source Of Truth
 
-### `.claude/settings.local.json`
-Pre-configured permissions for:
-- WebSearch and WebFetch capabilities
-- Bash commands: python3, pip install, curl, tree
-- Financial data domains whitelist (yahoo.com, investing.com, cftc.gov, cmegroup.com, and Chinese financial sites)
+- Investment skills live only in `plugins/invest-flow/skills/`.
+- Plugin discovery metadata lives in `.agents/plugins/marketplace.json`.
+- Do not reintroduce duplicate investment skills under `.agents/skills/`, `.claude/skills/`, or legacy agent-definition folders.
 
-### `.opencode/package.json`
-OpenCode framework dependency:
-```json
-{
-  "dependencies": {
-    "@opencode-ai/plugin": "1.1.53"
-  }
-}
-```
+## Key Files
 
-### `.venv/pyvenv.cfg`
-Python 3.12.10 virtual environment with `include-system-site-packages = false` for isolation.
+- `plugins/invest-flow/.codex-plugin/plugin.json` - plugin manifest
+- `.agents/plugins/marketplace.json` - repo-local plugin marketplace entry
+- `plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py` - multi-agent orchestration entrypoint
+- `plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py` - market data router entrypoint
 
-## Build/Test/Lint Commands
+## Build/Test Commands
 
-This is an AI agent project with **no formal test suite**. Testing is done by executing skills on real tasks.
+This project has no formal test suite. Validation is done through direct script execution and real analysis tasks.
 
 ```bash
 # Activate virtual environment
 source .venv/bin/activate
 
-# Run market data router script
-python .agents/skills/market-data-router/scripts/fetch_market_data.py --help
+# Check orchestrator CLI
+python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py --help
 
-# Run multi-agent orchestrator
-python .agents/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --execution-mode command
+# Check market data router CLI
+python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py --help
 
-# Validate skill structure
-python .agents/skills/skill-creator/scripts/quick_validate.py <skill-directory>
-
-# Package a skill
-python .agents/skills/skill-creator/scripts/package_skill.py <skill-folder>
-
-# Initialize new skill
-python .agents/skills/skill-creator/scripts/init_skill.py <skill-name> --path ../
+# Run multi-agent analysis
+python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --execution-mode command
 ```
 
-## Code Organization
+## Skill Layout
 
-### 1. Skill-Based Analysis System (`.agents/skills/`)
-Each skill follows a standard structure:
-```
+Each packaged skill follows this structure:
+
+```text
 skill-name/
-├── SKILL.md              # Required - skill definition with YAML frontmatter
-├── scripts/              # Executable Python/shell scripts
-├── references/           # Documentation (loaded on demand)
-└── assets/               # Templates, files for output
+├── SKILL.md
+├── scripts/
+├── references/
+└── assets/
 ```
 
-**Active Skills:**
-- `fundamental-analysis`: Deep-dive stock analysis combining financials, valuation, and technicals
-  - Output: `./output/fundamental-analysis/{ticker}-{company-name}-{date}.md`
-  - Template: `references/report-template.md`
-  
-- `institutional-accumulation-analysis`: Detect institutional (whale) buying/selling patterns
-  - Output: `./output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
-  - Uses scoring system: -100 to +100 with classification thresholds
-  - References: `scoring-system.md`, `scoring-quickref.md`, `analysis-template.md`
-  
-- `gold-trend-analysis`: Gold market bubble risk assessment with 0-100 risk scores
-  - Output: `./output/gold-analysis/gold-bubble-risk-{date}.md`
-  - Analyzes: real interest rates, COT positioning, gold-silver ratio, gold/SPX ratio
-  
-- `gie-investment-framework`: "Golden Shovel" asset discovery for 1-3 year investment horizons
-  - Output: `./output/gie-investment-framework/gie-{title}-{date}.md`
-  - Four-dimensional analysis: macro, supply-demand, financial, timing
-  
-- `multi-agent-stock-analysis`: Orchestrates multiple agents with retry mechanism
-  - Output: `./output/summary/综合分析-{TICKER}-{date}.md`
-  - References: `workflow-guide.md`, `data-structure.md`
+Active packaged skills:
 
-### 2. Multi-Agent Orchestrator (`.agents/skills/multi-agent-stock-analysis/scripts/orchestrator.py`)
-Core components:
-- `AgentExecutor`: Handles individual agent execution with retry logic
-- `MultiAgentOrchestrator`: Coordinates multiple agents in parallel
-- `SubAgentResult`: Dataclass for agent execution results
-- `OrchestrationConfig`: Configuration for retry behavior and timeouts
+- `fundamental-analysis` - stock fundamental and technical analysis
+- `institutional-accumulation-analysis` - whale accumulation/distribution analysis
+- `gie-investment-framework` - 1-3 year golden-shovel style investment framework
+- `gold-trend-analysis` - gold bubble risk and macro signal analysis
+- `multi-agent-stock-analysis` - orchestration across multiple analysis skills
+- `market-data-router` - routed market data fetch and fallback logic
 
-**Failure Detection:**
-- Empty output (< 100 characters)
-- Timeout (> 240 seconds)
-- Exception during execution
-- Missing required keywords ("分析", "报告", "结论")
+## Orchestrator Notes
 
-**Retry Strategy:**
-- Immediate retry (no exponential backoff)
-- Max 1 retry per agent
-- Continue with other agents if one fails
+`multi-agent-stock-analysis` is implemented by the packaged orchestrator script, not by separate legacy agent-definition files. The current orchestrator:
 
-### 3. Market Data Router (`.agents/skills/market-data-router/scripts/fetch_market_data.py`)
-Unified market data fetcher with routing and fallback:
-- Multi-market bars (`5m/1h/1d`, `auto` interval support)
-- US options and dark pool routing via Polygon
-- Fallback and quality flags (`fallback_to_yahoo`, `partial_data`, etc.)
-- Optional cache control (`--cache-dir`, `--cache-ttl`)
-
-## Code Style Guidelines
-
-### Python
-
-**Imports**:
-- Standard library first, then third-party
-- No wildcard imports
-- Group imports with blank line separation
-
-```python
-import csv
-import math
-from datetime import datetime
-
-import yfinance as yf
-import pandas as pd
-import requests
-```
-
-**Naming**:
-- Functions/variables: `snake_case`
-- Constants: `UPPER_SNAKE_CASE`
-- Classes: `PascalCase`
-- Skill directories: `hyphen-case`
-
-**Formatting**:
-- f-strings preferred for string formatting
-- Max line length: 100 characters (soft limit)
-- 4 spaces for indentation
-- Two blank lines between top-level functions/classes
-
-**Error Handling**:
-- Explicit try-except blocks
-- Meaningful error messages
-- Avoid bare `except:` clauses
-
-```python
-try:
-    data = yf.download(tickers, period="5d")
-except Exception as e:
-    print(f"Error fetching data: {e}")
-    return
-```
-
-**Comments**:
-- Chinese for domain concepts, English for technical terms
-- Docstrings for modules and functions
-- Inline comments for complex logic
-
-### Skill Development
-
-**SKILL.md Structure**:
-```yaml
----
-name: skill-name
-description: "Clear description with WHEN to use this skill"
----
-```
-
-- Frontmatter required: `name` (hyphen-case), `description`
-- Progressive disclosure: metadata → SKILL.md → references/
-- Keep SKILL.md under 500 lines
-- Use references/ for detailed documentation
-
-**File Organization**:
-- Required: `SKILL.md` with YAML frontmatter
-- Optional: `scripts/`, `references/`, `assets/`
-- No extraneous docs (README.md, CHANGELOG.md, etc.)
-
-**Output Handling**:
-- Check for existing files before writing
-- Use numbered suffixes `(1)`, `(2)` for duplicates
-- Create directories: `os.makedirs(exist_ok=True)`
-
-## Testing Strategy
-
-This project has **no formal test suite**. Testing is done by:
-1. Executing skills on real analysis tasks
-2. Validating skill structure with `quick_validate.py`
-3. Testing scripts manually before packaging
-
-## Retry Mechanism
-
-The multi-agent system implements automatic retry for failed agents:
-
-```python
-# Configuration
-OrchestrationConfig(
-    max_retries=1,           # Maximum retry attempts
-    timeout_seconds=240,     # Per-agent timeout
-    retry_on_empty=True,     # Retry on empty output
-    retry_on_timeout=True,   # Retry on timeout
-    parallel_execution=True  # Execute agents in parallel
-)
-```
+- resolves the repo root dynamically
+- executes three skill commands directly
+- validates each result
+- retries once on empty output, timeout, or exception
+- aggregates partial success into a final summary flow
 
 ## Output Conventions
 
-### Report Naming
-- **Fundamental analysis**: `{ticker}-{company-name}-{date}.md` (e.g., `TSLA-Tesla-2026-02-06.md`)
-- **Institutional analysis**: `机构操作分析-{YYYYMMDD}-{TICKER}.md`
-- **GIE framework**: `gie-{title}-{date}.md`
-- **Gold analysis**: `gold-bubble-risk-{date}.md`
-- **Summary report**: `综合分析-{TICKER}-{date}.md`
+- Fundamental analysis: `output/fundamental-analysis/{ticker}-{company-name}-{date}.md`
+- Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
+- GIE framework: `output/gie-investment-framework/gie-{title}-{date}.md`
+- Gold analysis: `output/gold-analysis/gold-{analysis-type}-{date}.md`
+- Summary report: `output/summary/综合分析-{TICKER}-{date}.md`
+- Market data cache: `output/cache/market-data/`
 
-### Duplicate Handling
-If file exists, append numbered suffix:
-- First: `report.md`
-- Second: `report(1).md`
-- Third: `report(2).md`
+If an output file already exists, scripts should append numbered suffixes like `(1)` and `(2)` instead of overwriting.
 
-### Directory Structure
-```
-./output/
-├── fundamental-analysis/       # Stock fundamental reports
-├── institutional-accumulation-analysis/  # Whale flow reports
-├── gie-investment-framework/   # Golden shovel analysis
-├── gold-analysis/              # Gold risk assessments
-└── summary/                    # Multi-agent aggregated reports
-```
+## Code Style
 
-## Key Workflows
+### Python
 
-### Creating a New Skill
+- Standard library imports first, then third-party imports
+- `snake_case` for functions and variables
+- `PascalCase` for classes
+- `UPPER_SNAKE_CASE` for constants
+- Prefer explicit `try/except` with meaningful error messages
+- Prefer f-strings for formatting
+- Use 4-space indentation
 
-```bash
-cd .agents/skills/skill-creator
-python scripts/init_skill.py <skill-name> --path ../
-# Edit SKILL.md, customize scripts/references/assets
-python scripts/package_skill.py ../<skill-name>
-```
+### Skill Authoring
 
-### Running Multi-Agent Analysis
-
-```python
-from pathlib import Path
-import sys
-
-orchestrator_dir = Path(".agents/skills/multi-agent-stock-analysis/scripts").resolve()
-sys.path.append(str(orchestrator_dir))
-
-from orchestrator import analyze_stock_with_retry
-
-result = analyze_stock_with_retry(
-    ticker="TSLA",
-    max_retries=1,
-    timeout=240,
-    execution_mode="command",  # or "mock"
-)
-
-print(f"状态: {result['status']}")
-print(f"成功: {result['completed_count']}/{result['total_count']}")
-print(f"重试次数: {result['retried_count']}")
-```
-
-### Running Analysis Manually
-
-1. Load appropriate skill from `.agents/skills/`
-2. Read SKILL.md for workflow instructions
-3. Search for latest financial data
-4. Generate report using templates from `references/`
-5. Save to `./output/{skill-type}/` with unique filename
-
-## Security Considerations
-
-- Virtual environment isolated (`include-system-site-packages = false`)
-- WebFetch limited to whitelisted financial domains
-- Bash commands restricted to python, pip, curl, tree
-- No sensitive credentials stored in repository
+- `SKILL.md` must include YAML frontmatter with `name` and `description`
+- Keep detailed methodology in `references/` instead of bloating `SKILL.md`
+- Keep helper code in `scripts/`
+- Keep templates and assets in `assets/`
 
 ## Data Sources
 
-**Primary**:
-- Yahoo Finance (yfinance) - Real-time quotes and historical data
-- CFTC COT reports - Institutional positioning
-- Web search - Latest news and market data
+Primary sources used by the packaged skills:
 
-**Reference Only**:
-- `./output/cache/market-data/` - Router cache artifacts for reproducible analysis
+- Yahoo Finance (`yfinance`)
+- CFTC COT data
+- Web search for current market/news context
+
+Reference cache:
+
+- `output/cache/market-data/`
 
 ## Dependencies
 
-Core scripts use only Python standard library. External packages used in specific scripts:
-- `yfinance` - Market data
-- `pandas` - Data processing
-- `requests` - HTTP requests
-- `PyYAML` - YAML parsing
+Install Python dependencies with:
 
-Install with:
 ```bash
 source .venv/bin/activate
 pip install yfinance pandas requests pyyaml
 ```
 
-## Version Information
+## Maintenance Guidance
 
-- **Python**: 3.12.10
-- **OpenCode Plugin**: 1.1.53
-- **Last Updated**: 2026-02-10
-
-## Additional Documentation
-
-- `CLAUDE.md` - Claude Code specific guidance
-- `RETRY_MECHANISM.md` - Detailed retry mechanism design document
-- `.agents/skills/multi-agent-stock-analysis/scripts/orchestrator.py` - Command-driven orchestrator implementation
+- When updating investment workflows, edit the packaged plugin content directly under `plugins/invest-flow/`.
+- Keep `README.md` and this file aligned with the actual on-disk structure.
+- If plugin packaging changes, update both `plugins/invest-flow/.codex-plugin/plugin.json` and `.agents/plugins/marketplace.json`.

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an AI-powered investment analysis project that combines technical analysis tools with AI-driven fundamental and institutional analysis capabilities. The project uses a modular "skill" system where each skill encapsulates domain expertise for specific analysis types.
+This is an AI-powered investment analysis project that combines technical analysis tools with AI-driven fundamental and institutional analysis capabilities. The packaged investment workflows now live in the repo-local `InvestFlow` plugin under `plugins/invest-flow/skills/`.
 
 **Language Context**: Investment reports and skill descriptions are primarily in Chinese (中文). Code comments are in English.
 
@@ -25,31 +25,19 @@ source .venv/bin/activate
 .venv/bin/python
 ```
 
-### Skill Development
-```bash
-# Initialize new skill
-cd .agents/skills/skill-creator
-python scripts/init_skill.py <skill-name> --path ../
-
-# Package skill for distribution
-python scripts/package_skill.py <path/to/skill-folder>
-```
-
 ### Report Operations
 ```bash
 # Save fundamental analysis report
-cd .agents/skills/fundamental-analysis
-python scripts/save_report.py ~/report.md TSLA
+python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --execution-mode command
 
 # Save institutional analysis report
-cd .agents/skills/institutional-accumulation-analysis
-python scripts/save_report.py ~/report.md TSLA
+python plugins/invest-flow/skills/institutional-accumulation-analysis/scripts/save_report.py ~/report.md TSLA
 ```
 
 ## Architecture
 
 ### Skill-Based System
-Skills are modular AI capabilities stored in `.agents/skills/` and `.claude/skills/`. Each skill follows a standard structure:
+Investment skills are packaged in `plugins/invest-flow/skills/`. Each skill follows a standard structure:
 
 ```
 skill-name/
