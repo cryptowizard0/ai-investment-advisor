@@ -6,11 +6,34 @@ from pathlib import Path
 from typing import Iterable, Optional
 
 
+def _is_valid_project_root(candidate: Path) -> bool:
+    if not (candidate / "AGENTS.md").exists():
+        return False
+    return any(
+        sentinel.exists()
+        for sentinel in [
+            candidate / "plugins" / "invest-flow",
+            candidate / ".agents" / "plugins" / "marketplace.json",
+            candidate / ".git",
+        ]
+    )
+
+
+def _is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+    except ValueError:
+        return False
+    return True
+
+
 def find_project_root(start: Optional[Path] = None) -> Path:
     current = (start or Path(__file__)).resolve()
+    if current.is_file():
+        current = current.parent
     candidates: Iterable[Path] = [current, *current.parents]
     for candidate in candidates:
-        if (candidate / "AGENTS.md").exists():
+        if _is_valid_project_root(candidate):
             return candidate
     return Path.cwd().resolve()
 
@@ -39,7 +62,10 @@ def unique_path(path: Path) -> Path:
 
 
 def ensure_output_dir(project_root: Path, relative_dir: str) -> Path:
-    output_dir = (project_root / relative_dir).resolve()
+    root = project_root.resolve()
+    output_dir = (root / relative_dir).resolve()
+    if not _is_relative_to(output_dir, root):
+        raise ValueError(f"Output directory escapes project root: {relative_dir}")
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir
 
@@ -47,6 +73,7 @@ def ensure_output_dir(project_root: Path, relative_dir: str) -> Path:
 def find_report_from_output(project_root: Path, command_output: str) -> Optional[Path]:
     if not command_output:
         return None
+    output_root = (project_root / "output").resolve()
     patterns = [
         r"([./\w\-\u4e00-\u9fff()]+/output/[^\s\"'`]+\.md)",
         r"(\.?/output/[^\s\"'`]+\.md)",
@@ -57,7 +84,9 @@ def find_report_from_output(project_root: Path, command_output: str) -> Optional
             path = Path(match)
             if not path.is_absolute():
                 path = (project_root / path).resolve()
-            if path.exists() and path.is_file():
+            else:
+                path = path.resolve()
+            if path.exists() and path.is_file() and _is_relative_to(path, output_root):
                 return path
     return None
 

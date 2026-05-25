@@ -163,6 +163,98 @@ class PathTests(unittest.TestCase):
 
         self.assertEqual(second.name, "report(1).md")
 
+    def test_find_project_root_from_nested_path_finds_repo_sentinel(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.paths import find_project_root
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            nested = project_root / "plugins" / "invest-flow" / "skills"
+            nested.mkdir(parents=True)
+            (project_root / "AGENTS.md").write_text("repo instructions", encoding="utf-8")
+
+            root = find_project_root(start=nested)
+
+        self.assertEqual(root, project_root.resolve())
+
+    def test_find_project_root_skips_agents_only_parent(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.paths import find_project_root
+
+        with TemporaryDirectory() as tmp:
+            fake_root = Path(tmp) / "fake-global-root"
+            nested = fake_root / "cache" / "plugin"
+            nested.mkdir(parents=True)
+            (fake_root / "AGENTS.md").write_text("global instructions", encoding="utf-8")
+
+            root = find_project_root(start=nested)
+
+        self.assertEqual(root, Path.cwd().resolve())
+
+    def test_find_report_from_output_returns_existing_output_report(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.paths import find_report_from_output
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            report = project_root / "output" / "summary" / "综合分析-TSLA.md"
+            report.parent.mkdir(parents=True)
+            report.write_text("report", encoding="utf-8")
+
+            found = find_report_from_output(project_root, f"saved to {report}")
+
+        self.assertEqual(found, report.resolve())
+
+    def test_find_report_from_output_rejects_markdown_outside_output(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.paths import find_report_from_output
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            readme = project_root / "README.md"
+            readme.parent.mkdir(parents=True)
+            readme.write_text("not a report", encoding="utf-8")
+
+            found = find_report_from_output(project_root, f"template: {readme}")
+
+        self.assertIsNone(found)
+
+    def test_find_latest_report_prefers_ticker_match_over_newer_non_ticker_report(self):
+        from datetime import datetime, timedelta
+        import os
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.paths import find_latest_report
+
+        with TemporaryDirectory() as tmp:
+            output_dir = Path(tmp)
+            ticker_report = output_dir / "TSLA-analysis.md"
+            other_report = output_dir / "NVDA-analysis.md"
+            started_at = datetime.now() - timedelta(seconds=1)
+            ticker_report.write_text("ticker", encoding="utf-8")
+            other_report.write_text("other", encoding="utf-8")
+            ticker_ts = started_at.timestamp() + 1
+            other_ts = started_at.timestamp() + 2
+            os.utime(ticker_report, (ticker_ts, ticker_ts))
+            os.utime(other_report, (other_ts, other_ts))
+
+            found = find_latest_report(output_dir, "TSLA", started_at)
+
+        self.assertEqual(found, ticker_report)
+
+    def test_ensure_output_dir_rejects_paths_outside_project_root(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.paths import ensure_output_dir
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            project_root.mkdir()
+            outside = Path(tmp) / "outside"
+
+            with self.assertRaises(ValueError):
+                ensure_output_dir(project_root, "../outside")
+            with self.assertRaises(ValueError):
+                ensure_output_dir(project_root, str(outside))
+
 
 if __name__ == "__main__":
     unittest.main()
