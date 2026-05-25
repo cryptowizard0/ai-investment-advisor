@@ -321,5 +321,37 @@ class PathTests(unittest.TestCase):
                 ensure_output_dir(project_root, str(outside))
 
 
+class RegistryTests(unittest.TestCase):
+    def test_basic_specs_include_three_legacy_agents(self):
+        from investflow_pipeline.registry import build_registry
+
+        registry = build_registry()
+        specs = registry.basic_stock_specs()
+        names = [spec.agent_name for spec in specs]
+
+        self.assertEqual(names, ["fundamental", "institutional", "gie"])
+        self.assertTrue(specs[0].required)
+        self.assertFalse(specs[1].required)
+        self.assertTrue(specs[2].required)
+
+    def test_unified_env_var_overrides_default_command(self):
+        import os
+        from investflow_pipeline.registry import build_registry
+
+        key = "INVESTFLOW_CMD_FUNDAMENTAL_ANALYSIS"
+        original = os.environ.get(key)
+        os.environ[key] = 'echo "/tmp/custom.md"'
+        try:
+            registry = build_registry()
+            spec = registry.get("fundamental-analysis")
+        finally:
+            if original is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = original
+
+        self.assertEqual(spec.command_template, 'echo "/tmp/custom.md"')
+
+
 if __name__ == "__main__":
     unittest.main()
