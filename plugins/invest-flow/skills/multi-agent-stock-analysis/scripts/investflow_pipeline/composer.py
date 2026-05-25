@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
@@ -10,11 +11,44 @@ from .models import AnalysisStatus, PipelineResult, StageResult
 from .paths import ensure_output_dir, unique_path
 
 
+def _normalize_text(value: str) -> str:
+    compact = " ".join((value or "").replace("\n", " ").split())
+    return "".join(ch for ch in compact if ch >= " " or ch == "\t").strip()
+
+
+def _table_cell(value: str, fallback: str) -> str:
+    text = _normalize_text(value) or fallback
+    return text.replace("|", r"\|")
+
+
+def _safe_symbol_token(*candidates: str) -> str:
+    raw = ""
+    for candidate in candidates:
+        candidate = (candidate or "").strip()
+        if candidate:
+            raw = candidate
+            break
+    upper = raw.upper()
+    sanitized = re.sub(r"[^A-Z0-9._-]+", "_", upper)
+    sanitized = re.sub(r"_+", "_", sanitized).strip("._-")
+    return sanitized or "UNKNOWN"
+
+
+def _safe_unique_path(summary_dir: Path, filename: str) -> Path:
+    candidate = unique_path(summary_dir / filename).resolve()
+    try:
+        candidate.relative_to(summary_dir.resolve())
+    except ValueError as exc:
+        raise ValueError(f"Output path escapes summary dir: {candidate}") from exc
+    return candidate
+
+
 def _line_items(values: List[str], fallback: str) -> str:
-    cleaned = [value.strip() for value in values if value and value.strip()]
+    cleaned = [_normalize_text(value) for value in values]
+    cleaned = [value for value in cleaned if value]
     if not cleaned:
-        return f"- {fallback}"
-    return "\n".join(f"- {value}" for value in cleaned)
+        return f"- {_normalize_text(fallback)}"
+    return "\n".join(f"- {value.replace('|', r'\|')}" for value in cleaned)
 
 
 def _stage_table(results: List[StageResult]) -> str:
@@ -23,7 +57,7 @@ def _stage_table(results: List[StageResult]) -> str:
         "| --- | --- | --- | --- | --- | --- |",
     ]
     for stage in results:
-        conclusion = stage.handoff.conclusion.strip() or "无结论"
+        conclusion = _normalize_text(stage.handoff.conclusion) or "无结论"
         if len(conclusion) > 40:
             conclusion = f"{conclusion[:37]}..."
         confidence = (
@@ -31,8 +65,9 @@ def _stage_table(results: List[StageResult]) -> str:
         )
         report_path = stage.report_path or "-"
         lines.append(
-            f"| {stage.skill_name} | {stage.agent_name} | {stage.status.value} | "
-            f"{conclusion} | {confidence} | {report_path} |"
+            f"| {_table_cell(stage.skill_name, '-')} | {_table_cell(stage.agent_name, '-')} "
+            f"| {_table_cell(stage.status.value, '-')} | {_table_cell(conclusion, '无结论')} "
+            f"| {_table_cell(confidence, 'N/A')} | {_table_cell(report_path, '-')} |"
         )
     return "\n".join(lines)
 
@@ -103,22 +138,27 @@ def _summary_date(ended_at: str) -> str:
 
 def write_outputs(project_root: Path, result: PipelineResult) -> PipelineResult:
     summary_dir = ensure_output_dir(project_root, "output/summary")
-    ticker = (result.ticker or result.target or "UNKNOWN").upper()
+    ticker = _safe_symbol_token(result.ticker, result.target)
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    json_path = unique_path(summary_dir / f"orchestration-{ticker}-{timestamp}.json").resolve()
-
-    updated = replace(result, orchestration_json_path=str(json_path))
-    json_payload = updated.to_dict()
-    json_path.write_text(
-        json.dumps(json_payload, ensure_ascii=False, indent=2),
-        encoding="utf-8",
+    json_path = _safe_unique_path(
+        summary_dir, f"orchestration-{ticker}-{timestamp}.json"
     )
 
-    if not any(stage.status == AnalysisStatus.SUCCESS for stage in result.stage_results):
-        return replace(updated, summary_report_path=None)
+    summary_path = None
+    if any(stage.status == AnalysisStatus.SUCCESS for stage in result.stage_results):
+        summary_name = f"综合分析-{ticker}-{_summary_date(result.ended_at)}.md"
+        summary_path = _safe_unique_path(summary_dir, summary_name)
 
-    summary_name = f"综合分析-{ticker}-{_summary_date(result.ended_at)}.md"
-    summary_path = unique_path(summary_dir / summary_name).resolve()
-    final_result = replace(updated, summary_report_path=str(summary_path))
-    summary_path.write_text(compose_summary(final_result), encoding="utf-8")
+    final_result = replace(
+        result,
+        summary_report_path=str(summary_path) if summary_path else None,
+        orchestration_json_path=str(json_path),
+    )
+
+    if summary_path:
+        summary_path.write_text(compose_summary(final_result), encoding="utf-8")
+    json_path.write_text(
+        json.dumps(final_result.to_dict(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
     return final_result

@@ -832,6 +832,7 @@ class ComposerTests(unittest.TestCase):
         self.assertIn("作者：InvestmentFlow", content)
         self.assertIn("stage_results", payload)
         self.assertIn("agents", payload)
+        self.assertEqual(payload["summary_report_path"], written.summary_report_path)
 
     def test_write_outputs_failed_only_creates_json_without_markdown(self):
         import json
@@ -880,6 +881,52 @@ class ComposerTests(unittest.TestCase):
             written_path = Path(written.summary_report_path)
             self.assertTrue(written_path.exists())
             self.assertEqual(written_path.name, "综合分析-TSLA-2026-05-25(1).md")
+
+    def test_write_outputs_sanitizes_symbol_and_keeps_paths_under_summary(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.composer import write_outputs
+        from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
+
+        success_stage = StageResult(
+            skill_name="fundamental-analysis",
+            agent_name="fundamental",
+            status=AnalysisStatus.SUCCESS,
+            handoff=Handoff(recommendation="观望"),
+        )
+        result = self._pipeline_result([success_stage])
+        result.ticker = "../x"
+        result.target = "A/B"
+
+        with TemporaryDirectory() as tmp:
+            written = write_outputs(Path(tmp), result)
+            summary_dir = (Path(tmp) / "output" / "summary").resolve()
+            summary_path = Path(written.summary_report_path).resolve()
+            json_path = Path(written.orchestration_json_path).resolve()
+            self.assertEqual(summary_path.parent, summary_dir)
+            self.assertEqual(json_path.parent, summary_dir)
+            self.assertNotIn("/", summary_path.name)
+            self.assertNotIn("/", json_path.name)
+
+    def test_markdown_sanitization_escapes_pipe_and_flattens_newlines(self):
+        from investflow_pipeline.composer import _line_items, _stage_table
+        from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
+
+        stage = StageResult(
+            skill_name="fund|amental",
+            agent_name="age\nnt",
+            status=AnalysisStatus.SUCCESS,
+            report_path="/tmp/a|b.md",
+            handoff=Handoff(conclusion="line1\nline2|x"),
+        )
+
+        table = _stage_table([stage])
+        items = _line_items(["ev|1\nnext"], "fallback")
+
+        self.assertIn(r"fund\|amental", table)
+        self.assertIn("age nt", table)
+        self.assertIn(r"line1 line2\|x", table)
+        self.assertIn(r"/tmp/a\|b.md", table)
+        self.assertIn(r"- ev\|1 next", items)
 
 
 if __name__ == "__main__":
