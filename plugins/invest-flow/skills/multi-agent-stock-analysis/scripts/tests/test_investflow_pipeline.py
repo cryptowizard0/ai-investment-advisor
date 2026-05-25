@@ -142,5 +142,27 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(second_request.requested_outputs, ["summary", "handoff_json"])
 
 
+class PathTests(unittest.TestCase):
+    def test_find_project_root_finds_agents_md(self):
+        from investflow_pipeline.paths import find_project_root
+
+        root = find_project_root()
+
+        self.assertTrue((root / "AGENTS.md").exists())
+        self.assertTrue((root / "plugins" / "invest-flow").exists())
+
+    def test_unique_path_adds_numbered_suffix(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.paths import unique_path
+
+        with TemporaryDirectory() as tmp:
+            first = Path(tmp) / "report.md"
+            first.write_text("existing", encoding="utf-8")
+
+            second = unique_path(first)
+
+        self.assertEqual(second.name, "report(1).md")
+
+
 if __name__ == "__main__":
     unittest.main()
