@@ -6,22 +6,44 @@ from typing import List
 from .models import Handoff
 
 
+def _strip_markdown_emphasis(text: str) -> str:
+    stripped = text.strip()
+    stripped = re.sub(r"^(?:[*_`]{1,3}\s*)+", "", stripped)
+    stripped = re.sub(r"(?:\s*[*_`]{1,3})+$", "", stripped)
+    return stripped.strip()
+
+
+def _remove_markdown_markers(text: str) -> str:
+    return re.sub(r"[*_`]+", "", text).strip()
+
+
+def _heading(line: str) -> tuple[int, str] | None:
+    match = re.match(r"^(#{1,6})\s*(.*?)\s*$", line.strip())
+    if not match:
+        return None
+    text = re.sub(r"\s+#+\s*$", "", match.group(2)).strip()
+    return len(match.group(1)), _strip_markdown_emphasis(text)
+
+
 def _section(markdown: str, names: List[str]) -> str:
     lines = markdown.splitlines()
     start = None
+    matched_level = None
     for name in names:
         for index, line in enumerate(lines):
-            stripped = line.strip()
-            if stripped.startswith("#") and name in stripped:
+            heading = _heading(line)
+            if heading and name in heading[1]:
                 start = index + 1
+                matched_level = heading[0]
                 break
         if start is not None:
             break
-    if start is None:
+    if start is None or matched_level is None:
         return ""
     collected: List[str] = []
     for line in lines[start:]:
-        if line.strip().startswith("#"):
+        heading = _heading(line)
+        if heading and heading[0] <= matched_level:
             break
         collected.append(line)
     return "\n".join(collected).strip()
@@ -41,30 +63,54 @@ def _bullets(text: str) -> List[str]:
 def _first_nonempty_line(text: str) -> str:
     for line in text.splitlines():
         stripped = line.strip()
+        if _heading(stripped):
+            continue
         if stripped and not stripped.startswith("- ") and not stripped.startswith("* "):
-            return stripped
+            return _strip_markdown_emphasis(stripped)
     return ""
 
 
 def _extract_recommendation(markdown: str) -> str:
     patterns = [
+        r"操作建议[:：]\s*([^\n\r]+)",
         r"建议[:：]\s*([^\n\r]+)",
         r"操作评级[:：]\s*([^\n\r]+)",
         r"最终结论[:：]\s*([^\n\r]+)",
     ]
-    for pattern in patterns:
-        match = re.search(pattern, markdown)
-        if match:
-            return match.group(1).strip()
+    for line in markdown.splitlines():
+        plain_line = _remove_markdown_markers(line)
+        for pattern in patterns:
+            match = re.search(pattern, plain_line)
+            if match:
+                return _strip_markdown_emphasis(match.group(1))
     return ""
 
 
 def _extract_confidence(markdown: str) -> int | None:
-    match = re.search(r"置信度[:：]?\s*(\d{1,3})\s*%", markdown)
-    if not match:
-        return None
-    value = int(match.group(1))
-    return max(0, min(100, value))
+    final_values: List[int] = []
+    normal_values: List[int] = []
+    raw_values: List[int] = []
+    for line in markdown.splitlines():
+        plain_line = _remove_markdown_markers(line)
+        match = re.search(r"(最终置信度|原始置信度|置信度)[:：]?\s*(\d{1,3})\s*%", plain_line)
+        if not match:
+            continue
+        value = max(0, min(100, int(match.group(2))))
+        label = match.group(1)
+        if label == "最终置信度":
+            final_values.append(value)
+        elif label == "置信度":
+            normal_values.append(value)
+        else:
+            raw_values.append(value)
+
+    if final_values:
+        return final_values[-1]
+    if normal_values:
+        return normal_values[-1]
+    if raw_values:
+        return raw_values[-1]
+    return None
 
 
 def extract_handoff(markdown: str) -> Handoff:

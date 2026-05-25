@@ -489,6 +489,51 @@ class ExtractorTests(unittest.TestCase):
         self.assertIn("收入仍保持增长", handoff.key_evidence)
         self.assertIn("估值回撤风险", handoff.risk_flags)
 
+    def test_extract_handoff_keeps_child_heading_content_in_parent_section(self):
+        from investflow_pipeline.extractors import extract_handoff
+
+        markdown = """
+# TSLA 分析报告
+
+## 执行摘要
+### 一句话 thesis
+长期需求仍在，但盈利拐点需要验证。
+
+## 风险提示
+- 交付放缓
+"""
+        handoff = extract_handoff(markdown)
+
+        self.assertIn("长期需求仍在，但盈利拐点需要验证。", handoff.conclusion)
+
+    def test_extract_handoff_strips_bold_recommendation_label(self):
+        from investflow_pipeline.extractors import extract_handoff
+
+        markdown = """
+# TSLA 分析报告
+
+## 投资建议
+**操作建议：** 观望
+"""
+        handoff = extract_handoff(markdown)
+
+        self.assertEqual(handoff.recommendation, "观望")
+
+    def test_extract_handoff_prefers_later_displayed_confidence_over_raw(self):
+        from investflow_pipeline.extractors import extract_handoff
+
+        markdown = """
+# TSLA 分析报告
+
+原始置信度: 54%
+
+## 投资建议
+**置信度：** 40%
+"""
+        handoff = extract_handoff(markdown)
+
+        self.assertEqual(handoff.confidence, 40)
+
 
 if __name__ == "__main__":
     unittest.main()
