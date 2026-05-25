@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Iterable, Optional
 
 
-def _is_valid_project_root(candidate: Path) -> bool:
+def _is_project_root(candidate: Path) -> bool:
     if not (candidate / "AGENTS.md").exists():
         return False
     return any(
@@ -33,9 +33,13 @@ def find_project_root(start: Optional[Path] = None) -> Path:
         current = current.parent
     candidates: Iterable[Path] = [current, *current.parents]
     for candidate in candidates:
-        if _is_valid_project_root(candidate):
+        if _is_project_root(candidate):
             return candidate
-    return Path.cwd().resolve()
+
+    cwd = Path.cwd().resolve()
+    if _is_project_root(cwd):
+        return cwd
+    raise RuntimeError("Unable to locate InvestFlow project root")
 
 
 def safe_read_text(file_path: Path) -> str:

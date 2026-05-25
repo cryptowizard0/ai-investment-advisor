@@ -177,7 +177,8 @@ class PathTests(unittest.TestCase):
 
         self.assertEqual(root, project_root.resolve())
 
-    def test_find_project_root_skips_agents_only_parent(self):
+    def test_find_project_root_raises_when_only_agents_parent_and_cwd_invalid(self):
+        import os
         from tempfile import TemporaryDirectory
         from investflow_pipeline.paths import find_project_root
 
@@ -187,9 +188,14 @@ class PathTests(unittest.TestCase):
             nested.mkdir(parents=True)
             (fake_root / "AGENTS.md").write_text("global instructions", encoding="utf-8")
 
-            root = find_project_root(start=nested)
+            old_cwd = Path.cwd()
+            try:
+                os.chdir(fake_root)
+                with self.assertRaisesRegex(RuntimeError, "Unable to locate InvestFlow project root"):
+                    find_project_root(start=nested)
+            finally:
+                os.chdir(old_cwd)
 
-        self.assertEqual(root, Path.cwd().resolve())
 
     def test_find_report_from_output_returns_existing_output_report(self):
         from tempfile import TemporaryDirectory
