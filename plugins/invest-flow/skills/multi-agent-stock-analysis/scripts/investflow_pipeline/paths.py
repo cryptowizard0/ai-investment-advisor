@@ -9,14 +9,10 @@ from typing import Iterable, Optional
 def _is_project_root(candidate: Path) -> bool:
     if not (candidate / "AGENTS.md").exists():
         return False
-    return any(
-        sentinel.exists()
-        for sentinel in [
-            candidate / "plugins" / "invest-flow",
-            candidate / ".agents" / "plugins" / "marketplace.json",
-            candidate / ".git",
-        ]
+    plugin_manifest = (
+        candidate / "plugins" / "invest-flow" / ".codex-plugin" / "plugin.json"
     )
+    return plugin_manifest.is_file()
 
 
 def _is_relative_to(path: Path, parent: Path) -> bool:
@@ -80,6 +76,7 @@ def find_report_from_output(project_root: Path, command_output: str) -> Optional
     output_root = (project_root / "output").resolve()
     patterns = [
         r"([./\w\-\u4e00-\u9fff()]+/output/[^\s\"'`]+\.md)",
+        r"(output/[^\s\"'`]+\.md)",
         r"(\.?/output/[^\s\"'`]+\.md)",
         r"(/[^ \n\t\"'`]+\.md)",
     ]

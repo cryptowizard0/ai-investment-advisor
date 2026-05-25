@@ -169,13 +169,38 @@ class PathTests(unittest.TestCase):
 
         with TemporaryDirectory() as tmp:
             project_root = Path(tmp) / "project"
+            plugin_manifest = (
+                project_root / "plugins" / "invest-flow" / ".codex-plugin" / "plugin.json"
+            )
             nested = project_root / "plugins" / "invest-flow" / "skills"
             nested.mkdir(parents=True)
+            plugin_manifest.parent.mkdir(parents=True)
             (project_root / "AGENTS.md").write_text("repo instructions", encoding="utf-8")
+            plugin_manifest.write_text('{"name": "invest-flow"}', encoding="utf-8")
 
             root = find_project_root(start=nested)
 
         self.assertEqual(root, project_root.resolve())
+
+    def test_find_project_root_rejects_agents_with_git_only(self):
+        import os
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.paths import find_project_root
+
+        with TemporaryDirectory() as tmp:
+            fake_root = Path(tmp) / "generic-repo"
+            nested = fake_root / "src"
+            nested.mkdir(parents=True)
+            (fake_root / "AGENTS.md").write_text("repo instructions", encoding="utf-8")
+            (fake_root / ".git").mkdir()
+
+            old_cwd = Path.cwd()
+            try:
+                os.chdir(fake_root)
+                with self.assertRaisesRegex(RuntimeError, "Unable to locate InvestFlow project root"):
+                    find_project_root(start=nested)
+            finally:
+                os.chdir(old_cwd)
 
     def test_find_project_root_raises_when_only_agents_parent_and_cwd_invalid(self):
         import os
@@ -208,6 +233,23 @@ class PathTests(unittest.TestCase):
             report.write_text("report", encoding="utf-8")
 
             found = find_report_from_output(project_root, f"saved to {report}")
+
+        self.assertEqual(found, report.resolve())
+
+    def test_find_report_from_output_returns_bare_relative_output_report(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.paths import find_report_from_output
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            report = project_root / "output" / "fundamental-analysis" / "TSLA.md"
+            report.parent.mkdir(parents=True)
+            report.write_text("report", encoding="utf-8")
+
+            found = find_report_from_output(
+                project_root,
+                "saved to output/fundamental-analysis/TSLA.md",
+            )
 
         self.assertEqual(found, report.resolve())
 
