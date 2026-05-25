@@ -535,5 +535,36 @@ class ExtractorTests(unittest.TestCase):
         self.assertEqual(handoff.confidence, 40)
 
 
+class ExecutorTests(unittest.TestCase):
+    def test_mock_executor_returns_successful_stage_result(self):
+        import asyncio
+        from investflow_pipeline.executor import PipelineExecutor
+        from investflow_pipeline.models import OrchestrationConfig
+        from investflow_pipeline.planner import create_stock_request
+        from investflow_pipeline.registry import build_registry
+
+        request = create_stock_request("TSLA", "Tesla")
+        spec = build_registry().get("fundamental-analysis")
+        executor = PipelineExecutor(
+            config=OrchestrationConfig(execution_mode="mock"),
+            project_root=Path.cwd(),
+        )
+
+        result = asyncio.run(executor.execute_stage(spec, request))
+
+        self.assertTrue(result.is_success)
+        self.assertEqual(result.agent_name, "fundamental")
+        self.assertIn("TSLA", result.output)
+        self.assertEqual(result.handoff.recommendation, "观望")
+
+    def test_validate_rejects_short_output(self):
+        from investflow_pipeline.executor import validate_output
+
+        valid, reason = validate_output("短")
+
+        self.assertFalse(valid)
+        self.assertEqual(reason, "输出内容不完整")
+
+
 if __name__ == "__main__":
     unittest.main()
