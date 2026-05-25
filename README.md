@@ -2,6 +2,24 @@
 
 `InvestFlow` is a repo-local Codex plugin for investment research workflows. The repository now treats the plugin package under `plugins/invest-flow/` as the canonical source for all investment skills.
 
+## Included Skills
+
+| Skill | 做什么 | 什么时候用 |
+|---|---|---|
+| `ai-infrastructure-sector-discovery` | 做 AI 基建板块周扫描、排序、打 `discovery_score` | 先找本周最值得深挖的 AI 基建方向时 |
+| `ai-infrastructure-scarcity-radar` | 深挖 AI 基建稀缺环节，判断是真短缺还是高景气 | 已经锁定某个 AI 基建板块，准备做 6-24 个月深挖时 |
+| `fundamental-analysis` | 做单个股票的基本面 + 技术面综合分析 | 想快速看一家公司值不值得继续研究时 |
+| `institutional-accumulation-analysis` | 分析机构吸筹、派发和主力资金行为 | 想判断主力是在买入还是出货时 |
+| `gie-investment-framework` | 用 GIE 框架找 1-3 年有爆发潜力的“金铲子”资产 | 想找中期高弹性机会或分析产业链受益者时 |
+| `gold-trend-analysis` | 分析黄金趋势、泡沫风险和宏观驱动 | 研究黄金价格、泡沫风险或交易框架时 |
+| `reflexivity-quick-scan` | 快速判断一个股票/主题所处的反身性阶段 | 想先用 5 分钟判断叙事是启动、强化还是透支时 |
+| `reflexivity-deep-analysis` | 对股票、行业或主题做完整反身性深度研究 | 需要完整拆解叙事、资金、价格与现实验证时 |
+| `professional-investment-analyst` | 生成买方视角的专业个股研究报告 | 需要正式、可跟踪、可复盘的单公司深度报告时 |
+| `reportify-stock-analysis` | 按统一模板生成结构化个股报告 | 想稳定输出标准化投研报告时 |
+| `daily-us-market-scan` | 生成中文《美股收盘日报》与日常复盘 | 每日复盘昨夜美股、板块、异动和次日计划时 |
+| `multi-agent-stock-analysis` | 并行运行多个分析 skill 并汇总结论 | 想一次拿到多维度交叉验证结果时 |
+| `market-data-router` | 路由和兜底金融数据源，获取行情/订单簿/期权数据 | 需要稳定抓取市场数据给其他分析流程使用时 |
+
 ## Current Structure
 
 ```text
@@ -16,13 +34,17 @@
 │       ├── .codex-plugin/plugin.json
 │       ├── assets/
 │       └── skills/
+│           ├── ai-infrastructure-scarcity-radar/
+│           ├── ai-infrastructure-sector-discovery/
 │           ├── fundamental-analysis/
 │           ├── institutional-accumulation-analysis/
 │           ├── gie-investment-framework/
 │           ├── gold-trend-analysis/
 │           ├── reflexivity-quick-scan/
 │           ├── reflexivity-deep-analysis/
+│           ├── professional-investment-analyst/
 │           ├── reportify-stock-analysis/
+│           ├── daily-us-market-scan/
 │           ├── multi-agent-stock-analysis/
 │           └── market-data-router/
 └── output/
@@ -33,18 +55,6 @@
 - Plugin root: `plugins/invest-flow`
 - Plugin manifest: `plugins/invest-flow/.codex-plugin/plugin.json`
 - Repo marketplace: `.agents/plugins/marketplace.json`
-
-## Included Skills
-
-- `fundamental-analysis`
-- `institutional-accumulation-analysis`
-- `gie-investment-framework`
-- `gold-trend-analysis`
-- `reflexivity-quick-scan`
-- `reflexivity-deep-analysis`
-- `reportify-stock-analysis`
-- `multi-agent-stock-analysis`
-- `market-data-router`
 
 ## Install In Codex
 
@@ -65,7 +75,9 @@ Examples:
 - `Use InvestFlow to assess gold bubble risk this week.`
 - `Use InvestFlow to perform a reflexivity quick scan on NVIDIA.`
 - `Use InvestFlow to run a deep reflexivity analysis on AI power infrastructure.`
+- `Use InvestFlow to build a professional investment analyst report for TSLA.`
 - `Use InvestFlow to generate a structured stock report for TSLA.`
+- `Use InvestFlow to generate a daily US market close report.`
 - `Use InvestFlow to fetch 5m market data for TSLA with market-data-router.`
 - `Use InvestFlow to evaluate whether NVIDIA is a GIE-style golden shovel asset.`
 
@@ -101,12 +113,16 @@ python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.p
 Generated analysis files are written under `output/`:
 
 - `output/fundamental-analysis/`
+- `output/ai-infrastructure-sector-discovery/`
+- `output/ai-infrastructure-scarcity-radar/`
 - `output/institutional-accumulation-analysis/`
 - `output/gie-investment-framework/`
 - `output/gold-analysis/`
 - `output/reflexivity-quick-scan/`
 - `output/reflexivity-deep-analysis/`
+- `output/professional-investment-analyst/`
 - `output/reportify-stock-analysis/`
+- `output/daily-us-market-scan/`
 - `output/summary/`
 - `output/cache/market-data/`
 

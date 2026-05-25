@@ -36,7 +36,9 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── gold-trend-analysis/
 │           ├── reflexivity-quick-scan/
 │           ├── reflexivity-deep-analysis/
+│           ├── professional-investment-analyst/
 │           ├── reportify-stock-analysis/
+│           ├── daily-us-market-scan/
 │           ├── multi-agent-stock-analysis/
 │           └── market-data-router/
 ├── output/
@@ -46,7 +48,9 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── gold-analysis/
 │   ├── reflexivity-quick-scan/
 │   ├── reflexivity-deep-analysis/
+│   ├── professional-investment-analyst/
 │   ├── reportify-stock-analysis/
+│   ├── daily-us-market-scan/
 │   ├── summary/
 │   └── cache/market-data/
 └── .venv/
@@ -103,7 +107,9 @@ Active packaged skills:
 - `gold-trend-analysis` - gold bubble risk and macro signal analysis
 - `reflexivity-quick-scan` - fast stage judgment with a Soros-style reflexivity lens
 - `reflexivity-deep-analysis` - full-cycle reflexivity research on stocks, sectors, and narratives
+- `professional-investment-analyst` - professional investment research system with evidence, valuation, reflexivity, decision, and tracking dashboard
 - `reportify-stock-analysis` - fixed-template structured stock research report generation
+- `daily-us-market-scan` - Chinese daily US market close scan covering indices, macro, sectors, themes, breadth, technicals, earnings, flows, watchlists, and next-session plans
 - `multi-agent-stock-analysis` - orchestration across multiple analysis skills
 - `market-data-router` - routed market data fetch and fallback logic
 
@@ -125,7 +131,9 @@ Active packaged skills:
 - Gold analysis: `output/gold-analysis/gold-{analysis-type}-{date}.md`
 - Reflexivity quick scan: `output/reflexivity-quick-scan/`
 - Reflexivity deep analysis: `output/reflexivity-deep-analysis/`
+- Professional investment analyst: `output/professional-investment-analyst/professional-investment-analyst-{TICKER}-{YYYY-MM-DD}.md`
 - Reportify stock analysis: `output/reportify-stock-analysis/reportify-stock-analysis-{TICKER}-{YYYY-MM-DD}.md`
+- Daily US market scan: `output/daily-us-market-scan/us-market-close-daily-{YYYY-MM-DD}.md`
 - Summary report: `output/summary/综合分析-{TICKER}-{date}.md`
 - Market data cache: `output/cache/market-data/`
 
