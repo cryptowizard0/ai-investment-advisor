@@ -365,6 +365,30 @@ class PlannerTests(unittest.TestCase):
         self.assertEqual(request.company_name, "Tesla")
         self.assertTrue(request.task_id.startswith("ma_"))
 
+    def test_create_stock_request_rejects_blank_ticker(self):
+        from investflow_pipeline.planner import create_stock_request
+
+        with self.assertRaisesRegex(ValueError, "ticker is required"):
+            create_stock_request("   ")
+
+    def test_create_stock_request_rejects_malformed_ticker(self):
+        from investflow_pipeline.planner import create_stock_request
+
+        for ticker in ("TSLA;rm", "TS LA"):
+            with self.subTest(ticker=ticker):
+                with self.assertRaisesRegex(ValueError, "invalid ticker"):
+                    create_stock_request(ticker)
+
+    def test_create_stock_request_task_id_is_unique_for_immediate_calls(self):
+        from investflow_pipeline.planner import create_stock_request
+
+        first = create_stock_request("TSLA")
+        second = create_stock_request("TSLA")
+
+        self.assertNotEqual(first.task_id, second.task_id)
+        self.assertTrue(first.task_id.startswith("ma_"))
+        self.assertTrue(second.task_id.startswith("ma_"))
+
     def test_basic_plan_uses_three_legacy_specs(self):
         from investflow_pipeline.planner import create_stock_request, plan_basic_stock_analysis
         from investflow_pipeline.registry import build_registry
@@ -373,6 +397,21 @@ class PlannerTests(unittest.TestCase):
         specs = plan_basic_stock_analysis(request, build_registry())
 
         self.assertEqual([spec.agent_name for spec in specs], ["fundamental", "institutional", "gie"])
+
+    def test_basic_plan_rejects_non_basic_intent(self):
+        from investflow_pipeline.models import TaskRequest
+        from investflow_pipeline.planner import plan_basic_stock_analysis
+        from investflow_pipeline.registry import build_registry
+
+        request = TaskRequest(
+            task_id="task-1",
+            intent="custom_intent",
+            target="TSLA",
+            ticker="TSLA",
+        )
+
+        with self.assertRaisesRegex(ValueError, "unsupported intent for basic stock analysis: custom_intent"):
+            plan_basic_stock_analysis(request, build_registry())
 
 
 if __name__ == "__main__":
