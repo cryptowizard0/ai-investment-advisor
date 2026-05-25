@@ -253,6 +253,23 @@ class PathTests(unittest.TestCase):
 
         self.assertEqual(found, report.resolve())
 
+    def test_find_report_from_output_returns_dot_relative_output_report(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.paths import find_report_from_output
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            report = project_root / "output" / "fundamental-analysis" / "TSLA.md"
+            report.parent.mkdir(parents=True)
+            report.write_text("report", encoding="utf-8")
+
+            found = find_report_from_output(
+                project_root,
+                "saved to ./output/fundamental-analysis/TSLA.md",
+            )
+
+        self.assertEqual(found, report.resolve())
+
     def test_find_report_from_output_rejects_markdown_outside_output(self):
         from tempfile import TemporaryDirectory
         from investflow_pipeline.paths import find_report_from_output
