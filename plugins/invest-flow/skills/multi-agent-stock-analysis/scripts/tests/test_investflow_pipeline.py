@@ -459,5 +459,36 @@ class PlannerTests(unittest.TestCase):
             plan_basic_stock_analysis(request, build_registry())
 
 
+class ExtractorTests(unittest.TestCase):
+    def test_extract_handoff_reads_conclusion_and_risks(self):
+        from investflow_pipeline.extractors import extract_handoff
+
+        markdown = """
+# TSLA 分析报告
+
+## 投资建议
+建议：观望
+置信度：68%
+
+## 核心结论
+公司长期逻辑仍在，但短期估值偏高。
+
+## 核心证据
+- 收入仍保持增长
+- 毛利率存在压力
+
+## 风险提示
+- 估值回撤风险
+- 竞争加剧
+"""
+        handoff = extract_handoff(markdown)
+
+        self.assertEqual(handoff.recommendation, "观望")
+        self.assertEqual(handoff.confidence, 68)
+        self.assertIn("公司长期逻辑仍在，但短期估值偏高。", handoff.conclusion)
+        self.assertIn("收入仍保持增长", handoff.key_evidence)
+        self.assertIn("估值回撤风险", handoff.risk_flags)
+
+
 if __name__ == "__main__":
     unittest.main()
