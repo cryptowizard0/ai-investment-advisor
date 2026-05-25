@@ -777,5 +777,110 @@ print(report)
         self.assertTrue(result.report_path.endswith("TSLA-report.md"))
 
 
+class ComposerTests(unittest.TestCase):
+    def _pipeline_result(self, stage_results):
+        from investflow_pipeline.models import PipelineResult
+
+        return PipelineResult(
+            task_id="task-compose-1",
+            status="partial",
+            intent="stock_decision_basic",
+            target="TSLA",
+            ticker="TSLA",
+            company_name="Tesla",
+            started_at="2026-05-25T09:00:00Z",
+            ended_at="2026-05-25T09:01:00Z",
+            stage_results=stage_results,
+            summary_report_path=None,
+            orchestration_json_path=None,
+        )
+
+    def test_write_outputs_success_creates_json_and_markdown(self):
+        import json
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.composer import write_outputs
+        from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
+
+        success_stage = StageResult(
+            skill_name="fundamental-analysis",
+            agent_name="fundamental",
+            status=AnalysisStatus.SUCCESS,
+            report_path="/tmp/fundamental.md",
+            handoff=Handoff(
+                recommendation="观望",
+                key_evidence=["收入保持增长"],
+                risk_flags=["估值回撤风险"],
+            ),
+        )
+        failed_stage = StageResult(
+            skill_name="gie-investment-framework",
+            agent_name="gie",
+            status=AnalysisStatus.FAILED,
+            errors=["timeout"],
+        )
+        result = self._pipeline_result([success_stage, failed_stage])
+
+        with TemporaryDirectory() as tmp:
+            written = write_outputs(Path(tmp), result)
+            json_path = Path(written.orchestration_json_path)
+            md_path = Path(written.summary_report_path)
+            self.assertTrue(json_path.exists())
+            self.assertTrue(md_path.exists())
+            content = md_path.read_text(encoding="utf-8")
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+
+        self.assertIn("作者：InvestmentFlow", content)
+        self.assertIn("stage_results", payload)
+        self.assertIn("agents", payload)
+
+    def test_write_outputs_failed_only_creates_json_without_markdown(self):
+        import json
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.composer import write_outputs
+        from investflow_pipeline.models import AnalysisStatus, StageResult
+
+        failed_stage = StageResult(
+            skill_name="institutional-accumulation-analysis",
+            agent_name="institutional",
+            status=AnalysisStatus.FAILED,
+            errors=["no report"],
+        )
+        result = self._pipeline_result([failed_stage])
+
+        with TemporaryDirectory() as tmp:
+            written = write_outputs(Path(tmp), result)
+            json_path = Path(written.orchestration_json_path)
+            self.assertTrue(json_path.exists())
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+
+        self.assertIsNone(written.summary_report_path)
+        self.assertIn("stage_results", payload)
+        self.assertIn("agents", payload)
+
+    def test_write_outputs_uses_unique_path_for_summary(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.composer import write_outputs
+        from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
+
+        success_stage = StageResult(
+            skill_name="fundamental-analysis",
+            agent_name="fundamental",
+            status=AnalysisStatus.SUCCESS,
+            handoff=Handoff(recommendation="买入"),
+        )
+        result = self._pipeline_result([success_stage])
+
+        with TemporaryDirectory() as tmp:
+            summary_dir = Path(tmp) / "output" / "summary"
+            summary_dir.mkdir(parents=True)
+            existing = summary_dir / "综合分析-TSLA-2026-05-25.md"
+            existing.write_text("existing", encoding="utf-8")
+
+            written = write_outputs(Path(tmp), result)
+            written_path = Path(written.summary_report_path)
+            self.assertTrue(written_path.exists())
+            self.assertEqual(written_path.name, "综合分析-TSLA-2026-05-25(1).md")
+
+
 if __name__ == "__main__":
     unittest.main()
