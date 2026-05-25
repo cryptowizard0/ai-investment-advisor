@@ -123,6 +123,7 @@ class PipelineResult:
 
     def to_dict(self) -> Dict[str, Any]:
         success_count = sum(1 for result in self.stage_results if result.is_success)
+        stage_results = [result.to_dict() for result in self.stage_results]
         return {
             "task_id": self.task_id,
             "status": self.status,
@@ -139,5 +140,6 @@ class PipelineResult:
             "orchestration_json_path": self.orchestration_json_path,
             "failed_required": list(self.failed_required),
             "warnings": list(self.warnings),
-            "agents": {result.agent_name: result.to_dict() for result in self.stage_results},
+            "stage_results": stage_results,
+            "agents": {result["agent_name"]: result for result in stage_results},
         }
