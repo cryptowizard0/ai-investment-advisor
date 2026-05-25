@@ -353,5 +353,27 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(spec.command_template, 'echo "/tmp/custom.md"')
 
 
+class PlannerTests(unittest.TestCase):
+    def test_create_stock_request_sets_task_fields(self):
+        from investflow_pipeline.planner import create_stock_request
+
+        request = create_stock_request("tsla", "Tesla")
+
+        self.assertEqual(request.intent, "stock_decision_basic")
+        self.assertEqual(request.target, "TSLA")
+        self.assertEqual(request.ticker, "TSLA")
+        self.assertEqual(request.company_name, "Tesla")
+        self.assertTrue(request.task_id.startswith("ma_"))
+
+    def test_basic_plan_uses_three_legacy_specs(self):
+        from investflow_pipeline.planner import create_stock_request, plan_basic_stock_analysis
+        from investflow_pipeline.registry import build_registry
+
+        request = create_stock_request("TSLA", "Tesla")
+        specs = plan_basic_stock_analysis(request, build_registry())
+
+        self.assertEqual([spec.agent_name for spec in specs], ["fundamental", "institutional", "gie"])
+
+
 if __name__ == "__main__":
     unittest.main()
