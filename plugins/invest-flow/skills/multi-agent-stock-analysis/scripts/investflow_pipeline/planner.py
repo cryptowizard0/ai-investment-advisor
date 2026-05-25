@@ -39,5 +39,7 @@ def create_stock_request(ticker: str, company_name: str = "") -> TaskRequest:
 def plan_basic_stock_analysis(request: TaskRequest, registry: SkillRegistry) -> List[SkillSpec]:
     if request.intent != "stock_decision_basic":
         raise ValueError(f"unsupported intent for basic stock analysis: {request.intent}")
-    _normalize_ticker(request.ticker)
+    normalized_ticker = _normalize_ticker(request.ticker)
+    if request.ticker != normalized_ticker:
+        raise ValueError("ticker must be normalized before planning")
     return registry.basic_stock_specs()

@@ -443,6 +443,21 @@ class PlannerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "invalid ticker"):
             plan_basic_stock_analysis(request, build_registry())
 
+    def test_basic_plan_rejects_direct_request_non_normalized_ticker(self):
+        from investflow_pipeline.models import TaskRequest
+        from investflow_pipeline.planner import plan_basic_stock_analysis
+        from investflow_pipeline.registry import build_registry
+
+        request = TaskRequest(
+            task_id="task-1",
+            intent="stock_decision_basic",
+            target="TSLA",
+            ticker=" TSLA ",
+        )
+
+        with self.assertRaisesRegex(ValueError, "ticker must be normalized before planning"):
+            plan_basic_stock_analysis(request, build_registry())
+
 
 if __name__ == "__main__":
     unittest.main()
