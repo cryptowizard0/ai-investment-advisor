@@ -36,18 +36,25 @@ class PipelineExecutor:
         self.project_root = project_root.resolve()
 
     async def execute_stage(self, spec: SkillSpec, request: TaskRequest) -> StageResult:
-        max_retries = max(0, self.config.max_retries)
+        max_retries = max(0, min(self.config.max_retries, spec.max_retries))
+        effective_timeout = self._effective_timeout(spec)
         last_result: StageResult | None = None
 
         for attempt in range(max_retries + 1):
             started = time.monotonic()
             try:
-                result = await asyncio.wait_for(
-                    asyncio.to_thread(self._execute_once, spec, request),
-                    timeout=self.config.timeout_seconds,
+                result = await asyncio.to_thread(
+                    self._execute_once,
+                    spec,
+                    request,
+                    effective_timeout,
                 )
                 result.retry_count = attempt
                 result.duration = time.monotonic() - started
+
+                if result.status == AnalysisStatus.FAILED:
+                    last_result = result
+                    continue
 
                 content = result.output
                 if result.report_path:
@@ -64,13 +71,6 @@ class PipelineExecutor:
                 result.status = AnalysisStatus.FAILED
                 result.errors.append(reason)
                 last_result = result
-            except asyncio.TimeoutError:
-                last_result = self._failed_result(
-                    spec,
-                    time.monotonic() - started,
-                    attempt,
-                    f"执行超时 (>{self.config.timeout_seconds}s)",
-                )
             except subprocess.TimeoutExpired as exc:
                 last_result = self._failed_result(
                     spec,
@@ -92,7 +92,12 @@ class PipelineExecutor:
 
         return self._failed_result(spec, 0.0, max_retries, "未知错误")
 
-    def _execute_once(self, spec: SkillSpec, request: TaskRequest) -> StageResult:
+    def _execute_once(
+        self,
+        spec: SkillSpec,
+        request: TaskRequest,
+        timeout_seconds: int | None = None,
+    ) -> StageResult:
         if self.config.execution_mode == "mock":
             output = self._mock_output(spec, request)
             return StageResult(
@@ -113,7 +118,7 @@ class PipelineExecutor:
             cwd=self.project_root,
             capture_output=True,
             text=True,
-            timeout=spec.timeout_seconds,
+            timeout=timeout_seconds,
             check=False,
         )
         combined_output = "\n".join(
@@ -131,6 +136,16 @@ class PipelineExecutor:
         if report_path is None:
             output_dir = (self.project_root / spec.output_dir).resolve()
             report_path = find_latest_report(output_dir, request.ticker, started_at)
+
+        if report_path is None:
+            return StageResult(
+                skill_name=spec.skill_name,
+                agent_name=spec.agent_name,
+                status=AnalysisStatus.FAILED,
+                output=combined_output,
+                errors=["命令执行完成，但未定位到输出报告文件"],
+                command=command,
+            )
 
         output = combined_output
         if report_path:
@@ -176,9 +191,19 @@ class PipelineExecutor:
     def _format_command(self, spec: SkillSpec, request: TaskRequest) -> str:
         return spec.command_template.format(
             ticker=request.ticker,
-            company=request.company_name or "",
+            company=request.company_name or request.target,
             target=request.target,
         )
+
+    def _effective_timeout(self, spec: SkillSpec) -> int | None:
+        timeouts = [
+            timeout
+            for timeout in (self.config.timeout_seconds, spec.timeout_seconds)
+            if timeout and timeout > 0
+        ]
+        if not timeouts:
+            return None
+        return min(timeouts)
 
     def _failed_result(
         self,

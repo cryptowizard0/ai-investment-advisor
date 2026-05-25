@@ -536,6 +536,47 @@ class ExtractorTests(unittest.TestCase):
 
 
 class ExecutorTests(unittest.TestCase):
+    def _report_text(self, ticker="TSLA", company="Tesla"):
+        return f"""# {ticker} {company} 分析报告
+
+## 投资建议
+建议：观望
+置信度：60%
+
+## 核心结论
+{ticker} 的测试报告用于验证 command mode 可以读取已经落在 output 目录下的 Markdown 报告。结论是当前样本足够完整，可以进入 handoff 提取流程。
+
+## 核心证据
+- 报告路径位于 project_root/output 之下，满足 hardened path 规则。
+- 内容包含分析、报告、结论等关键标识，长度也超过 executor 的最低校验阈值。
+- 建议和置信度字段可被 extract_handoff 稳定读取。
+
+## 风险提示
+- 这是单元测试夹具，不代表真实投资观点。
+- 命令执行必须定位到报告文件，不能只依赖 stdout 中的长文本。
+"""
+
+    def _spec(self, command_template, *, max_retries=1, timeout_seconds=10):
+        from investflow_pipeline.models import SkillSpec
+
+        return SkillSpec(
+            skill_name="fundamental-analysis",
+            agent_name="fundamental",
+            stage="single_asset_validation",
+            command_template=command_template,
+            output_dir="output/fundamental-analysis",
+            required=True,
+            timeout_seconds=timeout_seconds,
+            max_retries=max_retries,
+        )
+
+    def _python_command(self, script, *args):
+        import shlex
+
+        return " ".join(
+            shlex.quote(str(part)) for part in (sys.executable, script, *args)
+        )
+
     def test_mock_executor_returns_successful_stage_result(self):
         import asyncio
         from investflow_pipeline.executor import PipelineExecutor
@@ -564,6 +605,176 @@ class ExecutorTests(unittest.TestCase):
 
         self.assertFalse(valid)
         self.assertEqual(reason, "输出内容不完整")
+
+    def test_command_mode_succeeds_when_stdout_contains_existing_output_report(self):
+        import asyncio
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.executor import PipelineExecutor
+        from investflow_pipeline.models import OrchestrationConfig
+        from investflow_pipeline.planner import create_stock_request
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            report = project_root / "output" / "fundamental-analysis" / "TSLA-report.md"
+            report.parent.mkdir(parents=True)
+            report.write_text(self._report_text(), encoding="utf-8")
+            script = project_root / "emit_report.py"
+            script.write_text(f"print({str(report)!r})\n", encoding="utf-8")
+
+            executor = PipelineExecutor(
+                config=OrchestrationConfig(execution_mode="command", max_retries=0),
+                project_root=project_root,
+            )
+            result = asyncio.run(
+                executor.execute_stage(
+                    self._spec(self._python_command(script), max_retries=0),
+                    create_stock_request("TSLA", "Tesla"),
+                )
+            )
+
+        self.assertTrue(result.is_success)
+        self.assertEqual(result.report_path, str(report.resolve()))
+        self.assertIn("核心结论", result.output)
+        self.assertEqual(result.handoff.recommendation, "观望")
+
+    def test_command_mode_fails_when_no_report_path_is_found(self):
+        import asyncio
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.executor import PipelineExecutor
+        from investflow_pipeline.models import OrchestrationConfig
+        from investflow_pipeline.planner import create_stock_request
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            project_root.mkdir()
+            script = project_root / "emit_stdout_only.py"
+            script.write_text(f"print({self._report_text()!r})\n", encoding="utf-8")
+
+            executor = PipelineExecutor(
+                config=OrchestrationConfig(execution_mode="command", max_retries=0),
+                project_root=project_root,
+            )
+            result = asyncio.run(
+                executor.execute_stage(
+                    self._spec(self._python_command(script), max_retries=0),
+                    create_stock_request("TSLA", "Tesla"),
+                )
+            )
+
+        self.assertFalse(result.is_success)
+        self.assertIn("命令执行完成，但未定位到输出报告文件", result.errors)
+
+    def test_spec_max_retries_zero_prevents_retry_after_invalid_output(self):
+        import asyncio
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.executor import PipelineExecutor
+        from investflow_pipeline.models import OrchestrationConfig
+        from investflow_pipeline.planner import create_stock_request
+
+        script_content = """
+from pathlib import Path
+
+attempts = Path("attempts.txt")
+count = int(attempts.read_text(encoding="utf-8")) if attempts.exists() else 0
+attempts.write_text(str(count + 1), encoding="utf-8")
+report = Path("output/fundamental-analysis/TSLA-short.md")
+report.parent.mkdir(parents=True, exist_ok=True)
+report.write_text("短", encoding="utf-8")
+print(report)
+"""
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            project_root.mkdir()
+            script = project_root / "short_report.py"
+            script.write_text(script_content, encoding="utf-8")
+
+            executor = PipelineExecutor(
+                config=OrchestrationConfig(execution_mode="command", max_retries=1),
+                project_root=project_root,
+            )
+            result = asyncio.run(
+                executor.execute_stage(
+                    self._spec(self._python_command(script), max_retries=0),
+                    create_stock_request("TSLA", "Tesla"),
+                )
+            )
+            attempts = (project_root / "attempts.txt").read_text(encoding="utf-8")
+
+        self.assertFalse(result.is_success)
+        self.assertEqual(result.errors[-1], "输出内容不完整")
+        self.assertEqual(attempts, "1")
+
+    def test_command_nonzero_exit_returns_failed_result(self):
+        import asyncio
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.executor import PipelineExecutor
+        from investflow_pipeline.models import OrchestrationConfig
+        from investflow_pipeline.planner import create_stock_request
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            project_root.mkdir()
+            script = project_root / "fail.py"
+            script.write_text(
+                'import sys\nprint("boom")\nsys.exit(7)\n',
+                encoding="utf-8",
+            )
+
+            executor = PipelineExecutor(
+                config=OrchestrationConfig(execution_mode="command", max_retries=0),
+                project_root=project_root,
+            )
+            result = asyncio.run(
+                executor.execute_stage(
+                    self._spec(self._python_command(script), max_retries=0),
+                    create_stock_request("TSLA", "Tesla"),
+                )
+            )
+
+        self.assertFalse(result.is_success)
+        self.assertIn("命令执行失败", result.errors[0])
+
+    def test_blank_company_formats_as_target(self):
+        import asyncio
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.executor import PipelineExecutor
+        from investflow_pipeline.models import OrchestrationConfig
+        from investflow_pipeline.planner import create_stock_request
+
+        script_content = f"""
+from pathlib import Path
+import sys
+
+company = sys.argv[1]
+report = Path("output/fundamental-analysis") / f"{{company}}-report.md"
+report.parent.mkdir(parents=True, exist_ok=True)
+report.write_text({self._report_text("TSLA", "TSLA")!r}, encoding="utf-8")
+print(report)
+"""
+
+        with TemporaryDirectory() as tmp:
+            project_root = Path(tmp) / "project"
+            project_root.mkdir()
+            script = project_root / "company_arg.py"
+            script.write_text(script_content, encoding="utf-8")
+
+            executor = PipelineExecutor(
+                config=OrchestrationConfig(execution_mode="command", max_retries=0),
+                project_root=project_root,
+            )
+            result = asyncio.run(
+                executor.execute_stage(
+                    self._spec(
+                        self._python_command(script, "{company}"),
+                        max_retries=0,
+                    ),
+                    create_stock_request("TSLA"),
+                )
+            )
+
+        self.assertTrue(result.is_success)
+        self.assertTrue(result.report_path.endswith("TSLA-report.md"))
 
 
 if __name__ == "__main__":
