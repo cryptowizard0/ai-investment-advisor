@@ -19,9 +19,9 @@
 
 ## 概述
 
-本文档定义了多Agent股票分析系统中所有数据结构的规范，确保MainAgent、SubAgent和SummaryAgent之间的数据传递一致性。
+当前实现的数据结构以 Python dataclass 为准（见 `scripts/investflow_pipeline/models.py`）。本文后续 TypeScript interface 主要作为历史设计参考，用于说明字段语义与演化背景，不作为当前运行时契约。
 
-## 数据流概览
+## 数据流概览（历史设计参考）
 
 ```
 用户请求 → ParseRequest → TaskConfig
