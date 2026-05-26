@@ -1168,5 +1168,61 @@ class RunnerTests(unittest.TestCase):
         self.assertIn("sequential boom", gie.errors[0])
 
 
+class OrchestratorCompatibilityTests(unittest.TestCase):
+    def _load_orchestrator_module(self):
+        import importlib.util
+
+        module_path = SCRIPT_DIR / "orchestrator.py"
+        spec = importlib.util.spec_from_file_location("legacy_orchestrator", module_path)
+        self.assertIsNotNone(spec)
+        self.assertIsNotNone(spec.loader)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_analyze_stock_with_retry_compatibility_api_mock_mode(self):
+        orchestrator = self._load_orchestrator_module()
+
+        result = orchestrator.analyze_stock_with_retry(
+            ticker="TSLA",
+            company="Tesla",
+            execution_mode="mock",
+        )
+
+        self.assertEqual(result["status"], "success")
+        self.assertEqual(result["completed_count"], 3)
+        self.assertEqual(result["total_count"], 3)
+        self.assertTrue(result.get("summary_report_path"))
+        self.assertTrue(result.get("orchestration_json_path"))
+        self.assertTrue(Path(result["summary_report_path"]).exists())
+        self.assertTrue(Path(result["orchestration_json_path"]).exists())
+
+    def test_orchestrator_cli_mock_mode_prints_legacy_labels_and_returns_zero(self):
+        import subprocess
+
+        script = SCRIPT_DIR / "orchestrator.py"
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(script),
+                "TSLA",
+                "--company",
+                "Tesla",
+                "--execution-mode",
+                "mock",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        self.assertEqual(completed.returncode, 0)
+        stdout = completed.stdout
+        self.assertIn("状态: success", stdout)
+        self.assertIn("成功: 3/3", stdout)
+        self.assertIn("综合报告:", stdout)
+        self.assertIn("编排JSON:", stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
