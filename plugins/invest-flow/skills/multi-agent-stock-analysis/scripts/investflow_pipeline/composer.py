@@ -125,6 +125,32 @@ def compose_summary(result: PipelineResult) -> str:
     )
 
 
+def compose_prompt_plan(result: PipelineResult) -> str:
+    prompt_lines = []
+    for index, stage in enumerate(result.stage_results, start=1):
+        prompt_lines.append(
+            f"### {index}. {stage.skill_name}\n\n"
+            f"Agent：{stage.agent_name}\n\n"
+            f"```text\n{stage.prompt or stage.output}\n```"
+        )
+
+    return (
+        f"# Codex Prompt 编排计划 - {result.ticker}\n\n"
+        f"作者：InvestmentFlow\n\n"
+        f"## 任务信息\n"
+        f"- 任务ID：{result.task_id}\n"
+        f"- 标的：{result.ticker or result.target} {result.company_name}\n"
+        f"- 状态：{result.status}\n"
+        f"- 开始时间：{result.started_at}\n"
+        f"- 生成时间：{result.ended_at}\n\n"
+        f"## 执行方式\n"
+        f"在当前 Codex 会话中依次执行以下 prompt，完成三个子 skill 后，"
+        f"按综合模板汇总结论、证据、分歧、风险和数据缺口。\n\n"
+        f"## 子 Skill Prompts\n\n"
+        f"{chr(10).join(prompt_lines)}\n"
+    )
+
+
 def _summary_date(ended_at: str) -> str:
     normalized = ended_at.strip()
     if normalized.endswith("Z"):
@@ -149,14 +175,23 @@ def write_outputs(project_root: Path, result: PipelineResult) -> PipelineResult:
         summary_name = f"综合分析-{ticker}-{_summary_date(result.ended_at)}.md"
         summary_path = _safe_unique_path(summary_dir, summary_name)
 
+    prompt_plan_path = None
+    if result.status == "prompt_plan":
+        prompt_plan_path = _safe_unique_path(
+            summary_dir, f"prompt-plan-{ticker}-{timestamp}.md"
+        )
+
     final_result = replace(
         result,
         summary_report_path=str(summary_path) if summary_path else None,
         orchestration_json_path=str(json_path),
+        prompt_plan_path=str(prompt_plan_path) if prompt_plan_path else None,
     )
 
     if summary_path:
         summary_path.write_text(compose_summary(final_result), encoding="utf-8")
+    if prompt_plan_path:
+        prompt_plan_path.write_text(compose_prompt_plan(final_result), encoding="utf-8")
     json_path.write_text(
         json.dumps(final_result.to_dict(), ensure_ascii=False, indent=2),
         encoding="utf-8",

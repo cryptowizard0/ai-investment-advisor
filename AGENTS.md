@@ -9,7 +9,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 ## Technology Stack
 
 - **Python**: 3.12.10 (virtual environment at `.venv/`)
-- **Node.js**: Codex/OpenCode runtime environment
+- **Node.js**: Codex runtime environment
 - **Key Python Libraries**:
   - `yfinance`
   - `pandas`
@@ -83,8 +83,8 @@ python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrato
 # Check market data router CLI
 python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py --help
 
-# Run multi-agent analysis
-python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --execution-mode command
+# Generate a multi-agent Codex prompt plan
+python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
 ```
 
 ## Skill Layout
@@ -118,10 +118,12 @@ Active packaged skills:
 `multi-agent-stock-analysis` is implemented by the packaged orchestrator script, not by separate legacy agent-definition files. The current orchestrator:
 
 - resolves the repo root dynamically
-- executes three skill commands directly
-- validates each result
-- retries once on empty output, timeout, or exception
-- aggregates partial success into a final summary flow
+- generates three Codex skill prompts for the basic stock-analysis workflow
+- writes a prompt plan Markdown file and orchestration JSON
+- does not execute child skills or launch another agent process
+- supports summary composition from already completed handoff data
+
+Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 分析 MRVL` in Codex. Codex then executes the child skill prompts in the current session and writes the final Chinese report.
 
 ## Output Conventions
 

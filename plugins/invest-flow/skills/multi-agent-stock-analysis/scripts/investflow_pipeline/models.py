@@ -55,14 +55,10 @@ class SkillSpec:
     skill_name: str
     agent_name: str
     stage: str
-    command_template: str
+    prompt_template: str
     output_dir: str
     required: bool = False
-    timeout_seconds: int = 240
-    max_retries: int = 1
     extractor_type: str = "markdown"
-    legacy_env_var: str = ""
-    unified_env_var: str = ""
 
 
 @dataclass
@@ -76,7 +72,7 @@ class StageResult:
     errors: List[str] = field(default_factory=list)
     duration: float = 0.0
     retry_count: int = 0
-    command: str = ""
+    prompt: str = ""
 
     @property
     def is_success(self) -> bool:
@@ -92,15 +88,13 @@ class StageResult:
             "errors": list(self.errors),
             "duration": self.duration,
             "retry_count": self.retry_count,
-            "command": self.command,
+            "prompt": self.prompt,
         }
 
 
 @dataclass
 class OrchestrationConfig:
-    execution_mode: str = "command"
-    max_retries: int = 1
-    timeout_seconds: int = 240
+    execution_mode: str = "prompt"
     parallel_execution: bool = True
     continue_on_failure: bool = True
 
@@ -118,11 +112,18 @@ class PipelineResult:
     stage_results: List[StageResult]
     summary_report_path: Optional[str]
     orchestration_json_path: Optional[str]
+    prompt_plan_path: Optional[str] = None
     failed_required: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         success_count = sum(1 for result in self.stage_results if result.is_success)
+        failed_count = sum(
+            1 for result in self.stage_results if result.status == AnalysisStatus.FAILED
+        )
+        pending_count = sum(
+            1 for result in self.stage_results if result.status == AnalysisStatus.PENDING
+        )
         stage_results = [result.to_dict() for result in self.stage_results]
         return {
             "task_id": self.task_id,
@@ -134,10 +135,12 @@ class PipelineResult:
             "started_at": self.started_at,
             "ended_at": self.ended_at,
             "completed_count": success_count,
-            "failed_count": len(self.stage_results) - success_count,
+            "failed_count": failed_count,
+            "pending_count": pending_count,
             "total_count": len(self.stage_results),
             "summary_report_path": self.summary_report_path,
             "orchestration_json_path": self.orchestration_json_path,
+            "prompt_plan_path": self.prompt_plan_path,
             "failed_required": list(self.failed_required),
             "warnings": list(self.warnings),
             "stage_results": stage_results,

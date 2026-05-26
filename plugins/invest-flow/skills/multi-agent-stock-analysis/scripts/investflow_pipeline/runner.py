@@ -23,6 +23,8 @@ def _stage_exception_result(spec, exc: Exception) -> StageResult:
 
 
 def _overall_status(results: list[StageResult]) -> str:
+    if results and all(result.status == AnalysisStatus.PENDING for result in results):
+        return "prompt_plan"
     success_count = sum(1 for result in results if result.status == AnalysisStatus.SUCCESS)
     if success_count == len(results) and results:
         return AnalysisStatus.SUCCESS.value
@@ -38,6 +40,8 @@ async def analyze_stock(
     project_root: Optional[Path] = None,
 ) -> PipelineResult:
     effective_config = config or OrchestrationConfig()
+    if effective_config.execution_mode != "prompt":
+        raise ValueError("外部执行模式已废弃；请在 Codex 会话中使用 prompt 编排")
     root = (project_root or find_project_root()).resolve()
 
     request = create_stock_request(ticker, company)
@@ -65,12 +69,15 @@ async def analyze_stock(
             except Exception as exc:
                 stage_result = _stage_exception_result(spec, exc)
             stage_results.append(stage_result)
-            if not effective_config.continue_on_failure and not stage_result.is_success:
+            if (
+                not effective_config.continue_on_failure
+                and stage_result.status == AnalysisStatus.FAILED
+            ):
                 break
 
     failed_required = []
     for spec, stage_result in zip(specs, stage_results):
-        if spec.required and not stage_result.is_success:
+        if spec.required and stage_result.status == AnalysisStatus.FAILED:
             failed_required.append(spec.skill_name)
 
     result = PipelineResult(

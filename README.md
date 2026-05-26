@@ -17,7 +17,7 @@
 | `professional-investment-analyst` | 生成买方视角的专业个股研究报告 | 需要正式、可跟踪、可复盘的单公司深度报告时 |
 | `reportify-stock-analysis` | 按统一模板生成结构化个股报告 | 想稳定输出标准化投研报告时 |
 | `daily-us-market-scan` | 生成中文《美股收盘日报》与日常复盘 | 每日复盘昨夜美股、板块、异动和次日计划时 |
-| `multi-agent-stock-analysis` | 并行运行多个分析 skill 并汇总结论 | 想一次拿到多维度交叉验证结果时 |
+| `multi-agent-stock-analysis` | 在 Codex 当前会话中编排多个分析 skill 并汇总结论 | 想一次拿到多维度交叉验证结果时 |
 | `market-data-router` | 路由和兜底金融数据源，获取行情/订单簿/期权数据 | 需要稳定抓取市场数据给其他分析流程使用时 |
 
 ## Current Structure
@@ -71,6 +71,7 @@ After installation, call the packaged skills directly through normal prompts.
 Examples:
 
 - `Use InvestFlow to run a multi-agent analysis for TSLA.`
+- `使用 invest-flow:multi-agent-stock-analysis 分析 MRVL`
 - `Use InvestFlow to analyze institutional accumulation in AAPL over the last 3 months.`
 - `Use InvestFlow to assess gold bubble risk this week.`
 - `Use InvestFlow to perform a reflexivity quick scan on NVIDIA.`
@@ -104,9 +105,11 @@ The packaged scripts search for `.env` automatically from the current working di
 You can also run the packaged scripts directly from the repo root:
 
 ```bash
-python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --execution-mode command
+python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
 python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py --market US --symbol TSLA --interval 5m --types bars --out -
 ```
+
+The multi-agent script is a prompt-plan helper only. Recommended analysis usage is still the Codex prompt form: `使用 invest-flow:multi-agent-stock-analysis 分析 MRVL`.
 
 ## Output Paths
 

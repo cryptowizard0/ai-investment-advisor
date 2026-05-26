@@ -1,101 +1,113 @@
-# 多Agent协同分析 - 详细工作流指南
+# 多Agent协同分析 - Prompt-Native 工作流指南
 
-> 当前实现为 Phase 1 命令驱动 Pipeline。历史文档中出现的 `delegate_task` 伪代码仅表示目标架构概念，不是当前脚本调用方式。当前真实入口是 `scripts/orchestrator.py`，核心逻辑位于 `scripts/investflow_pipeline/`。
+> 当前实现以 Codex 会话内 prompt 编排为准。`scripts/orchestrator.py` 只生成 prompt plan 和 orchestration JSON，方便检查或 handoff，不负责执行子 skill。
 
-## 当前执行路径（Phase 1）
+## 当前执行路径
 
 ```text
 用户请求
-  -> CLI / Python API
-  -> Pipeline
-  -> Planner
-  -> Executor
-  -> Extractor
-  -> Composer
-  -> output/summary/orchestration-*.json + 综合分析 Markdown
+  -> Codex 解析 ticker/company
+  -> Codex 执行三段子 skill prompt
+  -> Codex 提取每个维度 handoff
+  -> Composer 汇总已有 handoff
+  -> 中文综合报告
 ```
 
 ## 阶段说明
 
 ### 阶段1: Request -> Planner
 
-- 输入：ticker/company/analysis_type（默认 `full`）
+- 输入：ticker/company
 - 输出：`stock_decision_basic` 计划
 - 默认包含三个分析维度：
   - `fundamental-analysis`
   - `institutional-accumulation-analysis`
   - `gie-investment-framework`
 
-### 阶段2: Planner -> Executor
+### 阶段2: Planner -> Prompt Plan
 
-Executor 根据计划并行执行命令。默认命令模板：
+Registry 为三个维度生成 prompt template：
 
-```bash
-opencode run "/fundamental-analysis {ticker}" --format default
-opencode run "/institutional-accumulation-analysis {ticker}" --format default
-opencode run "/gie-investment-framework {ticker}" --format default
+```text
+使用 invest-flow:fundamental-analysis 分析 {ticker}
+使用 invest-flow:institutional-accumulation-analysis 分析 {ticker}
+使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}
 ```
 
-可通过环境变量覆盖：
+这些 prompt 由当前 Codex 会话依次执行。Python 层不会启动外部 agent 进程。
 
-```bash
-export INVESTFLOW_CMD_FUNDAMENTAL_ANALYSIS='opencode run "/fundamental-analysis {ticker}" --format default'
-export INVESTFLOW_CMD_INSTITUTIONAL_ACCUMULATION_ANALYSIS='opencode run "/institutional-accumulation-analysis {ticker}" --format default'
-export INVESTFLOW_CMD_GIE_INVESTMENT_FRAMEWORK='opencode run "/gie-investment-framework {ticker}" --format default'
-```
+### 阶段3: 子 Skill -> Handoff
 
-### 阶段3: Executor -> Extractor
+每个子 skill 完成后，提取并保留：
 
-Extractor 汇总各维度产出并标准化 handoff 数据：
+- 核心结论
+- 操作建议
+- 置信度
+- 关键证据
+- 风险信号
+- 分歧点
+- 监控指标
+- 数据缺口
 
-- 报告路径
-- 关键结论/风险
-- 执行状态（成功、失败、重试次数）
+### 阶段4: Handoff -> Composer
 
-失败控制由配置项决定：
-
-- `max_retries`
-- `timeout_seconds`
-- `parallel_execution`
-- `continue_on_failure`
-
-### 阶段4: Extractor -> Composer
-
-Composer 生成最终输出：
+Composer 根据成功或部分成功的 handoff 生成：
 
 - `output/summary/orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
 - `output/summary/综合分析-{TICKER}-{YYYY-MM-DD}.md`
 
+如果只是生成 prompt plan，则输出：
+
+- `output/summary/prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md`
+- `output/summary/orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
+
 综合报告固定作者字段：`InvestmentFlow`。
 
-## 入口示例
+## 推荐入口
 
-### CLI
+在 Codex 中说：
+
+```text
+使用 invest-flow:multi-agent-stock-analysis 分析 MRVL
+```
+
+然后 Codex 应执行：
+
+```text
+使用 invest-flow:fundamental-analysis 分析 MRVL
+使用 invest-flow:institutional-accumulation-analysis 分析 MRVL
+使用 invest-flow:gie-investment-framework 分析 MRVL / MRVL
+```
+
+如果用户提供公司名：
+
+```text
+使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology
+```
+
+## Python Helper
+
+从仓库根目录运行：
 
 ```bash
-python scripts/orchestrator.py TSLA --execution-mode command
-python scripts/orchestrator.py TSLA --execution-mode mock
+python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py MRVL --company "Marvell Technology"
 ```
 
-### Python API
+该命令只生成 prompt plan。适用场景：
 
-```python
-from scripts.orchestrator import analyze_stock_with_retry, OrchestrationConfig
+- 调试 registry 是否生成了正确 prompt
+- 在外部文档中交接待执行计划
+- 将已有 handoff 交给 Composer 汇总前检查结构
 
-result = analyze_stock_with_retry(
-    ticker="TSLA",
-    company="Tesla",
-    config=OrchestrationConfig(
-        execution_mode="command",
-        max_retries=1,
-        timeout_seconds=240,
-        parallel_execution=True,
-        continue_on_failure=True,
-    ),
-)
-```
+## 部分结果处理
 
-## 历史设计参考（非当前执行路径）
+- 三个维度都完成：输出完整综合报告。
+- 只有部分维度完成：输出报告，但必须标注缺失维度和数据缺口。
+- 三个维度都缺失：只输出 orchestration JSON 或 prompt plan，不输出投资结论。
 
-- “MainAgent / SubAgent / SummaryAgent” 术语仅用于表达职责分层。
-- 真实运行时以 `scripts/orchestrator.py` + `scripts/investflow_pipeline/` 为准。
+## 综合报告原则
+
+1. 不把单一维度结论当成最终结论。
+2. 基本面、资金流、GIE 结论一致时才提高置信度。
+3. 结论冲突时优先写清冲突来源，而不是强行平均。
+4. 所有高置信度建议必须附带触发重新评估的监控信号。

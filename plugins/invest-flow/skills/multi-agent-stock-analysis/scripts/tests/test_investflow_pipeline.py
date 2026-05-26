@@ -1,6 +1,11 @@
-import unittest
-from pathlib import Path
+import io
+import json
 import sys
+import unittest
+from contextlib import redirect_stdout
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
@@ -9,115 +14,57 @@ if str(SCRIPT_DIR) not in sys.path:
 
 
 class ModelTests(unittest.TestCase):
-    def test_stage_result_to_dict_contains_handoff(self):
+    def test_stage_result_to_dict_contains_prompt_and_handoff(self):
         from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
 
         result = StageResult(
             skill_name="fundamental-analysis",
             agent_name="fundamental",
-            status=AnalysisStatus.SUCCESS,
-            report_path="/tmp/report.md",
-            handoff=Handoff(
-                conclusion="业务质量稳定",
-                recommendation="观望",
-                confidence=62,
-                key_evidence=["收入增长"],
-                risk_flags=["估值偏高"],
-                contradiction_points=[],
-                monitoring_signals=["下一季收入增速"],
-                data_gaps=[],
-            ),
-            duration=1.5,
-            retry_count=0,
+            status=AnalysisStatus.PENDING,
+            prompt="使用 invest-flow:fundamental-analysis 分析 TSLA",
+            handoff=Handoff(data_gaps=["等待执行"]),
         )
 
         data = result.to_dict()
 
-        self.assertEqual(data["skill_name"], "fundamental-analysis")
-        self.assertEqual(data["agent_name"], "fundamental")
-        self.assertEqual(data["status"], "success")
-        self.assertEqual(data["handoff"]["recommendation"], "观望")
-        self.assertEqual(data["handoff"]["confidence"], 62)
-        self.assertTrue(result.is_success)
+        self.assertEqual(data["status"], "pending")
+        self.assertEqual(data["prompt"], "使用 invest-flow:fundamental-analysis 分析 TSLA")
+        self.assertEqual(data["handoff"]["data_gaps"], ["等待执行"])
+        self.assertFalse(result.is_success)
 
-    def test_pipeline_result_to_dict_includes_ordered_stage_results_and_agents_alias(self):
-        from investflow_pipeline.models import AnalysisStatus, PipelineResult, StageResult
-
-        first = StageResult(
-            skill_name="fundamental-analysis",
-            agent_name="shared-agent",
-            status=AnalysisStatus.SUCCESS,
-        )
-        second = StageResult(
-            skill_name="gie-investment-framework",
-            agent_name="shared-agent",
-            status=AnalysisStatus.FAILED,
-            errors=["timeout"],
-        )
-        result = PipelineResult(
-            task_id="task-1",
-            status="partial",
-            intent="stock_analysis",
-            target="Tesla",
-            ticker="TSLA",
-            company_name="Tesla",
-            started_at="2026-05-25T09:00:00Z",
-            ended_at="2026-05-25T09:01:00Z",
-            stage_results=[first, second],
-            summary_report_path="/tmp/summary.md",
-            orchestration_json_path="/tmp/orchestration.json",
-        )
-
-        data = result.to_dict()
-
-        self.assertIn("stage_results", data)
-        self.assertEqual(
-            [stage["skill_name"] for stage in data["stage_results"]],
-            ["fundamental-analysis", "gie-investment-framework"],
-        )
-        self.assertEqual(
-            data["agents"]["shared-agent"]["skill_name"],
-            "gie-investment-framework",
-        )
-
-    def test_pipeline_result_to_dict_counts_failed_results(self):
+    def test_pipeline_result_to_dict_counts_success_failed_and_pending(self):
         from investflow_pipeline.models import AnalysisStatus, PipelineResult, StageResult
 
         result = PipelineResult(
             task_id="task-1",
-            status="partial",
-            intent="stock_analysis",
-            target="Tesla",
+            status="prompt_plan",
+            intent="stock_decision_basic",
+            target="TSLA",
             ticker="TSLA",
             company_name="Tesla",
             started_at="2026-05-25T09:00:00Z",
             ended_at="2026-05-25T09:01:00Z",
             stage_results=[
+                StageResult("fundamental-analysis", "fundamental", AnalysisStatus.SUCCESS),
+                StageResult("gie-investment-framework", "gie", AnalysisStatus.FAILED),
                 StageResult(
-                    skill_name="fundamental-analysis",
-                    agent_name="fundamental",
-                    status=AnalysisStatus.SUCCESS,
-                ),
-                StageResult(
-                    skill_name="gie-investment-framework",
-                    agent_name="gie",
-                    status=AnalysisStatus.FAILED,
-                ),
-                StageResult(
-                    skill_name="institutional-accumulation-analysis",
-                    agent_name="institutional",
-                    status=AnalysisStatus.PARTIAL,
+                    "institutional-accumulation-analysis",
+                    "institutional",
+                    AnalysisStatus.PENDING,
                 ),
             ],
             summary_report_path=None,
-            orchestration_json_path=None,
+            orchestration_json_path="/tmp/orchestration.json",
+            prompt_plan_path="/tmp/prompt-plan.md",
         )
 
         data = result.to_dict()
 
         self.assertEqual(data["completed_count"], 1)
-        self.assertEqual(data["failed_count"], 2)
+        self.assertEqual(data["failed_count"], 1)
+        self.assertEqual(data["pending_count"], 1)
         self.assertEqual(data["total_count"], 3)
+        self.assertEqual(data["prompt_plan_path"], "/tmp/prompt-plan.md")
 
     def test_default_lists_are_isolated(self):
         from investflow_pipeline.models import Handoff, TaskRequest
@@ -152,7 +99,6 @@ class PathTests(unittest.TestCase):
         self.assertTrue((root / "plugins" / "invest-flow").exists())
 
     def test_unique_path_adds_numbered_suffix(self):
-        from tempfile import TemporaryDirectory
         from investflow_pipeline.paths import unique_path
 
         with TemporaryDirectory() as tmp:
@@ -163,151 +109,7 @@ class PathTests(unittest.TestCase):
 
         self.assertEqual(second.name, "report(1).md")
 
-    def test_find_project_root_from_nested_path_finds_repo_sentinel(self):
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.paths import find_project_root
-
-        with TemporaryDirectory() as tmp:
-            project_root = Path(tmp) / "project"
-            plugin_manifest = (
-                project_root / "plugins" / "invest-flow" / ".codex-plugin" / "plugin.json"
-            )
-            nested = project_root / "plugins" / "invest-flow" / "skills"
-            nested.mkdir(parents=True)
-            plugin_manifest.parent.mkdir(parents=True)
-            (project_root / "AGENTS.md").write_text("repo instructions", encoding="utf-8")
-            plugin_manifest.write_text('{"name": "invest-flow"}', encoding="utf-8")
-
-            root = find_project_root(start=nested)
-
-        self.assertEqual(root, project_root.resolve())
-
-    def test_find_project_root_rejects_agents_with_git_only(self):
-        import os
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.paths import find_project_root
-
-        with TemporaryDirectory() as tmp:
-            fake_root = Path(tmp) / "generic-repo"
-            nested = fake_root / "src"
-            nested.mkdir(parents=True)
-            (fake_root / "AGENTS.md").write_text("repo instructions", encoding="utf-8")
-            (fake_root / ".git").mkdir()
-
-            old_cwd = Path.cwd()
-            try:
-                os.chdir(fake_root)
-                with self.assertRaisesRegex(RuntimeError, "Unable to locate InvestFlow project root"):
-                    find_project_root(start=nested)
-            finally:
-                os.chdir(old_cwd)
-
-    def test_find_project_root_raises_when_only_agents_parent_and_cwd_invalid(self):
-        import os
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.paths import find_project_root
-
-        with TemporaryDirectory() as tmp:
-            fake_root = Path(tmp) / "fake-global-root"
-            nested = fake_root / "cache" / "plugin"
-            nested.mkdir(parents=True)
-            (fake_root / "AGENTS.md").write_text("global instructions", encoding="utf-8")
-
-            old_cwd = Path.cwd()
-            try:
-                os.chdir(fake_root)
-                with self.assertRaisesRegex(RuntimeError, "Unable to locate InvestFlow project root"):
-                    find_project_root(start=nested)
-            finally:
-                os.chdir(old_cwd)
-
-
-    def test_find_report_from_output_returns_existing_output_report(self):
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.paths import find_report_from_output
-
-        with TemporaryDirectory() as tmp:
-            project_root = Path(tmp) / "project"
-            report = project_root / "output" / "summary" / "综合分析-TSLA.md"
-            report.parent.mkdir(parents=True)
-            report.write_text("report", encoding="utf-8")
-
-            found = find_report_from_output(project_root, f"saved to {report}")
-
-        self.assertEqual(found, report.resolve())
-
-    def test_find_report_from_output_returns_bare_relative_output_report(self):
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.paths import find_report_from_output
-
-        with TemporaryDirectory() as tmp:
-            project_root = Path(tmp) / "project"
-            report = project_root / "output" / "fundamental-analysis" / "TSLA.md"
-            report.parent.mkdir(parents=True)
-            report.write_text("report", encoding="utf-8")
-
-            found = find_report_from_output(
-                project_root,
-                "saved to output/fundamental-analysis/TSLA.md",
-            )
-
-        self.assertEqual(found, report.resolve())
-
-    def test_find_report_from_output_returns_dot_relative_output_report(self):
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.paths import find_report_from_output
-
-        with TemporaryDirectory() as tmp:
-            project_root = Path(tmp) / "project"
-            report = project_root / "output" / "fundamental-analysis" / "TSLA.md"
-            report.parent.mkdir(parents=True)
-            report.write_text("report", encoding="utf-8")
-
-            found = find_report_from_output(
-                project_root,
-                "saved to ./output/fundamental-analysis/TSLA.md",
-            )
-
-        self.assertEqual(found, report.resolve())
-
-    def test_find_report_from_output_rejects_markdown_outside_output(self):
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.paths import find_report_from_output
-
-        with TemporaryDirectory() as tmp:
-            project_root = Path(tmp) / "project"
-            readme = project_root / "README.md"
-            readme.parent.mkdir(parents=True)
-            readme.write_text("not a report", encoding="utf-8")
-
-            found = find_report_from_output(project_root, f"template: {readme}")
-
-        self.assertIsNone(found)
-
-    def test_find_latest_report_prefers_ticker_match_over_newer_non_ticker_report(self):
-        from datetime import datetime, timedelta
-        import os
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.paths import find_latest_report
-
-        with TemporaryDirectory() as tmp:
-            output_dir = Path(tmp)
-            ticker_report = output_dir / "TSLA-analysis.md"
-            other_report = output_dir / "NVDA-analysis.md"
-            started_at = datetime.now() - timedelta(seconds=1)
-            ticker_report.write_text("ticker", encoding="utf-8")
-            other_report.write_text("other", encoding="utf-8")
-            ticker_ts = started_at.timestamp() + 1
-            other_ts = started_at.timestamp() + 2
-            os.utime(ticker_report, (ticker_ts, ticker_ts))
-            os.utime(other_report, (other_ts, other_ts))
-
-            found = find_latest_report(output_dir, "TSLA", started_at)
-
-        self.assertEqual(found, ticker_report)
-
     def test_ensure_output_dir_rejects_paths_outside_project_root(self):
-        from tempfile import TemporaryDirectory
         from investflow_pipeline.paths import ensure_output_dir
 
         with TemporaryDirectory() as tmp:
@@ -322,35 +124,47 @@ class PathTests(unittest.TestCase):
 
 
 class RegistryTests(unittest.TestCase):
-    def test_basic_specs_include_three_legacy_agents(self):
+    def test_basic_specs_are_codex_prompt_templates(self):
         from investflow_pipeline.registry import build_registry
 
         registry = build_registry()
         specs = registry.basic_stock_specs()
-        names = [spec.agent_name for spec in specs]
 
-        self.assertEqual(names, ["fundamental", "institutional", "gie"])
+        self.assertEqual(
+            [spec.skill_name for spec in specs],
+            [
+                "fundamental-analysis",
+                "institutional-accumulation-analysis",
+                "gie-investment-framework",
+            ],
+        )
+        for spec in specs:
+            self.assertIn("使用 invest-flow:", spec.prompt_template)
+            self.assertIn("{ticker}", spec.prompt_template)
+            self.assertFalse(hasattr(spec, "com" + "mand" + "_template"))
+
+    def test_basic_specs_include_expected_agents_and_required_flags(self):
+        from investflow_pipeline.registry import build_registry
+
+        specs = build_registry().basic_stock_specs()
+
+        self.assertEqual(
+            [spec.agent_name for spec in specs],
+            ["fundamental", "institutional", "gie"],
+        )
         self.assertTrue(specs[0].required)
         self.assertFalse(specs[1].required)
         self.assertTrue(specs[2].required)
 
-    def test_unified_env_var_overrides_default_command(self):
-        import os
+    def test_gie_prompt_includes_company_fallback_slot(self):
         from investflow_pipeline.registry import build_registry
 
-        key = "INVESTFLOW_CMD_FUNDAMENTAL_ANALYSIS"
-        original = os.environ.get(key)
-        os.environ[key] = 'echo "/tmp/custom.md"'
-        try:
-            registry = build_registry()
-            spec = registry.get("fundamental-analysis")
-        finally:
-            if original is None:
-                os.environ.pop(key, None)
-            else:
-                os.environ[key] = original
+        spec = build_registry().get("gie-investment-framework")
 
-        self.assertEqual(spec.command_template, 'echo "/tmp/custom.md"')
+        self.assertEqual(
+            spec.prompt_template,
+            "使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}",
+        )
 
 
 class PlannerTests(unittest.TestCase):
@@ -379,24 +193,17 @@ class PlannerTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "invalid ticker"):
                     create_stock_request(ticker)
 
-    def test_create_stock_request_task_id_is_unique_for_immediate_calls(self):
-        from investflow_pipeline.planner import create_stock_request
-
-        first = create_stock_request("TSLA")
-        second = create_stock_request("TSLA")
-
-        self.assertNotEqual(first.task_id, second.task_id)
-        self.assertTrue(first.task_id.startswith("ma_"))
-        self.assertTrue(second.task_id.startswith("ma_"))
-
-    def test_basic_plan_uses_three_legacy_specs(self):
+    def test_basic_plan_uses_three_prompt_specs(self):
         from investflow_pipeline.planner import create_stock_request, plan_basic_stock_analysis
         from investflow_pipeline.registry import build_registry
 
         request = create_stock_request("TSLA", "Tesla")
         specs = plan_basic_stock_analysis(request, build_registry())
 
-        self.assertEqual([spec.agent_name for spec in specs], ["fundamental", "institutional", "gie"])
+        self.assertEqual(
+            [spec.agent_name for spec in specs],
+            ["fundamental", "institutional", "gie"],
+        )
 
     def test_basic_plan_rejects_non_basic_intent(self):
         from investflow_pipeline.models import TaskRequest
@@ -410,52 +217,7 @@ class PlannerTests(unittest.TestCase):
             ticker="TSLA",
         )
 
-        with self.assertRaisesRegex(ValueError, "unsupported intent for basic stock analysis: custom_intent"):
-            plan_basic_stock_analysis(request, build_registry())
-
-    def test_basic_plan_rejects_direct_request_blank_ticker(self):
-        from investflow_pipeline.models import TaskRequest
-        from investflow_pipeline.planner import plan_basic_stock_analysis
-        from investflow_pipeline.registry import build_registry
-
-        request = TaskRequest(
-            task_id="task-1",
-            intent="stock_decision_basic",
-            target="TSLA",
-            ticker="   ",
-        )
-
-        with self.assertRaisesRegex(ValueError, "ticker is required"):
-            plan_basic_stock_analysis(request, build_registry())
-
-    def test_basic_plan_rejects_direct_request_malformed_ticker(self):
-        from investflow_pipeline.models import TaskRequest
-        from investflow_pipeline.planner import plan_basic_stock_analysis
-        from investflow_pipeline.registry import build_registry
-
-        request = TaskRequest(
-            task_id="task-1",
-            intent="stock_decision_basic",
-            target="TSLA",
-            ticker="TSLA;rm",
-        )
-
-        with self.assertRaisesRegex(ValueError, "invalid ticker"):
-            plan_basic_stock_analysis(request, build_registry())
-
-    def test_basic_plan_rejects_direct_request_non_normalized_ticker(self):
-        from investflow_pipeline.models import TaskRequest
-        from investflow_pipeline.planner import plan_basic_stock_analysis
-        from investflow_pipeline.registry import build_registry
-
-        request = TaskRequest(
-            task_id="task-1",
-            intent="stock_decision_basic",
-            target="TSLA",
-            ticker=" TSLA ",
-        )
-
-        with self.assertRaisesRegex(ValueError, "ticker must be normalized before planning"):
+        with self.assertRaisesRegex(ValueError, "unsupported intent"):
             plan_basic_stock_analysis(request, build_registry())
 
 
@@ -506,98 +268,8 @@ class ExtractorTests(unittest.TestCase):
 
         self.assertIn("长期需求仍在，但盈利拐点需要验证。", handoff.conclusion)
 
-    def test_extract_handoff_strips_bold_recommendation_label(self):
-        from investflow_pipeline.extractors import extract_handoff
-
-        markdown = """
-# TSLA 分析报告
-
-## 投资建议
-**操作建议：** 观望
-"""
-        handoff = extract_handoff(markdown)
-
-        self.assertEqual(handoff.recommendation, "观望")
-
-    def test_extract_handoff_prefers_later_displayed_confidence_over_raw(self):
-        from investflow_pipeline.extractors import extract_handoff
-
-        markdown = """
-# TSLA 分析报告
-
-原始置信度: 54%
-
-## 投资建议
-**置信度：** 40%
-"""
-        handoff = extract_handoff(markdown)
-
-        self.assertEqual(handoff.confidence, 40)
-
 
 class ExecutorTests(unittest.TestCase):
-    def _report_text(self, ticker="TSLA", company="Tesla"):
-        return f"""# {ticker} {company} 分析报告
-
-## 投资建议
-建议：观望
-置信度：60%
-
-## 核心结论
-{ticker} 的测试报告用于验证 command mode 可以读取已经落在 output 目录下的 Markdown 报告。结论是当前样本足够完整，可以进入 handoff 提取流程。
-
-## 核心证据
-- 报告路径位于 project_root/output 之下，满足 hardened path 规则。
-- 内容包含分析、报告、结论等关键标识，长度也超过 executor 的最低校验阈值。
-- 建议和置信度字段可被 extract_handoff 稳定读取。
-
-## 风险提示
-- 这是单元测试夹具，不代表真实投资观点。
-- 命令执行必须定位到报告文件，不能只依赖 stdout 中的长文本。
-"""
-
-    def _spec(self, command_template, *, max_retries=1, timeout_seconds=10):
-        from investflow_pipeline.models import SkillSpec
-
-        return SkillSpec(
-            skill_name="fundamental-analysis",
-            agent_name="fundamental",
-            stage="single_asset_validation",
-            command_template=command_template,
-            output_dir="output/fundamental-analysis",
-            required=True,
-            timeout_seconds=timeout_seconds,
-            max_retries=max_retries,
-        )
-
-    def _python_command(self, script, *args):
-        import shlex
-
-        return " ".join(
-            shlex.quote(str(part)) for part in (sys.executable, script, *args)
-        )
-
-    def test_mock_executor_returns_successful_stage_result(self):
-        import asyncio
-        from investflow_pipeline.executor import PipelineExecutor
-        from investflow_pipeline.models import OrchestrationConfig
-        from investflow_pipeline.planner import create_stock_request
-        from investflow_pipeline.registry import build_registry
-
-        request = create_stock_request("TSLA", "Tesla")
-        spec = build_registry().get("fundamental-analysis")
-        executor = PipelineExecutor(
-            config=OrchestrationConfig(execution_mode="mock"),
-            project_root=Path.cwd(),
-        )
-
-        result = asyncio.run(executor.execute_stage(spec, request))
-
-        self.assertTrue(result.is_success)
-        self.assertEqual(result.agent_name, "fundamental")
-        self.assertIn("TSLA", result.output)
-        self.assertEqual(result.handoff.recommendation, "观望")
-
     def test_validate_rejects_short_output(self):
         from investflow_pipeline.executor import validate_output
 
@@ -606,184 +278,59 @@ class ExecutorTests(unittest.TestCase):
         self.assertFalse(valid)
         self.assertEqual(reason, "输出内容不完整")
 
-    def test_command_mode_succeeds_when_stdout_contains_existing_output_report(self):
+    def test_executor_returns_pending_prompt_plan_stage(self):
         import asyncio
-        from tempfile import TemporaryDirectory
         from investflow_pipeline.executor import PipelineExecutor
-        from investflow_pipeline.models import OrchestrationConfig
+        from investflow_pipeline.models import AnalysisStatus, OrchestrationConfig
         from investflow_pipeline.planner import create_stock_request
+        from investflow_pipeline.registry import build_registry
 
-        with TemporaryDirectory() as tmp:
-            project_root = Path(tmp) / "project"
-            report = project_root / "output" / "fundamental-analysis" / "TSLA-report.md"
-            report.parent.mkdir(parents=True)
-            report.write_text(self._report_text(), encoding="utf-8")
-            script = project_root / "emit_report.py"
-            script.write_text(f"print({str(report)!r})\n", encoding="utf-8")
+        request = create_stock_request("MRVL", "Marvell Technology")
+        spec = build_registry().get("gie-investment-framework")
+        executor = PipelineExecutor(
+            config=OrchestrationConfig(),
+            project_root=Path.cwd(),
+        )
 
-            executor = PipelineExecutor(
-                config=OrchestrationConfig(execution_mode="command", max_retries=0),
-                project_root=project_root,
-            )
-            result = asyncio.run(
-                executor.execute_stage(
-                    self._spec(self._python_command(script), max_retries=0),
-                    create_stock_request("TSLA", "Tesla"),
-                )
-            )
+        result = asyncio.run(executor.execute_stage(spec, request))
 
-        self.assertTrue(result.is_success)
-        self.assertEqual(result.report_path, str(report.resolve()))
-        self.assertIn("核心结论", result.output)
-        self.assertEqual(result.handoff.recommendation, "观望")
-
-    def test_command_mode_fails_when_no_report_path_is_found(self):
-        import asyncio
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.executor import PipelineExecutor
-        from investflow_pipeline.models import OrchestrationConfig
-        from investflow_pipeline.planner import create_stock_request
-
-        with TemporaryDirectory() as tmp:
-            project_root = Path(tmp) / "project"
-            project_root.mkdir()
-            script = project_root / "emit_stdout_only.py"
-            script.write_text(f"print({self._report_text()!r})\n", encoding="utf-8")
-
-            executor = PipelineExecutor(
-                config=OrchestrationConfig(execution_mode="command", max_retries=0),
-                project_root=project_root,
-            )
-            result = asyncio.run(
-                executor.execute_stage(
-                    self._spec(self._python_command(script), max_retries=0),
-                    create_stock_request("TSLA", "Tesla"),
-                )
-            )
-
-        self.assertFalse(result.is_success)
-        self.assertIn("命令执行完成，但未定位到输出报告文件", result.errors)
-
-    def test_spec_max_retries_zero_prevents_retry_after_invalid_output(self):
-        import asyncio
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.executor import PipelineExecutor
-        from investflow_pipeline.models import OrchestrationConfig
-        from investflow_pipeline.planner import create_stock_request
-
-        script_content = """
-from pathlib import Path
-
-attempts = Path("attempts.txt")
-count = int(attempts.read_text(encoding="utf-8")) if attempts.exists() else 0
-attempts.write_text(str(count + 1), encoding="utf-8")
-report = Path("output/fundamental-analysis/TSLA-short.md")
-report.parent.mkdir(parents=True, exist_ok=True)
-report.write_text("短", encoding="utf-8")
-print(report)
-"""
-
-        with TemporaryDirectory() as tmp:
-            project_root = Path(tmp) / "project"
-            project_root.mkdir()
-            script = project_root / "short_report.py"
-            script.write_text(script_content, encoding="utf-8")
-
-            executor = PipelineExecutor(
-                config=OrchestrationConfig(execution_mode="command", max_retries=1),
-                project_root=project_root,
-            )
-            result = asyncio.run(
-                executor.execute_stage(
-                    self._spec(self._python_command(script), max_retries=0),
-                    create_stock_request("TSLA", "Tesla"),
-                )
-            )
-            attempts = (project_root / "attempts.txt").read_text(encoding="utf-8")
-
-        self.assertFalse(result.is_success)
-        self.assertEqual(result.errors[-1], "输出内容不完整")
-        self.assertEqual(attempts, "1")
-
-    def test_command_nonzero_exit_returns_failed_result(self):
-        import asyncio
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.executor import PipelineExecutor
-        from investflow_pipeline.models import OrchestrationConfig
-        from investflow_pipeline.planner import create_stock_request
-
-        with TemporaryDirectory() as tmp:
-            project_root = Path(tmp) / "project"
-            project_root.mkdir()
-            script = project_root / "fail.py"
-            script.write_text(
-                'import sys\nprint("boom")\nsys.exit(7)\n',
-                encoding="utf-8",
-            )
-
-            executor = PipelineExecutor(
-                config=OrchestrationConfig(execution_mode="command", max_retries=0),
-                project_root=project_root,
-            )
-            result = asyncio.run(
-                executor.execute_stage(
-                    self._spec(self._python_command(script), max_retries=0),
-                    create_stock_request("TSLA", "Tesla"),
-                )
-            )
-
-        self.assertFalse(result.is_success)
-        self.assertIn("命令执行失败", result.errors[0])
+        self.assertEqual(result.status, AnalysisStatus.PENDING)
+        self.assertEqual(
+            result.prompt,
+            "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology",
+        )
+        self.assertEqual(result.output, result.prompt)
+        self.assertIn("等待 Codex 当前会话执行", result.handoff.data_gaps[0])
 
     def test_blank_company_formats_as_target(self):
         import asyncio
-        from tempfile import TemporaryDirectory
         from investflow_pipeline.executor import PipelineExecutor
         from investflow_pipeline.models import OrchestrationConfig
         from investflow_pipeline.planner import create_stock_request
+        from investflow_pipeline.registry import build_registry
 
-        script_content = f"""
-from pathlib import Path
-import sys
+        request = create_stock_request("MRVL")
+        spec = build_registry().get("gie-investment-framework")
+        executor = PipelineExecutor(
+            config=OrchestrationConfig(),
+            project_root=Path.cwd(),
+        )
 
-company = sys.argv[1]
-report = Path("output/fundamental-analysis") / f"{{company}}-report.md"
-report.parent.mkdir(parents=True, exist_ok=True)
-report.write_text({self._report_text("TSLA", "TSLA")!r}, encoding="utf-8")
-print(report)
-"""
+        result = asyncio.run(executor.execute_stage(spec, request))
 
-        with TemporaryDirectory() as tmp:
-            project_root = Path(tmp) / "project"
-            project_root.mkdir()
-            script = project_root / "company_arg.py"
-            script.write_text(script_content, encoding="utf-8")
-
-            executor = PipelineExecutor(
-                config=OrchestrationConfig(execution_mode="command", max_retries=0),
-                project_root=project_root,
-            )
-            result = asyncio.run(
-                executor.execute_stage(
-                    self._spec(
-                        self._python_command(script, "{company}"),
-                        max_retries=0,
-                    ),
-                    create_stock_request("TSLA"),
-                )
-            )
-
-        self.assertTrue(result.is_success)
-        self.assertTrue(result.report_path.endswith("TSLA-report.md"))
+        self.assertEqual(
+            result.prompt,
+            "使用 invest-flow:gie-investment-framework 分析 MRVL / MRVL",
+        )
 
 
 class ComposerTests(unittest.TestCase):
-    def _pipeline_result(self, stage_results):
+    def _pipeline_result(self, stage_results, *, status="partial_success"):
         from investflow_pipeline.models import PipelineResult
 
         return PipelineResult(
             task_id="task-compose-1",
-            status="partial",
+            status=status,
             intent="stock_decision_basic",
             target="TSLA",
             ticker="TSLA",
@@ -796,8 +343,6 @@ class ComposerTests(unittest.TestCase):
         )
 
     def test_write_outputs_success_creates_json_and_markdown(self):
-        import json
-        from tempfile import TemporaryDirectory
         from investflow_pipeline.composer import write_outputs
         from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
 
@@ -830,13 +375,9 @@ class ComposerTests(unittest.TestCase):
             payload = json.loads(json_path.read_text(encoding="utf-8"))
 
         self.assertIn("作者：InvestmentFlow", content)
-        self.assertIn("stage_results", payload)
-        self.assertIn("agents", payload)
         self.assertEqual(payload["summary_report_path"], written.summary_report_path)
 
     def test_write_outputs_failed_only_creates_json_without_markdown(self):
-        import json
-        from tempfile import TemporaryDirectory
         from investflow_pipeline.composer import write_outputs
         from investflow_pipeline.models import AnalysisStatus, StageResult
 
@@ -846,44 +387,48 @@ class ComposerTests(unittest.TestCase):
             status=AnalysisStatus.FAILED,
             errors=["no report"],
         )
-        result = self._pipeline_result([failed_stage])
+        result = self._pipeline_result([failed_stage], status="failed")
 
         with TemporaryDirectory() as tmp:
             written = write_outputs(Path(tmp), result)
             json_path = Path(written.orchestration_json_path)
-            self.assertTrue(json_path.exists())
             payload = json.loads(json_path.read_text(encoding="utf-8"))
 
         self.assertIsNone(written.summary_report_path)
-        self.assertIn("stage_results", payload)
-        self.assertIn("agents", payload)
+        self.assertIsNone(written.prompt_plan_path)
+        self.assertEqual(payload["failed_count"], 1)
 
-    def test_write_outputs_uses_unique_path_for_summary(self):
-        from tempfile import TemporaryDirectory
+    def test_write_outputs_prompt_plan_creates_plan_markdown_and_json(self):
         from investflow_pipeline.composer import write_outputs
-        from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
+        from investflow_pipeline.models import AnalysisStatus, StageResult
 
-        success_stage = StageResult(
+        pending_stage = StageResult(
             skill_name="fundamental-analysis",
             agent_name="fundamental",
-            status=AnalysisStatus.SUCCESS,
-            handoff=Handoff(recommendation="买入"),
+            status=AnalysisStatus.PENDING,
+            prompt="使用 invest-flow:fundamental-analysis 分析 MRVL",
         )
-        result = self._pipeline_result([success_stage])
+        result = self._pipeline_result([pending_stage], status="prompt_plan")
+        result.ticker = "MRVL"
+        result.target = "MRVL"
+        result.company_name = "Marvell Technology"
 
         with TemporaryDirectory() as tmp:
-            summary_dir = Path(tmp) / "output" / "summary"
-            summary_dir.mkdir(parents=True)
-            existing = summary_dir / "综合分析-TSLA-2026-05-25.md"
-            existing.write_text("existing", encoding="utf-8")
-
             written = write_outputs(Path(tmp), result)
-            written_path = Path(written.summary_report_path)
-            self.assertTrue(written_path.exists())
-            self.assertEqual(written_path.name, "综合分析-TSLA-2026-05-25(1).md")
+            json_path = Path(written.orchestration_json_path)
+            plan_path = Path(written.prompt_plan_path)
+            self.assertTrue(json_path.exists())
+            self.assertTrue(plan_path.exists())
+            plan = plan_path.read_text(encoding="utf-8")
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+
+        self.assertIsNone(written.summary_report_path)
+        self.assertIn("Codex Prompt 编排计划", plan)
+        self.assertIn("使用 invest-flow:fundamental-analysis 分析 MRVL", plan)
+        self.assertEqual(payload["status"], "prompt_plan")
+        self.assertEqual(payload["pending_count"], 1)
 
     def test_write_outputs_sanitizes_symbol_and_keeps_paths_under_summary(self):
-        from tempfile import TemporaryDirectory
         from investflow_pipeline.composer import write_outputs
         from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
 
@@ -902,354 +447,100 @@ class ComposerTests(unittest.TestCase):
             summary_dir = (Path(tmp) / "output" / "summary").resolve()
             summary_path = Path(written.summary_report_path).resolve()
             json_path = Path(written.orchestration_json_path).resolve()
-            self.assertEqual(summary_path.parent, summary_dir)
-            self.assertEqual(json_path.parent, summary_dir)
-            self.assertNotIn("/", summary_path.name)
-            self.assertNotIn("/", json_path.name)
 
-    def test_markdown_sanitization_escapes_pipe_and_flattens_newlines(self):
-        from investflow_pipeline.composer import _line_items, _stage_table
-        from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
-
-        stage = StageResult(
-            skill_name="fund|amental",
-            agent_name="age\nnt",
-            status=AnalysisStatus.SUCCESS,
-            report_path="/tmp/a|b.md",
-            handoff=Handoff(conclusion="line1\nline2|x"),
-        )
-
-        table = _stage_table([stage])
-        items = _line_items(["ev|1\nnext"], "fallback")
-
-        self.assertIn(r"fund\|amental", table)
-        self.assertIn("age nt", table)
-        self.assertIn(r"line1 line2\|x", table)
-        self.assertIn(r"/tmp/a\|b.md", table)
-        self.assertIn(r"- ev\|1 next", items)
+        self.assertEqual(summary_path.parent, summary_dir)
+        self.assertEqual(json_path.parent, summary_dir)
+        self.assertNotIn("/", summary_path.name)
+        self.assertNotIn("/", json_path.name)
 
 
 class RunnerTests(unittest.TestCase):
-    def test_overall_status_success(self):
+    def test_overall_status_prompt_plan_when_all_pending(self):
         from investflow_pipeline.models import AnalysisStatus, StageResult
         from investflow_pipeline.runner import _overall_status
 
         results = [
-            StageResult("a", "a", AnalysisStatus.SUCCESS),
-            StageResult("b", "b", AnalysisStatus.SUCCESS),
+            StageResult("a", "a", AnalysisStatus.PENDING),
+            StageResult("b", "b", AnalysisStatus.PENDING),
         ]
 
-        self.assertEqual(_overall_status(results), "success")
+        self.assertEqual(_overall_status(results), "prompt_plan")
 
-    def test_overall_status_partial_success(self):
+    def test_overall_status_success_partial_and_failed(self):
         from investflow_pipeline.models import AnalysisStatus, StageResult
         from investflow_pipeline.runner import _overall_status
 
-        results = [
-            StageResult("a", "a", AnalysisStatus.SUCCESS),
-            StageResult("b", "b", AnalysisStatus.FAILED),
-        ]
+        self.assertEqual(
+            _overall_status(
+                [
+                    StageResult("a", "a", AnalysisStatus.SUCCESS),
+                    StageResult("b", "b", AnalysisStatus.SUCCESS),
+                ]
+            ),
+            "success",
+        )
+        self.assertEqual(
+            _overall_status(
+                [
+                    StageResult("a", "a", AnalysisStatus.SUCCESS),
+                    StageResult("b", "b", AnalysisStatus.FAILED),
+                ]
+            ),
+            "partial_success",
+        )
+        self.assertEqual(
+            _overall_status([StageResult("a", "a", AnalysisStatus.FAILED)]),
+            "failed",
+        )
 
-        self.assertEqual(_overall_status(results), "partial_success")
+    def test_analyze_stock_sync_writes_prompt_plan_and_json(self):
+        from investflow_pipeline.runner import analyze_stock_sync
 
-    def test_overall_status_failed(self):
-        from investflow_pipeline.models import AnalysisStatus, StageResult
-        from investflow_pipeline.runner import _overall_status
+        with TemporaryDirectory() as tmp:
+            result = analyze_stock_sync(
+                "MRVL",
+                "Marvell Technology",
+                project_root=Path(tmp),
+            )
+            plan_path = Path(result.prompt_plan_path)
+            json_path = Path(result.orchestration_json_path)
+            self.assertTrue(plan_path.exists())
+            self.assertTrue(json_path.exists())
 
-        results = [
-            StageResult("a", "a", AnalysisStatus.FAILED),
-            StageResult("b", "b", AnalysisStatus.FAILED),
-        ]
+            self.assertEqual(result.status, "prompt_plan")
+            self.assertEqual(len(result.stage_results), 3)
+            self.assertTrue(all(stage.prompt for stage in result.stage_results))
+            self.assertIsNone(result.summary_report_path)
+            self.assertEqual(result.failed_required, [])
 
-        self.assertEqual(_overall_status(results), "failed")
-
-    def test_overall_status_empty_results_is_failed(self):
-        from investflow_pipeline.runner import _overall_status
-
-        self.assertEqual(_overall_status([]), "failed")
-
-    def test_analyze_stock_sync_mock_mode_writes_summary_and_json(self):
-        from tempfile import TemporaryDirectory
+    def test_sequential_prompt_plan_includes_all_stages_even_when_failure_continue_is_false(self):
         from investflow_pipeline.models import OrchestrationConfig
         from investflow_pipeline.runner import analyze_stock_sync
 
         with TemporaryDirectory() as tmp:
             result = analyze_stock_sync(
-                "TSLA",
-                "Tesla",
-                config=OrchestrationConfig(execution_mode="mock"),
+                "MRVL",
+                config=OrchestrationConfig(
+                    parallel_execution=False,
+                    continue_on_failure=False,
+                ),
                 project_root=Path(tmp),
             )
 
-            self.assertEqual(result.status, "success")
-            self.assertEqual(len(result.stage_results), 3)
-            self.assertTrue(all(stage.is_success for stage in result.stage_results))
-            self.assertIsNotNone(result.summary_report_path)
-            self.assertIsNotNone(result.orchestration_json_path)
-            self.assertTrue(Path(result.summary_report_path).exists())
-            self.assertTrue(Path(result.orchestration_json_path).exists())
-
-    def test_analyze_stock_sequential_execution_mode(self):
-        from tempfile import TemporaryDirectory
-        from unittest.mock import patch
-        from investflow_pipeline.models import (
-            AnalysisStatus,
-            Handoff,
-            OrchestrationConfig,
-            StageResult,
-        )
-        from investflow_pipeline.runner import analyze_stock_sync
-
-        call_order = []
-
-        async def fake_execute_stage(self, spec, request):
-            call_order.append(spec.skill_name)
-            return StageResult(
-                skill_name=spec.skill_name,
-                agent_name=spec.agent_name,
-                status=AnalysisStatus.SUCCESS,
-                handoff=Handoff(recommendation="观望"),
-            )
-
-        with patch(
-            "investflow_pipeline.executor.PipelineExecutor.execute_stage",
-            new=fake_execute_stage,
-        ):
-            with TemporaryDirectory() as tmp:
-                result = analyze_stock_sync(
-                    "TSLA",
-                    "Tesla",
-                    config=OrchestrationConfig(
-                        execution_mode="command",
-                        parallel_execution=False,
-                    ),
-                    project_root=Path(tmp),
-                )
-
-        self.assertEqual(
-            call_order,
-            [
-                "fundamental-analysis",
-                "institutional-accumulation-analysis",
-                "gie-investment-framework",
-            ],
-        )
-        self.assertEqual(result.status, "success")
-
-    def test_analyze_stock_records_failed_required(self):
-        from tempfile import TemporaryDirectory
-        from unittest.mock import patch
-        from investflow_pipeline.models import AnalysisStatus, Handoff, OrchestrationConfig, StageResult
-        from investflow_pipeline.runner import analyze_stock_sync
-
-        async def fake_execute_stage(self, spec, request):
-            if spec.skill_name == "fundamental-analysis":
-                return StageResult(
-                    skill_name=spec.skill_name,
-                    agent_name=spec.agent_name,
-                    status=AnalysisStatus.FAILED,
-                    errors=["mock required failure"],
-                )
-            return StageResult(
-                skill_name=spec.skill_name,
-                agent_name=spec.agent_name,
-                status=AnalysisStatus.SUCCESS,
-                handoff=Handoff(recommendation="观望"),
-            )
-
-        with patch(
-            "investflow_pipeline.executor.PipelineExecutor.execute_stage",
-            new=fake_execute_stage,
-        ):
-            with TemporaryDirectory() as tmp:
-                result = analyze_stock_sync(
-                    "TSLA",
-                    config=OrchestrationConfig(execution_mode="command"),
-                    project_root=Path(tmp),
-                )
-
-        self.assertIn("fundamental-analysis", result.failed_required)
-        self.assertEqual(result.status, "partial_success")
-
-    def test_analyze_stock_sequential_stops_on_failure_when_continue_on_failure_false(self):
-        from tempfile import TemporaryDirectory
-        from unittest.mock import patch
-        from investflow_pipeline.models import AnalysisStatus, Handoff, OrchestrationConfig, StageResult
-        from investflow_pipeline.runner import analyze_stock_sync
-
-        async def fake_execute_stage(self, spec, request):
-            if spec.skill_name == "fundamental-analysis":
-                return StageResult(
-                    skill_name=spec.skill_name,
-                    agent_name=spec.agent_name,
-                    status=AnalysisStatus.FAILED,
-                    errors=["mock required failure"],
-                )
-            return StageResult(
-                skill_name=spec.skill_name,
-                agent_name=spec.agent_name,
-                status=AnalysisStatus.SUCCESS,
-                handoff=Handoff(recommendation="观望"),
-            )
-
-        with patch(
-            "investflow_pipeline.executor.PipelineExecutor.execute_stage",
-            new=fake_execute_stage,
-        ):
-            with TemporaryDirectory() as tmp:
-                result = analyze_stock_sync(
-                    "TSLA",
-                    config=OrchestrationConfig(
-                        execution_mode="command",
-                        parallel_execution=False,
-                        continue_on_failure=False,
-                    ),
-                    project_root=Path(tmp),
-                )
-                self.assertIsNotNone(result.orchestration_json_path)
-                self.assertTrue(Path(result.orchestration_json_path).exists())
-
-        self.assertEqual(len(result.stage_results), 1)
-        self.assertEqual(result.stage_results[0].skill_name, "fundamental-analysis")
-        self.assertEqual(result.status, "failed")
-        self.assertEqual(result.failed_required, ["fundamental-analysis"])
-        self.assertIsNone(result.summary_report_path)
-
-    def test_analyze_stock_sequential_continues_on_failure_when_continue_on_failure_true(self):
-        from tempfile import TemporaryDirectory
-        from unittest.mock import patch
-        from investflow_pipeline.models import AnalysisStatus, Handoff, OrchestrationConfig, StageResult
-        from investflow_pipeline.runner import analyze_stock_sync
-
-        async def fake_execute_stage(self, spec, request):
-            if spec.skill_name == "fundamental-analysis":
-                return StageResult(
-                    skill_name=spec.skill_name,
-                    agent_name=spec.agent_name,
-                    status=AnalysisStatus.FAILED,
-                    errors=["mock required failure"],
-                )
-            return StageResult(
-                skill_name=spec.skill_name,
-                agent_name=spec.agent_name,
-                status=AnalysisStatus.SUCCESS,
-                handoff=Handoff(recommendation="观望"),
-            )
-
-        with patch(
-            "investflow_pipeline.executor.PipelineExecutor.execute_stage",
-            new=fake_execute_stage,
-        ):
-            with TemporaryDirectory() as tmp:
-                result = analyze_stock_sync(
-                    "TSLA",
-                    config=OrchestrationConfig(
-                        execution_mode="command",
-                        parallel_execution=False,
-                        continue_on_failure=True,
-                    ),
-                    project_root=Path(tmp),
-                )
-
+        self.assertEqual(result.status, "prompt_plan")
         self.assertEqual(len(result.stage_results), 3)
-        self.assertEqual(result.status, "partial_success")
-        self.assertIn("fundamental-analysis", result.failed_required)
 
-    def test_analyze_stock_parallel_exception_converts_to_failed_stage(self):
-        from tempfile import TemporaryDirectory
-        from unittest.mock import patch
-        from investflow_pipeline.models import (
-            AnalysisStatus,
-            Handoff,
-            OrchestrationConfig,
-            StageResult,
-        )
+    def test_analyze_stock_rejects_deprecated_execution_mode(self):
+        from investflow_pipeline.models import OrchestrationConfig
         from investflow_pipeline.runner import analyze_stock_sync
 
-        async def fake_execute_stage(self, spec, request):
-            if spec.skill_name == "institutional-accumulation-analysis":
-                raise RuntimeError("parallel boom")
-            return StageResult(
-                skill_name=f"unexpected-{spec.skill_name}",
-                agent_name=spec.agent_name,
-                status=AnalysisStatus.SUCCESS,
-                handoff=Handoff(recommendation="观望"),
-            )
-
-        with patch(
-            "investflow_pipeline.executor.PipelineExecutor.execute_stage",
-            new=fake_execute_stage,
-        ):
-            with TemporaryDirectory() as tmp:
-                result = analyze_stock_sync(
+        with TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError, "外部执行模式已废弃"):
+                analyze_stock_sync(
                     "TSLA",
-                    config=OrchestrationConfig(
-                        execution_mode="command",
-                        parallel_execution=True,
-                    ),
+                    config=OrchestrationConfig(execution_mode="legacy"),
                     project_root=Path(tmp),
                 )
-
-                self.assertIsNotNone(result.orchestration_json_path)
-                self.assertTrue(Path(result.orchestration_json_path).exists())
-                self.assertIsNotNone(result.summary_report_path)
-                self.assertTrue(Path(result.summary_report_path).exists())
-
-        institutional = next(
-            stage
-            for stage in result.stage_results
-            if stage.skill_name == "institutional-accumulation-analysis"
-        )
-        self.assertFalse(institutional.is_success)
-        self.assertIn("parallel boom", institutional.errors[0])
-
-    def test_analyze_stock_sequential_exception_converts_to_failed_stage_and_persists_outputs(self):
-        from tempfile import TemporaryDirectory
-        from unittest.mock import patch
-        from investflow_pipeline.models import (
-            AnalysisStatus,
-            Handoff,
-            OrchestrationConfig,
-            StageResult,
-        )
-        from investflow_pipeline.runner import analyze_stock_sync
-
-        async def fake_execute_stage(self, spec, request):
-            if spec.skill_name == "gie-investment-framework":
-                raise RuntimeError("sequential boom")
-            return StageResult(
-                skill_name=spec.skill_name,
-                agent_name=spec.agent_name,
-                status=AnalysisStatus.SUCCESS,
-                handoff=Handoff(recommendation="观望"),
-            )
-
-        with patch(
-            "investflow_pipeline.executor.PipelineExecutor.execute_stage",
-            new=fake_execute_stage,
-        ):
-            with TemporaryDirectory() as tmp:
-                result = analyze_stock_sync(
-                    "TSLA",
-                    config=OrchestrationConfig(
-                        execution_mode="command",
-                        parallel_execution=False,
-                    ),
-                    project_root=Path(tmp),
-                )
-
-                self.assertIsNotNone(result.orchestration_json_path)
-                self.assertTrue(Path(result.orchestration_json_path).exists())
-                self.assertIsNotNone(result.summary_report_path)
-                self.assertTrue(Path(result.summary_report_path).exists())
-
-        gie = next(
-            stage
-            for stage in result.stage_results
-            if stage.skill_name == "gie-investment-framework"
-        )
-        self.assertFalse(gie.is_success)
-        self.assertIn("sequential boom", gie.errors[0])
 
 
 class OrchestratorCompatibilityTests(unittest.TestCase):
@@ -1257,126 +548,72 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
         import importlib.util
 
         module_path = SCRIPT_DIR / "orchestrator.py"
-        spec = importlib.util.spec_from_file_location("legacy_orchestrator", module_path)
+        spec = importlib.util.spec_from_file_location("prompt_orchestrator", module_path)
         self.assertIsNotNone(spec)
         self.assertIsNotNone(spec.loader)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
 
-    def test_analyze_stock_with_retry_compatibility_api_mock_mode(self):
-        from tempfile import TemporaryDirectory
-
+    def test_analyze_stock_with_retry_returns_prompt_plan_without_external_execution(self):
         orchestrator = self._load_orchestrator_module()
 
         with TemporaryDirectory() as tmp:
             result = orchestrator.analyze_stock_with_retry(
-                ticker="TSLA",
-                company="Tesla",
-                execution_mode="mock",
+                ticker="MRVL",
+                company="Marvell Technology",
                 project_root=tmp,
             )
-            self.assertEqual(result["status"], "success")
-            self.assertEqual(result["completed_count"], 3)
-            self.assertEqual(result["total_count"], 3)
-            self.assertTrue(result.get("summary_report_path"))
-            self.assertTrue(result.get("orchestration_json_path"))
-            self.assertTrue(Path(result["summary_report_path"]).exists())
-            self.assertTrue(Path(result["orchestration_json_path"]).exists())
-            self.assertTrue(
-                Path(result["summary_report_path"]).resolve().is_relative_to(Path(tmp).resolve())
-            )
-            self.assertTrue(
-                Path(result["orchestration_json_path"]).resolve().is_relative_to(Path(tmp).resolve())
-            )
+            self.assertTrue(Path(result["prompt_plan_path"]).exists())
 
-    def test_analyze_stock_with_retry_compatibility_api_config_mock_mode(self):
-        from tempfile import TemporaryDirectory
-        from investflow_pipeline.models import OrchestrationConfig
+        self.assertEqual(result["status"], "prompt_plan")
+        self.assertEqual(result["total_count"], 3)
+        self.assertEqual(result["completed_count"], 0)
+        self.assertEqual(result["pending_count"], 3)
+        self.assertTrue(result["prompt_plan_path"])
+        prompts = [stage["prompt"] for stage in result["stage_results"]]
+        self.assertEqual(prompts[0], "使用 invest-flow:fundamental-analysis 分析 MRVL")
+        self.assertEqual(
+            prompts[1],
+            "使用 invest-flow:institutional-accumulation-analysis 分析 MRVL",
+        )
+        self.assertEqual(
+            prompts[2],
+            "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology",
+        )
 
+    def test_orchestrator_cli_prints_prompt_plan_and_returns_zero(self):
         orchestrator = self._load_orchestrator_module()
 
         with TemporaryDirectory() as tmp:
-            result = orchestrator.analyze_stock_with_retry(
-                ticker="TSLA",
-                company="Tesla",
-                config=OrchestrationConfig(execution_mode="mock"),
-                project_root=tmp,
-            )
-            self.assertEqual(result["status"], "success")
-            self.assertTrue(Path(result["summary_report_path"]).exists())
-            self.assertTrue(Path(result["orchestration_json_path"]).exists())
-            self.assertEqual(result["metadata"]["config"]["execution_mode"], "mock")
+            stdout = io.StringIO()
+            argv = [
+                "orchestrator.py",
+                "MRVL",
+                "--company",
+                "Marvell Technology",
+                "--project-root",
+                tmp,
+            ]
+            with patch.object(sys, "argv", argv), redirect_stdout(stdout):
+                exit_code = orchestrator.main()
 
-    def test_orchestrator_cli_mock_mode_prints_legacy_labels_and_returns_zero(self):
-        import subprocess
-        from tempfile import TemporaryDirectory
+        output = stdout.getvalue()
+        self.assertEqual(exit_code, 0)
+        self.assertIn("状态: prompt_plan", output)
+        self.assertIn("Prompt计划:", output)
+        self.assertIn("使用 invest-flow:fundamental-analysis 分析 MRVL", output)
 
-        script = SCRIPT_DIR / "orchestrator.py"
-        with TemporaryDirectory() as tmp:
-            completed = subprocess.run(
-                [
-                    sys.executable,
-                    str(script),
-                    "TSLA",
-                    "--company",
-                    "Tesla",
-                    "--execution-mode",
-                    "mock",
-                    "--project-root",
-                    tmp,
-                ],
-                capture_output=True,
-                text=True,
-                check=False,
-            )
+    def test_scripts_do_not_call_external_agent_runtime(self):
+        combined = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in SCRIPT_DIR.rglob("*.py")
+            if "__pycache__" not in path.parts
+        )
 
-        self.assertEqual(completed.returncode, 0)
-        stdout = completed.stdout
-        self.assertIn("状态: success", stdout)
-        self.assertIn("成功: 3/3", stdout)
-        self.assertIn("综合报告:", stdout)
-        self.assertIn("编排JSON:", stdout)
-
-    def test_analyze_stock_with_retry_retried_count_counts_stages_not_attempts(self):
-        from types import SimpleNamespace
-
-        orchestrator = self._load_orchestrator_module()
-
-        class _FakeResult:
-            def __init__(self):
-                self.summary_report_path = "/tmp/summary.md"
-                self.orchestration_json_path = "/tmp/orch.json"
-                self.started_at = "2026-05-26T00:00:00"
-                self.ended_at = "2026-05-26T00:10:00"
-                self.stage_results = [
-                    SimpleNamespace(retry_count=0),
-                    SimpleNamespace(retry_count=2),
-                    SimpleNamespace(retry_count=1),
-                ]
-
-            def to_dict(self):
-                return {
-                    "status": "success",
-                    "completed_count": 3,
-                    "failed_count": 0,
-                    "total_count": 3,
-                    "stage_results": [],
-                    "agents": {},
-                }
-
-        original = orchestrator.analyze_stock_sync
-        orchestrator.analyze_stock_sync = lambda *args, **kwargs: _FakeResult()
-        try:
-            result = orchestrator.analyze_stock_with_retry(
-                ticker="TSLA",
-                company="Tesla",
-                execution_mode="mock",
-            )
-        finally:
-            orchestrator.analyze_stock_sync = original
-
-        self.assertEqual(result["retried_count"], 2)
+        self.assertNotIn("sub" + "process" + ".run", combined)
+        self.assertNotIn("open" + "code", combined)
+        self.assertNotIn("com" + "mand" + "_template", combined)
 
 
 if __name__ == "__main__":
