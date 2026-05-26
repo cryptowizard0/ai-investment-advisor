@@ -1,5 +1,7 @@
 # 多Agent协同分析 - 详细工作流指南
 
+> 当前实现为 Phase 1 命令驱动 Pipeline。历史文档中出现的 `delegate_task` 伪代码仅表示目标架构概念，不是当前脚本调用方式。当前真实入口是 `scripts/orchestrator.py`，核心逻辑位于 `scripts/investflow_pipeline/`。
+
 ## 完整工作流程
 
 ### 阶段1: 请求解析 (MainAgent)

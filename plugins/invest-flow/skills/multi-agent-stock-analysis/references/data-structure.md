@@ -1,5 +1,22 @@
 # 多Agent协同分析 - 数据结构定义
 
+## Phase 1 实现模型
+
+当前代码中的数据模型位于：
+
+`scripts/investflow_pipeline/models.py`
+
+核心模型：
+
+- `TaskRequest`
+- `SkillSpec`
+- `StageResult`
+- `Handoff`
+- `PipelineResult`
+- `OrchestrationConfig`
+
+历史 TypeScript interface 示例保留为设计参考；以 Python dataclass 为当前实现准绳。
+
 ## 概述
 
 本文档定义了多Agent股票分析系统中所有数据结构的规范，确保MainAgent、SubAgent和SummaryAgent之间的数据传递一致性。

@@ -7,16 +7,23 @@ description: "多Agent协同股票分析系统 - 同时运行基本面分析、�
 
 ## 概述
 
-本系统通过**主从架构**实现多维度并行股票分析：
+本系统通过命令驱动的轻量 Pipeline 实现多维度股票分析。当前默认兼容流程为：
 
+```text
+用户请求
+  -> CLI / Python API
+  -> Intent Request
+  -> Basic Stock Planner
+  -> 并行执行 3 个 Skill
+       fundamental-analysis
+       institutional-accumulation-analysis
+       gie-investment-framework
+  -> Handoff Extractor
+  -> Decision Composer
+  -> orchestration JSON + 中文综合摘要
 ```
-用户请求 → MainAgent → 并行启动3个SubAgent → SummaryAgent → 综合报告
-                     ↓
-        ┌────────────┼────────────┐
-        ↓            ↓            ↓
-   Fundamental  Institutional    GIE
-   Analysis     Analysis      Framework
-```
+
+Phase 1 保持旧三件套流程兼容；后续阶段会把 `market-data-router`、`reflexivity-*`、`professional-investment-analyst`、`daily-us-market-scan` 和 AI 基建相关 skill 接入更多 workflow preset。
 
 **核心价值：**
 - ⚡ **并行处理**：3个维度同时分析，节省时间
@@ -50,38 +57,22 @@ MainAgent识别：
 - 公司名称（如 Tesla）
 - 分析类型（默认 full）
 
-### Step 2: 并行启动SubAgents
+### Step 2: 生成兼容执行计划
 
-使用 `delegate_task` 同时启动3个分析Agent：
+默认 `stock_decision_basic` 计划包含：
 
-**SubAgent 1: 基本面分析**
-```python
-delegate_task(
-    category="deep",
-    load_skills=["fundamental-analysis"],
-    prompt="对 {ticker} 执行完整的基本面分析...",
-    run_in_background=True
-)
-```
+| Agent | Skill | 默认命令 |
+|---|---|---|
+| fundamental | `fundamental-analysis` | `opencode run "/fundamental-analysis {ticker}" --format default` |
+| institutional | `institutional-accumulation-analysis` | `opencode run "/institutional-accumulation-analysis {ticker}" --format default` |
+| gie | `gie-investment-framework` | `opencode run "/gie-investment-framework {ticker}" --format default` |
 
-**SubAgent 2: 机构资金流向分析**
-```python
-delegate_task(
-    category="deep",
-    load_skills=["institutional-accumulation-analysis"],
-    prompt="分析 {ticker} 的机构吸筹派发情况...",
-    run_in_background=True
-)
-```
+命令可通过环境变量覆盖：
 
-**SubAgent 3: GIE投资框架分析**
-```python
-delegate_task(
-    category="deep",
-    load_skills=["gie-investment-framework"],
-    prompt="使用GIE框架评估 {ticker}...",
-    run_in_background=True
-)
+```bash
+export INVESTFLOW_CMD_FUNDAMENTAL_ANALYSIS='opencode run "/fundamental-analysis {ticker}" --format default'
+export INVESTFLOW_CMD_INSTITUTIONAL_ACCUMULATION_ANALYSIS='opencode run "/institutional-accumulation-analysis {ticker}" --format default'
+export INVESTFLOW_CMD_GIE_INVESTMENT_FRAMEWORK='opencode run "/gie-investment-framework {ticker}" --format default'
 ```
 
 ### Step 3: 监控任务执行
@@ -122,10 +113,12 @@ MainAgent等待所有SubAgent完成：
 
 ### Step 6: 输出结果
 
-- 显示综合投资建议
-- 列出所有生成的报告路径
-- 提供关键风险提示
-- 最终综合报告必须包含固定作者字段：`InvestmentFlow`
+系统输出两类文件：
+
+- `output/summary/orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
+- `output/summary/综合分析-{TICKER}-{YYYY-MM-DD}.md`
+
+综合报告必须包含固定作者字段：`InvestmentFlow`。
 
 ## 输出文件结构
 
@@ -259,9 +252,9 @@ python scripts/orchestrator.py TSLA --execution-mode mock
 
 ```bash
 # 按需覆盖默认命令模板（支持 {ticker}/{company} 变量）
-export ORCH_FUNDAMENTAL_CMD='opencode run "/fundamental-analysis {ticker}" --format default'
-export ORCH_INSTITUTIONAL_CMD='opencode run "/institutional-accumulation-analysis {ticker}" --format default'
-export ORCH_GIE_CMD='opencode run "/gie-investment-framework {ticker}" --format default'
+export INVESTFLOW_CMD_FUNDAMENTAL_ANALYSIS='opencode run "/fundamental-analysis {ticker}" --format default'
+export INVESTFLOW_CMD_INSTITUTIONAL_ACCUMULATION_ANALYSIS='opencode run "/institutional-accumulation-analysis {ticker}" --format default'
+export INVESTFLOW_CMD_GIE_INVESTMENT_FRAMEWORK='opencode run "/gie-investment-framework {ticker}" --format default'
 ```
 
 ## 注意事项
