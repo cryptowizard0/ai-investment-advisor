@@ -1071,6 +1071,90 @@ class RunnerTests(unittest.TestCase):
         self.assertIn("fundamental-analysis", result.failed_required)
         self.assertEqual(result.status, "partial_success")
 
+    def test_analyze_stock_sequential_stops_on_failure_when_continue_on_failure_false(self):
+        from tempfile import TemporaryDirectory
+        from unittest.mock import patch
+        from investflow_pipeline.models import AnalysisStatus, Handoff, OrchestrationConfig, StageResult
+        from investflow_pipeline.runner import analyze_stock_sync
+
+        async def fake_execute_stage(self, spec, request):
+            if spec.skill_name == "fundamental-analysis":
+                return StageResult(
+                    skill_name=spec.skill_name,
+                    agent_name=spec.agent_name,
+                    status=AnalysisStatus.FAILED,
+                    errors=["mock required failure"],
+                )
+            return StageResult(
+                skill_name=spec.skill_name,
+                agent_name=spec.agent_name,
+                status=AnalysisStatus.SUCCESS,
+                handoff=Handoff(recommendation="观望"),
+            )
+
+        with patch(
+            "investflow_pipeline.executor.PipelineExecutor.execute_stage",
+            new=fake_execute_stage,
+        ):
+            with TemporaryDirectory() as tmp:
+                result = analyze_stock_sync(
+                    "TSLA",
+                    config=OrchestrationConfig(
+                        execution_mode="command",
+                        parallel_execution=False,
+                        continue_on_failure=False,
+                    ),
+                    project_root=Path(tmp),
+                )
+                self.assertIsNotNone(result.orchestration_json_path)
+                self.assertTrue(Path(result.orchestration_json_path).exists())
+
+        self.assertEqual(len(result.stage_results), 1)
+        self.assertEqual(result.stage_results[0].skill_name, "fundamental-analysis")
+        self.assertEqual(result.status, "failed")
+        self.assertEqual(result.failed_required, ["fundamental-analysis"])
+        self.assertIsNone(result.summary_report_path)
+
+    def test_analyze_stock_sequential_continues_on_failure_when_continue_on_failure_true(self):
+        from tempfile import TemporaryDirectory
+        from unittest.mock import patch
+        from investflow_pipeline.models import AnalysisStatus, Handoff, OrchestrationConfig, StageResult
+        from investflow_pipeline.runner import analyze_stock_sync
+
+        async def fake_execute_stage(self, spec, request):
+            if spec.skill_name == "fundamental-analysis":
+                return StageResult(
+                    skill_name=spec.skill_name,
+                    agent_name=spec.agent_name,
+                    status=AnalysisStatus.FAILED,
+                    errors=["mock required failure"],
+                )
+            return StageResult(
+                skill_name=spec.skill_name,
+                agent_name=spec.agent_name,
+                status=AnalysisStatus.SUCCESS,
+                handoff=Handoff(recommendation="观望"),
+            )
+
+        with patch(
+            "investflow_pipeline.executor.PipelineExecutor.execute_stage",
+            new=fake_execute_stage,
+        ):
+            with TemporaryDirectory() as tmp:
+                result = analyze_stock_sync(
+                    "TSLA",
+                    config=OrchestrationConfig(
+                        execution_mode="command",
+                        parallel_execution=False,
+                        continue_on_failure=True,
+                    ),
+                    project_root=Path(tmp),
+                )
+
+        self.assertEqual(len(result.stage_results), 3)
+        self.assertEqual(result.status, "partial_success")
+        self.assertIn("fundamental-analysis", result.failed_required)
+
     def test_analyze_stock_parallel_exception_converts_to_failed_stage(self):
         from tempfile import TemporaryDirectory
         from unittest.mock import patch
@@ -1205,6 +1289,24 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
             self.assertTrue(
                 Path(result["orchestration_json_path"]).resolve().is_relative_to(Path(tmp).resolve())
             )
+
+    def test_analyze_stock_with_retry_compatibility_api_config_mock_mode(self):
+        from tempfile import TemporaryDirectory
+        from investflow_pipeline.models import OrchestrationConfig
+
+        orchestrator = self._load_orchestrator_module()
+
+        with TemporaryDirectory() as tmp:
+            result = orchestrator.analyze_stock_with_retry(
+                ticker="TSLA",
+                company="Tesla",
+                config=OrchestrationConfig(execution_mode="mock"),
+                project_root=tmp,
+            )
+            self.assertEqual(result["status"], "success")
+            self.assertTrue(Path(result["summary_report_path"]).exists())
+            self.assertTrue(Path(result["orchestration_json_path"]).exists())
+            self.assertEqual(result["metadata"]["config"]["execution_mode"], "mock")
 
     def test_orchestrator_cli_mock_mode_prints_legacy_labels_and_returns_zero(self):
         import subprocess

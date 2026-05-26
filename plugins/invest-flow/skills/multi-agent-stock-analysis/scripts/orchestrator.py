@@ -22,15 +22,46 @@ def analyze_stock_with_retry(
     timeout: int = 240,
     **kwargs: Any,
 ) -> Dict[str, Any]:
+    compatibility_config = kwargs.get("config")
+    if not isinstance(compatibility_config, OrchestrationConfig):
+        compatibility_config = None
+
+    execution_mode = kwargs.get("execution_mode")
+    if execution_mode is None:
+        execution_mode = (
+            compatibility_config.execution_mode
+            if compatibility_config is not None
+            else os.environ.get("ORCH_EXECUTION_MODE", "command")
+        )
+
+    if "parallel_execution" in kwargs:
+        parallel_execution = kwargs["parallel_execution"]
+    elif compatibility_config is not None:
+        parallel_execution = compatibility_config.parallel_execution
+    else:
+        parallel_execution = True
+
+    if "continue_on_failure" in kwargs:
+        continue_on_failure = kwargs["continue_on_failure"]
+    elif compatibility_config is not None:
+        continue_on_failure = compatibility_config.continue_on_failure
+    else:
+        continue_on_failure = True
+
+    resolved_max_retries = max_retries
+    if compatibility_config is not None and max_retries == 1:
+        resolved_max_retries = compatibility_config.max_retries
+
+    resolved_timeout = timeout
+    if compatibility_config is not None and timeout == 240:
+        resolved_timeout = compatibility_config.timeout_seconds
+
     config = OrchestrationConfig(
-        execution_mode=kwargs.get(
-            "execution_mode",
-            os.environ.get("ORCH_EXECUTION_MODE", "command"),
-        ),
-        max_retries=max_retries,
-        timeout_seconds=timeout,
-        parallel_execution=kwargs.get("parallel_execution", True),
-        continue_on_failure=kwargs.get("continue_on_failure", True),
+        execution_mode=execution_mode,
+        max_retries=resolved_max_retries,
+        timeout_seconds=resolved_timeout,
+        parallel_execution=parallel_execution,
+        continue_on_failure=continue_on_failure,
     )
     project_root = kwargs.get("project_root")
     if project_root is not None:
@@ -48,6 +79,7 @@ def analyze_stock_with_retry(
             "max_retries": config.max_retries,
             "timeout": config.timeout_seconds,
             "parallel": config.parallel_execution,
+            "continue_on_failure": config.continue_on_failure,
         },
     }
     return payload

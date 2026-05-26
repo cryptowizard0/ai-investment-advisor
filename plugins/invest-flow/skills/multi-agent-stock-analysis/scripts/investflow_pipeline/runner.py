@@ -61,9 +61,12 @@ async def analyze_stock(
         stage_results = []
         for spec in specs:
             try:
-                stage_results.append(await executor.execute_stage(spec, request))
+                stage_result = await executor.execute_stage(spec, request)
             except Exception as exc:
-                stage_results.append(_stage_exception_result(spec, exc))
+                stage_result = _stage_exception_result(spec, exc)
+            stage_results.append(stage_result)
+            if not effective_config.continue_on_failure and not stage_result.is_success:
+                break
 
     failed_required = []
     for spec, stage_result in zip(specs, stage_results):
