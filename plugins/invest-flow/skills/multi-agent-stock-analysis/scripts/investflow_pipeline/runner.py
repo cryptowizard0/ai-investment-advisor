@@ -13,6 +13,15 @@ from .planner import create_stock_request, plan_basic_stock_analysis
 from .registry import build_registry
 
 
+def _stage_exception_result(spec, exc: Exception) -> StageResult:
+    return StageResult(
+        skill_name=spec.skill_name,
+        agent_name=spec.agent_name,
+        status=AnalysisStatus.FAILED,
+        errors=[f"Stage execution raised exception: {exc}"],
+    )
+
+
 def _overall_status(results: list[StageResult]) -> str:
     success_count = sum(1 for result in results if result.status == AnalysisStatus.SUCCESS)
     if success_count == len(results) and results:
@@ -38,22 +47,28 @@ async def analyze_stock(
     started_at = datetime.now().isoformat()
 
     if effective_config.parallel_execution:
-        stage_results = list(
-            await asyncio.gather(
-                *(executor.execute_stage(spec, request) for spec in specs)
-            )
+        raw_results = await asyncio.gather(
+            *(executor.execute_stage(spec, request) for spec in specs),
+            return_exceptions=True,
         )
+        stage_results = []
+        for spec, raw_result in zip(specs, raw_results):
+            if isinstance(raw_result, Exception):
+                stage_results.append(_stage_exception_result(spec, raw_result))
+                continue
+            stage_results.append(raw_result)
     else:
         stage_results = []
         for spec in specs:
-            stage_results.append(await executor.execute_stage(spec, request))
+            try:
+                stage_results.append(await executor.execute_stage(spec, request))
+            except Exception as exc:
+                stage_results.append(_stage_exception_result(spec, exc))
 
-    required_skills = {spec.skill_name for spec in specs if spec.required}
-    failed_required = [
-        stage_result.skill_name
-        for stage_result in stage_results
-        if stage_result.skill_name in required_skills and not stage_result.is_success
-    ]
+    failed_required = []
+    for spec, stage_result in zip(specs, stage_results):
+        if spec.required and not stage_result.is_success:
+            failed_required.append(spec.skill_name)
 
     result = PipelineResult(
         task_id=request.task_id,
