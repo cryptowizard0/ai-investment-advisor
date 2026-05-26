@@ -1106,6 +1106,11 @@ class RunnerTests(unittest.TestCase):
                     project_root=Path(tmp),
                 )
 
+                self.assertIsNotNone(result.orchestration_json_path)
+                self.assertTrue(Path(result.orchestration_json_path).exists())
+                self.assertIsNotNone(result.summary_report_path)
+                self.assertTrue(Path(result.summary_report_path).exists())
+
         institutional = next(
             stage
             for stage in result.stage_results
@@ -1113,6 +1118,54 @@ class RunnerTests(unittest.TestCase):
         )
         self.assertFalse(institutional.is_success)
         self.assertIn("parallel boom", institutional.errors[0])
+
+    def test_analyze_stock_sequential_exception_converts_to_failed_stage_and_persists_outputs(self):
+        from tempfile import TemporaryDirectory
+        from unittest.mock import patch
+        from investflow_pipeline.models import (
+            AnalysisStatus,
+            Handoff,
+            OrchestrationConfig,
+            StageResult,
+        )
+        from investflow_pipeline.runner import analyze_stock_sync
+
+        async def fake_execute_stage(self, spec, request):
+            if spec.skill_name == "gie-investment-framework":
+                raise RuntimeError("sequential boom")
+            return StageResult(
+                skill_name=spec.skill_name,
+                agent_name=spec.agent_name,
+                status=AnalysisStatus.SUCCESS,
+                handoff=Handoff(recommendation="观望"),
+            )
+
+        with patch(
+            "investflow_pipeline.executor.PipelineExecutor.execute_stage",
+            new=fake_execute_stage,
+        ):
+            with TemporaryDirectory() as tmp:
+                result = analyze_stock_sync(
+                    "TSLA",
+                    config=OrchestrationConfig(
+                        execution_mode="command",
+                        parallel_execution=False,
+                    ),
+                    project_root=Path(tmp),
+                )
+
+                self.assertIsNotNone(result.orchestration_json_path)
+                self.assertTrue(Path(result.orchestration_json_path).exists())
+                self.assertIsNotNone(result.summary_report_path)
+                self.assertTrue(Path(result.summary_report_path).exists())
+
+        gie = next(
+            stage
+            for stage in result.stage_results
+            if stage.skill_name == "gie-investment-framework"
+        )
+        self.assertFalse(gie.is_success)
+        self.assertIn("sequential boom", gie.errors[0])
 
 
 if __name__ == "__main__":
