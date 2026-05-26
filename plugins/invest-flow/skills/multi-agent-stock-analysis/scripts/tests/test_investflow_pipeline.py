@@ -1181,40 +1181,53 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
         return module
 
     def test_analyze_stock_with_retry_compatibility_api_mock_mode(self):
+        from tempfile import TemporaryDirectory
+
         orchestrator = self._load_orchestrator_module()
 
-        result = orchestrator.analyze_stock_with_retry(
-            ticker="TSLA",
-            company="Tesla",
-            execution_mode="mock",
-        )
-
-        self.assertEqual(result["status"], "success")
-        self.assertEqual(result["completed_count"], 3)
-        self.assertEqual(result["total_count"], 3)
-        self.assertTrue(result.get("summary_report_path"))
-        self.assertTrue(result.get("orchestration_json_path"))
-        self.assertTrue(Path(result["summary_report_path"]).exists())
-        self.assertTrue(Path(result["orchestration_json_path"]).exists())
+        with TemporaryDirectory() as tmp:
+            result = orchestrator.analyze_stock_with_retry(
+                ticker="TSLA",
+                company="Tesla",
+                execution_mode="mock",
+                project_root=tmp,
+            )
+            self.assertEqual(result["status"], "success")
+            self.assertEqual(result["completed_count"], 3)
+            self.assertEqual(result["total_count"], 3)
+            self.assertTrue(result.get("summary_report_path"))
+            self.assertTrue(result.get("orchestration_json_path"))
+            self.assertTrue(Path(result["summary_report_path"]).exists())
+            self.assertTrue(Path(result["orchestration_json_path"]).exists())
+            self.assertTrue(
+                Path(result["summary_report_path"]).resolve().is_relative_to(Path(tmp).resolve())
+            )
+            self.assertTrue(
+                Path(result["orchestration_json_path"]).resolve().is_relative_to(Path(tmp).resolve())
+            )
 
     def test_orchestrator_cli_mock_mode_prints_legacy_labels_and_returns_zero(self):
         import subprocess
+        from tempfile import TemporaryDirectory
 
         script = SCRIPT_DIR / "orchestrator.py"
-        completed = subprocess.run(
-            [
-                sys.executable,
-                str(script),
-                "TSLA",
-                "--company",
-                "Tesla",
-                "--execution-mode",
-                "mock",
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        with TemporaryDirectory() as tmp:
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "TSLA",
+                    "--company",
+                    "Tesla",
+                    "--execution-mode",
+                    "mock",
+                    "--project-root",
+                    tmp,
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
 
         self.assertEqual(completed.returncode, 0)
         stdout = completed.stdout
@@ -1222,6 +1235,46 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
         self.assertIn("成功: 3/3", stdout)
         self.assertIn("综合报告:", stdout)
         self.assertIn("编排JSON:", stdout)
+
+    def test_analyze_stock_with_retry_retried_count_counts_stages_not_attempts(self):
+        from types import SimpleNamespace
+
+        orchestrator = self._load_orchestrator_module()
+
+        class _FakeResult:
+            def __init__(self):
+                self.summary_report_path = "/tmp/summary.md"
+                self.orchestration_json_path = "/tmp/orch.json"
+                self.started_at = "2026-05-26T00:00:00"
+                self.ended_at = "2026-05-26T00:10:00"
+                self.stage_results = [
+                    SimpleNamespace(retry_count=0),
+                    SimpleNamespace(retry_count=2),
+                    SimpleNamespace(retry_count=1),
+                ]
+
+            def to_dict(self):
+                return {
+                    "status": "success",
+                    "completed_count": 3,
+                    "failed_count": 0,
+                    "total_count": 3,
+                    "stage_results": [],
+                    "agents": {},
+                }
+
+        original = orchestrator.analyze_stock_sync
+        orchestrator.analyze_stock_sync = lambda *args, **kwargs: _FakeResult()
+        try:
+            result = orchestrator.analyze_stock_with_retry(
+                ticker="TSLA",
+                company="Tesla",
+                execution_mode="mock",
+            )
+        finally:
+            orchestrator.analyze_stock_sync = original
+
+        self.assertEqual(result["retried_count"], 2)
 
 
 if __name__ == "__main__":

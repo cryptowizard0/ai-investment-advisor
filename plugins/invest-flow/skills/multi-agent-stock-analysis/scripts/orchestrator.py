@@ -4,6 +4,7 @@
 import argparse
 import os
 import sys
+from pathlib import Path
 from typing import Any, Dict
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,11 +32,14 @@ def analyze_stock_with_retry(
         parallel_execution=kwargs.get("parallel_execution", True),
         continue_on_failure=kwargs.get("continue_on_failure", True),
     )
-    result = analyze_stock_sync(ticker, company, config, project_root=kwargs.get("project_root"))
+    project_root = kwargs.get("project_root")
+    if project_root is not None:
+        project_root = Path(project_root)
+    result = analyze_stock_sync(ticker, company, config, project_root=project_root)
     payload = result.to_dict()
     payload["summary_report_path"] = result.summary_report_path
     payload["orchestration_json_path"] = result.orchestration_json_path
-    payload["retried_count"] = sum(stage.retry_count for stage in result.stage_results)
+    payload["retried_count"] = sum(1 for stage in result.stage_results if stage.retry_count > 0)
     payload["metadata"] = {
         "start_time": result.started_at,
         "end_time": result.ended_at,
@@ -61,6 +65,11 @@ def main() -> int:
         default=os.environ.get("ORCH_EXECUTION_MODE", "command"),
         help="执行模式",
     )
+    parser.add_argument(
+        "--project-root",
+        default=None,
+        help=argparse.SUPPRESS,
+    )
     args = parser.parse_args()
 
     result = analyze_stock_with_retry(
@@ -69,6 +78,7 @@ def main() -> int:
         max_retries=args.max_retries,
         timeout=args.timeout,
         execution_mode=args.execution_mode,
+        project_root=args.project_root,
     )
 
     print("=== 多Agent分析结果 ===")
