@@ -30,9 +30,12 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │       ├── .codex-plugin/plugin.json
 │       ├── assets/
 │       └── skills/
+│           ├── ai-infrastructure-scarcity-radar/
+│           ├── ai-infrastructure-sector-discovery/
 │           ├── fundamental-analysis/
 │           ├── institutional-accumulation-analysis/
 │           ├── gie-investment-framework/
+│           ├── non-consensus-company-discovery/
 │           ├── gold-trend-analysis/
 │           ├── reflexivity-quick-scan/
 │           ├── reflexivity-deep-analysis/
@@ -43,8 +46,11 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           └── market-data-router/
 ├── output/
 │   ├── fundamental-analysis/
+│   ├── ai-infrastructure-sector-discovery/
+│   ├── ai-infrastructure-scarcity-radar/
 │   ├── institutional-accumulation-analysis/
 │   ├── gie-investment-framework/
+│   ├── non-consensus-company-discovery/
 │   ├── gold-analysis/
 │   ├── reflexivity-quick-scan/
 │   ├── reflexivity-deep-analysis/
@@ -68,6 +74,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `.agents/plugins/marketplace.json` - repo-local plugin marketplace entry
 - `plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py` - multi-agent orchestration entrypoint
 - `plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py` - market data router entrypoint
+- `plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py` - non-consensus discovery report skeleton generator
 
 ## Build/Test Commands
 
@@ -85,6 +92,9 @@ python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.p
 
 # Generate a multi-agent Codex prompt plan
 python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
+
+# Generate a non-consensus company discovery report skeleton
+python plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py --theme "AI 数据中心电力"
 ```
 
 ## Skill Layout
@@ -101,9 +111,12 @@ skill-name/
 
 Active packaged skills:
 
+- `ai-infrastructure-sector-discovery` - weekly AI infrastructure sector discovery and scoring
+- `ai-infrastructure-scarcity-radar` - AI infrastructure scarcity opportunity and bottleneck analysis
 - `fundamental-analysis` - stock fundamental and technical analysis
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
 - `gie-investment-framework` - 1-3 year golden-shovel style investment framework
+- `non-consensus-company-discovery` - theme-to-company discovery for high-potential non-consensus opportunities
 - `gold-trend-analysis` - gold bubble risk and macro signal analysis
 - `reflexivity-quick-scan` - fast stage judgment with a Soros-style reflexivity lens
 - `reflexivity-deep-analysis` - full-cycle reflexivity research on stocks, sectors, and narratives
@@ -128,8 +141,11 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 ## Output Conventions
 
 - Fundamental analysis: `output/fundamental-analysis/{ticker}-{company-name}-{date}.md`
+- AI infrastructure sector discovery: `output/ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-{YYYY-MM-DD}.md`
+- AI infrastructure scarcity radar: `output/ai-infrastructure-scarcity-radar/ai-infrastructure-scarcity-radar-{topic}-{YYYY-MM-DD}.md`
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - GIE framework: `output/gie-investment-framework/gie-{title}-{date}.md`
+- Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`
 - Gold analysis: `output/gold-analysis/gold-{analysis-type}-{date}.md`
 - Reflexivity quick scan: `output/reflexivity-quick-scan/`
 - Reflexivity deep analysis: `output/reflexivity-deep-analysis/`

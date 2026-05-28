@@ -11,6 +11,7 @@
 | `fundamental-analysis` | 做单个股票的基本面 + 技术面综合分析 | 想快速看一家公司值不值得继续研究时 |
 | `institutional-accumulation-analysis` | 分析机构吸筹、派发和主力资金行为 | 想判断主力是在买入还是出货时 |
 | `gie-investment-framework` | 用 GIE 框架找 1-3 年有爆发潜力的“金铲子”资产 | 想找中期高弹性机会或分析产业链受益者时 |
+| `non-consensus-company-discovery` | 从主题或产业链中发现高潜力非共识公司，按 100 分模型筛出 Top 1-3 跟踪标的 | 想寻找市场仍按旧逻辑定价、但可能在 6-24 个月重估的公司时 |
 | `gold-trend-analysis` | 分析黄金趋势、泡沫风险和宏观驱动 | 研究黄金价格、泡沫风险或交易框架时 |
 | `reflexivity-quick-scan` | 快速判断一个股票/主题所处的反身性阶段 | 想先用 5 分钟判断叙事是启动、强化还是透支时 |
 | `reflexivity-deep-analysis` | 对股票、行业或主题做完整反身性深度研究 | 需要完整拆解叙事、资金、价格与现实验证时 |
@@ -39,6 +40,7 @@
 │           ├── fundamental-analysis/
 │           ├── institutional-accumulation-analysis/
 │           ├── gie-investment-framework/
+│           ├── non-consensus-company-discovery/
 │           ├── gold-trend-analysis/
 │           ├── reflexivity-quick-scan/
 │           ├── reflexivity-deep-analysis/
@@ -81,6 +83,7 @@ Examples:
 - `Use InvestFlow to generate a daily US market close report.`
 - `Use InvestFlow to fetch 5m market data for TSLA with market-data-router.`
 - `Use InvestFlow to evaluate whether NVIDIA is a GIE-style golden shovel asset.`
+- `使用 invest-flow:non-consensus-company-discovery 发现 AI 数据中心电力里的非共识公司`
 
 ## Environment Variables
 
@@ -107,6 +110,7 @@ You can also run the packaged scripts directly from the repo root:
 ```bash
 python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
 python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py --market US --symbol TSLA --interval 5m --types bars --out -
+python plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py --theme "AI 数据中心电力"
 ```
 
 The multi-agent script is a prompt-plan helper only. Recommended analysis usage is still the Codex prompt form: `使用 invest-flow:multi-agent-stock-analysis 分析 MRVL`.
@@ -120,6 +124,7 @@ Generated analysis files are written under `output/`:
 - `output/ai-infrastructure-scarcity-radar/`
 - `output/institutional-accumulation-analysis/`
 - `output/gie-investment-framework/`
+- `output/non-consensus-company-discovery/`
 - `output/gold-analysis/`
 - `output/reflexivity-quick-scan/`
 - `output/reflexivity-deep-analysis/`
