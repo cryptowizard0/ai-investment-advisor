@@ -9,6 +9,7 @@
 | `ai-infrastructure-sector-discovery` | 做 AI 基建板块周扫描、排序、打 `discovery_score` | 先找本周最值得深挖的 AI 基建方向时 |
 | `ai-infrastructure-scarcity-radar` | 深挖 AI 基建稀缺环节，判断是真短缺还是高景气 | 已经锁定某个 AI 基建板块，准备做 6-24 个月深挖时 |
 | `fundamental-analysis` | 做单个股票的基本面 + 技术面综合分析 | 想快速看一家公司值不值得继续研究时 |
+| `earnings-report-analysis` | 从机构视角解读财报、电话会、guidance 和预期差 | 想判断一份财报是否改变盈利预期、估值中枢和投资动作时 |
 | `institutional-accumulation-analysis` | 分析机构吸筹、派发和主力资金行为 | 想判断主力是在买入还是出货时 |
 | `gie-investment-framework` | 用 GIE 框架找 1-3 年有爆发潜力的“金铲子”资产 | 想找中期高弹性机会或分析产业链受益者时 |
 | `non-consensus-company-discovery` | 从主题或产业链中发现高潜力非共识公司，按 100 分模型筛出 Top 1-3 跟踪标的 | 想寻找市场仍按旧逻辑定价、但可能在 6-24 个月重估的公司时 |
@@ -38,6 +39,7 @@
 │           ├── ai-infrastructure-scarcity-radar/
 │           ├── ai-infrastructure-sector-discovery/
 │           ├── fundamental-analysis/
+│           ├── earnings-report-analysis/
 │           ├── institutional-accumulation-analysis/
 │           ├── gie-investment-framework/
 │           ├── non-consensus-company-discovery/
@@ -75,6 +77,7 @@ Examples:
 - `Use InvestFlow to run a multi-agent analysis for TSLA.`
 - `使用 invest-flow:multi-agent-stock-analysis 分析 MRVL`
 - `Use InvestFlow to analyze institutional accumulation in AAPL over the last 3 months.`
+- `使用 invest-flow:earnings-report-analysis 解读 NVDA 最新财报`
 - `Use InvestFlow to assess gold bubble risk this week.`
 - `Use InvestFlow to perform a reflexivity quick scan on NVIDIA.`
 - `Use InvestFlow to run a deep reflexivity analysis on AI power infrastructure.`
@@ -110,6 +113,7 @@ You can also run the packaged scripts directly from the repo root:
 ```bash
 python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
 python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py --market US --symbol TSLA --interval 5m --types bars --out -
+python plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py --ticker NVDA --company "NVIDIA" --period "FY2026 Q1"
 python plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py --theme "AI 数据中心电力"
 ```
 
@@ -120,6 +124,7 @@ The multi-agent script is a prompt-plan helper only. Recommended analysis usage 
 Generated analysis files are written under `output/`:
 
 - `output/fundamental-analysis/`
+- `output/earnings-report-analysis/`
 - `output/ai-infrastructure-sector-discovery/`
 - `output/ai-infrastructure-scarcity-radar/`
 - `output/institutional-accumulation-analysis/`
