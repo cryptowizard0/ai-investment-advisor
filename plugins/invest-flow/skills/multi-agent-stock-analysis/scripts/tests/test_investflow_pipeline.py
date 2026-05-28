@@ -453,6 +453,33 @@ class ComposerTests(unittest.TestCase):
         self.assertNotIn("/", summary_path.name)
         self.assertNotIn("/", json_path.name)
 
+    def test_compose_summary_includes_monitoring_signals(self):
+        from investflow_pipeline.composer import compose_summary
+        from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
+
+        result = self._pipeline_result(
+            [
+                StageResult(
+                    skill_name="fundamental-analysis",
+                    agent_name="fundamental",
+                    status=AnalysisStatus.SUCCESS,
+                    handoff=Handoff(
+                        monitoring_signals=[
+                            "毛利率连续两个季度改善",
+                            "订单增速跌破收入增速",
+                        ],
+                    ),
+                )
+            ],
+            status="success",
+        )
+
+        summary = compose_summary(result)
+
+        self.assertIn("## 后续跟踪信号", summary)
+        self.assertIn("毛利率连续两个季度改善", summary)
+        self.assertIn("订单增速跌破收入增速", summary)
+
 
 class RunnerTests(unittest.TestCase):
     def test_overall_status_prompt_plan_when_all_pending(self):

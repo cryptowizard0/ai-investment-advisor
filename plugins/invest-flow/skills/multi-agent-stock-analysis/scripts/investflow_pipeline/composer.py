@@ -81,6 +81,7 @@ def compose_summary(result: PipelineResult) -> str:
     risks: List[str] = []
     decisions: List[str] = []
     data_gaps: List[str] = []
+    monitoring_signals: List[str] = []
     subreports: List[str] = []
     for stage in success_results:
         evidence_items.extend(stage.handoff.key_evidence)
@@ -90,6 +91,7 @@ def compose_summary(result: PipelineResult) -> str:
             f"{stage.skill_name}: {stage.handoff.recommendation or '未提供建议'}"
         )
         data_gaps.extend(stage.handoff.data_gaps)
+        monitoring_signals.extend(stage.handoff.monitoring_signals)
         if stage.report_path:
             subreports.append(f"{stage.skill_name}: {stage.report_path}")
 
@@ -118,6 +120,7 @@ def compose_summary(result: PipelineResult) -> str:
         f"## 风险清单\n{_line_items(risks, '暂无新增风险信号')}\n\n"
         f"## 决策看板\n{_line_items(decisions, '暂无可执行建议')}\n\n"
         f"## 数据缺口与失败阶段说明\n{_line_items(data_gaps, '无明显数据缺口')}\n\n"
+        f"## 后续跟踪信号\n{_line_items(monitoring_signals, '暂无后续跟踪信号')}\n\n"
         f"## 子报告索引\n{_line_items(subreports, '暂无子报告路径')}\n\n"
         f"## 投资免责声明\n"
         f"- 本报告仅用于研究与教育目的，不构成任何投资建议。\n"
