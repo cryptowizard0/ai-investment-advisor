@@ -1,146 +1,109 @@
 # InvestFlow
 
-`InvestFlow` is a repo-local Codex plugin for investment research workflows. The repository now treats the plugin package under `plugins/invest-flow/` as the canonical source for all investment skills.
+[Chinese version](README.zh-CN.md)
 
-## Included Skills
+InvestFlow is a repo-local Codex plugin for investment research. It bundles reusable skills for market scans, industry-chain research, non-consensus discovery, single-stock analysis, earnings review, reflexivity analysis, and routed market data.
 
-| Skill | 做什么 | 什么时候用 |
-|---|---|---|
-| `ai-infrastructure-sector-discovery` | 做 AI 基建板块周扫描、排序、打 `discovery_score` | 先找本周最值得深挖的 AI 基建方向时 |
-| `ai-infrastructure-scarcity-radar` | 深挖 AI 基建稀缺环节，判断是真短缺还是高景气 | 已经锁定某个 AI 基建板块，准备做 6-24 个月深挖时 |
-| `fundamental-analysis` | 做单个股票的基本面 + 技术面综合分析 | 想快速看一家公司值不值得继续研究时 |
-| `earnings-report-analysis` | 从机构视角解读财报、电话会、guidance 和预期差 | 想判断一份财报是否改变盈利预期、估值中枢和投资动作时 |
-| `institutional-accumulation-analysis` | 分析机构吸筹、派发和主力资金行为 | 想判断主力是在买入还是出货时 |
-| `gie-investment-framework` | 用 GIE 框架找 1-3 年有爆发潜力的“金铲子”资产 | 想找中期高弹性机会或分析产业链受益者时 |
-| `non-consensus-company-discovery` | 从主题或产业链中发现高潜力非共识公司，按 100 分模型筛出 Top 1-3 跟踪标的 | 想寻找市场仍按旧逻辑定价、但可能在 6-24 个月重估的公司时 |
-| `gold-trend-analysis` | 分析黄金趋势、泡沫风险和宏观驱动 | 研究黄金价格、泡沫风险或交易框架时 |
-| `reflexivity-quick-scan` | 快速判断一个股票/主题所处的反身性阶段 | 想先用 5 分钟判断叙事是启动、强化还是透支时 |
-| `reflexivity-deep-analysis` | 对股票、行业或主题做完整反身性深度研究 | 需要完整拆解叙事、资金、价格与现实验证时 |
-| `professional-investment-analyst` | 生成买方视角的专业个股研究报告 | 需要正式、可跟踪、可复盘的单公司深度报告时 |
-| `reportify-stock-analysis` | 按统一模板生成结构化个股报告 | 想稳定输出标准化投研报告时 |
-| `daily-us-market-scan` | 生成中文《美股收盘日报》与日常复盘 | 每日复盘昨夜美股、板块、异动和次日计划时 |
-| `multi-agent-stock-analysis` | 在 Codex 当前会话中编排基本面、机构资金、GIE、反身性、Reportify、非共识等分析并汇总结论 | 想一次拿到多维度交叉验证结果时 |
-| `market-data-router` | 路由和兜底金融数据源，获取行情/订单簿/期权数据 | 需要稳定抓取市场数据给其他分析流程使用时 |
+The canonical plugin package lives in `plugins/invest-flow/`. Packaged skills live in `plugins/invest-flow/skills/`.
 
-## Current Structure
-
-```text
-.
-├── AGENTS.md
-├── README.md
-├── .agents/
-│   └── plugins/
-│       └── marketplace.json
-├── plugins/
-│   └── invest-flow/
-│       ├── .codex-plugin/plugin.json
-│       ├── assets/
-│       └── skills/
-│           ├── ai-infrastructure-scarcity-radar/
-│           ├── ai-infrastructure-sector-discovery/
-│           ├── fundamental-analysis/
-│           ├── earnings-report-analysis/
-│           ├── institutional-accumulation-analysis/
-│           ├── gie-investment-framework/
-│           ├── non-consensus-company-discovery/
-│           ├── gold-trend-analysis/
-│           ├── reflexivity-quick-scan/
-│           ├── reflexivity-deep-analysis/
-│           ├── professional-investment-analyst/
-│           ├── reportify-stock-analysis/
-│           ├── daily-us-market-scan/
-│           ├── multi-agent-stock-analysis/
-│           └── market-data-router/
-└── output/
-```
-
-## Plugin Location
-
-- Plugin root: `plugins/invest-flow`
-- Plugin manifest: `plugins/invest-flow/.codex-plugin/plugin.json`
-- Repo marketplace: `.agents/plugins/marketplace.json`
-
-## Install In Codex
+## Quick Start
 
 1. Open this repository in Codex.
 2. Reload Codex so it reads `.agents/plugins/marketplace.json`.
-3. Open the plugin marketplace and install `InvestFlow`.
-
-If `InvestFlow` does not appear, verify that `plugins/invest-flow/.codex-plugin/plugin.json` and `.agents/plugins/marketplace.json` both exist and contain valid JSON.
-
-## Use In Codex
-
-After installation, call the packaged skills directly through normal prompts.
+3. Install `InvestFlow` from the local plugin marketplace.
+4. Use the skills directly in Codex prompts.
 
 Examples:
 
-- `Use InvestFlow to run a multi-agent analysis for TSLA.`
-- `使用 invest-flow:multi-agent-stock-analysis 分析 MRVL`
-- `Use InvestFlow to analyze institutional accumulation in AAPL over the last 3 months.`
-- `使用 invest-flow:earnings-report-analysis 解读 NVDA 最新财报`
-- `Use InvestFlow to assess gold bubble risk this week.`
-- `Use InvestFlow to perform a reflexivity quick scan on NVIDIA.`
-- `Use InvestFlow to run a deep reflexivity analysis on AI power infrastructure.`
-- `Use InvestFlow to build a professional investment analyst report for TSLA.`
-- `Use InvestFlow to generate a structured stock report for TSLA.`
-- `Use InvestFlow to generate a daily US market close report.`
-- `Use InvestFlow to fetch 5m market data for TSLA with market-data-router.`
-- `Use InvestFlow to evaluate whether NVIDIA is a GIE-style golden shovel asset.`
-- `使用 invest-flow:non-consensus-company-discovery 发现 AI 数据中心电力里的非共识公司`
-
-## Environment Variables
-
-If you want `market-data-router` to use external market data providers, create a local `.env` from `.env_example`:
-
-```bash
-cp .env_example .env
+```text
+Use InvestFlow to run a multi-agent analysis for TSLA.
+Use InvestFlow to scan the US market close today.
+Use InvestFlow to find non-consensus companies in AI data center power.
+Use InvestFlow to analyze the HBM industry chain.
 ```
 
-Current template variables:
+If the plugin does not appear, confirm these files exist:
 
-- `POLYGON_API_KEY` - Polygon API key for US options and dark-pool related data
-- `ALLTICK_API_KEY` - AllTick API key for routed quote/bar data
-- `YAHOO_ENABLED` - enable Yahoo fallback when routed sources are unavailable
-- `ALLTICK_BASE_URL` - AllTick API base URL
-- `POLYGON_BASE_URL` - Polygon API base URL
+- `plugins/invest-flow/.codex-plugin/plugin.json`
+- `.agents/plugins/marketplace.json`
 
-The packaged scripts search for `.env` automatically from the current working directory upward, so placing `.env` in the repo root is sufficient.
+## Recommended Workflows
 
-## Direct Script Usage
+| Goal | Recommended flow |
+|---|---|
+| Find AI infrastructure opportunities | Start with `ai-infrastructure-sector-discovery`, then use `ai-infrastructure-scarcity-radar` on the strongest scarcity theme. |
+| Map a sector and find non-consensus names | Start with `industry-chain-analysis`, then use `non-consensus-company-discovery` on the most interesting bottleneck or module. |
+| Run daily market review | Use `daily-us-market-scan` after the US close. |
+| Track narrative and reflexivity risk | Use `reflexivity-quick-scan` regularly; upgrade to `reflexivity-deep-analysis` when the stage changes or the position is material. |
+| Research one stock quickly | Use `multi-agent-stock-analysis` for cross-checking across fundamentals, flows, GIE, reflexivity, Reportify, and non-consensus views. |
+| Review earnings | Use `earnings-report-analysis` after a company reports, then update the single-stock thesis if guidance or expectations changed. |
+| Produce a formal stock report | Use `professional-investment-analyst` for a buy-side style report, or `reportify-stock-analysis` for a standardized structured report. |
+| Pull market data | Use `market-data-router` when another workflow needs bars, quote data, options context, or cached market data. |
 
-You can also run the packaged scripts directly from the repo root:
+## Skill List
 
-```bash
-python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
-python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py --market US --symbol TSLA --interval 5m --types bars --out -
-python plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py --ticker NVDA --company "NVIDIA" --period "FY2026 Q1"
-python plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py --theme "AI 数据中心电力"
+| Skill | Purpose | Use when |
+|---|---|---|
+| `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring. | You want to identify the best AI infrastructure themes to research next. |
+| `ai-infrastructure-scarcity-radar` | Deep scarcity and bottleneck analysis for AI infrastructure. | You already have a theme and need to judge whether scarcity is real and investable. |
+| `daily-us-market-scan` | Chinese US market close report and next-session review. | You want a daily read on indices, sectors, themes, breadth, earnings, and watchlists. |
+| `earnings-report-analysis` | Institutional earnings, guidance, call, and expectation-gap analysis. | A company has reported and you need to know whether the thesis changed. |
+| `fundamental-analysis` | Single-stock fundamental, valuation, and technical analysis. | You need a fast but structured view of a company. |
+| `gie-investment-framework` | GIE framework for 1-3 year golden-shovel opportunities. | You want to test whether a company or industry benefits from durable bottlenecks. |
+| `gold-trend-analysis` | Gold trend, bubble-risk, and macro-driver analysis. | You are researching gold prices, macro risk, or a gold trading framework. |
+| `industry-chain-analysis` | Two-layer industry-chain and bottleneck mapping. | You need to understand upstream, midstream, downstream, and module-level constraints. |
+| `institutional-accumulation-analysis` | Institutional accumulation and distribution analysis. | You want to judge whether major players are buying, distributing, or hedging. |
+| `market-data-router` | Routed market-data fetching and fallback logic. | You need bars, quote data, options context, or cached market data for analysis. |
+| `multi-agent-stock-analysis` | Codex-native orchestration across multiple stock-analysis skills. | You want one stock analyzed from several independent angles. |
+| `non-consensus-company-discovery` | Theme-to-company discovery for high-potential non-consensus opportunities. | You want names the market may still value using the wrong framework. |
+| `professional-investment-analyst` | Buy-side style company research system. | You need a formal, trackable, evidence-based stock report. |
+| `reflexivity-deep-analysis` | Full reflexivity-cycle analysis for a stock, sector, asset, or narrative. | You need to map narrative, price, reality, marginal change, and reversal risk. |
+| `reflexivity-quick-scan` | Fast reflexivity stage check. | You need a quick read on whether a narrative is starting, strengthening, exhausted, or reversing. |
+| `reportify-stock-analysis` | Standardized structured stock report. | You need a repeatable report format for facts, interpretation, decision, and risk. |
+
+## Use Skills In Agent
+
+Use InvestFlow through natural-language prompts in the Codex agent. Prefer skill names when you want a specific workflow:
+
+```text
+Use invest-flow:multi-agent-stock-analysis to analyze TSLA.
+Use invest-flow:daily-us-market-scan to scan today's US market close.
+Use invest-flow:industry-chain-analysis to map the HBM industry chain.
+Use invest-flow:non-consensus-company-discovery to find non-consensus opportunities in AI data center power.
+Use invest-flow:reflexivity-quick-scan to check NVIDIA's current narrative stage.
+Use invest-flow:earnings-report-analysis to analyze NVIDIA's latest earnings.
 ```
 
-The multi-agent script is a prompt-plan helper only. Recommended analysis usage is still the Codex prompt form: `使用 invest-flow:multi-agent-stock-analysis 分析 MRVL`.
+For provider-backed market data, create a local `.env` from `.env_example` and add the relevant API keys.
 
 ## Output Paths
 
-Generated analysis files are written under `output/`:
+Generated reports and cache files are written under `output/`:
 
-- `output/fundamental-analysis/`
-- `output/earnings-report-analysis/`
-- `output/ai-infrastructure-sector-discovery/`
-- `output/ai-infrastructure-scarcity-radar/`
-- `output/institutional-accumulation-analysis/`
-- `output/gie-investment-framework/`
-- `output/non-consensus-company-discovery/`
-- `output/gold-analysis/`
-- `output/reflexivity-quick-scan/`
-- `output/reflexivity-deep-analysis/`
-- `output/professional-investment-analyst/`
-- `output/reportify-stock-analysis/`
-- `output/daily-us-market-scan/`
-- `output/summary/`
-- `output/cache/market-data/`
+| Workflow | Output path |
+|---|---|
+| Fundamental analysis | `output/fundamental-analysis/` |
+| Earnings report analysis | `output/earnings-report-analysis/` |
+| AI infrastructure sector discovery | `output/ai-infrastructure-sector-discovery/` |
+| AI infrastructure scarcity radar | `output/ai-infrastructure-scarcity-radar/` |
+| Industry-chain analysis | `output/industry-chain-analysis/` |
+| Institutional analysis | `output/institutional-accumulation-analysis/` |
+| GIE framework | `output/gie-investment-framework/` |
+| Non-consensus company discovery | `output/non-consensus-company-discovery/` |
+| Gold analysis | `output/gold-analysis/` |
+| Reflexivity quick scan | `output/reflexivity-quick-scan/` |
+| Reflexivity deep analysis | `output/reflexivity-deep-analysis/` |
+| Professional investment analyst | `output/professional-investment-analyst/` |
+| Reportify stock analysis | `output/reportify-stock-analysis/` |
+| Daily US market scan | `output/daily-us-market-scan/` |
+| Multi-agent summaries | `output/summary/` |
+| Market data cache | `output/cache/market-data/` |
 
-## Notes
+Existing files should not be overwritten. Skills append suffixes such as `(1)` and `(2)` when needed.
 
-- This is a repo-local plugin, not a published remote marketplace plugin.
-- Investment skills are maintained only inside `plugins/invest-flow/skills/`.
-- `.agents/plugins/marketplace.json` is the only remaining repo-local `.agents` asset needed for plugin discovery.
+## Maintenance Notes
+
+- This is a repo-local plugin, not a remote marketplace package.
+- Keep investment skills under `plugins/invest-flow/skills/`.
+- Keep plugin discovery metadata in `.agents/plugins/marketplace.json`.
+- Keep README skill names aligned with the directories under `plugins/invest-flow/skills/`.
