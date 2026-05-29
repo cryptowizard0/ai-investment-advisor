@@ -19,7 +19,7 @@
 | `professional-investment-analyst` | 生成买方视角的专业个股研究报告 | 需要正式、可跟踪、可复盘的单公司深度报告时 |
 | `reportify-stock-analysis` | 按统一模板生成结构化个股报告 | 想稳定输出标准化投研报告时 |
 | `daily-us-market-scan` | 生成中文《美股收盘日报》与日常复盘 | 每日复盘昨夜美股、板块、异动和次日计划时 |
-| `multi-agent-stock-analysis` | 在 Codex 当前会话中编排多个分析 skill 并汇总结论 | 想一次拿到多维度交叉验证结果时 |
+| `multi-agent-stock-analysis` | 在 Codex 当前会话中编排基本面、机构资金、GIE、反身性、Reportify、非共识等分析并汇总结论 | 想一次拿到多维度交叉验证结果时 |
 | `market-data-router` | 路由和兜底金融数据源，获取行情/订单簿/期权数据 | 需要稳定抓取市场数据给其他分析流程使用时 |
 
 ## Current Structure

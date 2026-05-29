@@ -20,6 +20,9 @@ class SkillRegistry:
             self.get("fundamental-analysis"),
             self.get("institutional-accumulation-analysis"),
             self.get("gie-investment-framework"),
+            self.get("reflexivity-deep-analysis"),
+            self.get("reportify-stock-analysis"),
+            self.get("non-consensus-company-discovery"),
         ]
 
 
@@ -123,6 +126,14 @@ def build_registry() -> SkillRegistry:
             stage="decision_report",
             prompt_template="使用 invest-flow:reportify-stock-analysis 分析 {ticker}",
             output_dir="output/reportify-stock-analysis",
+            required=False,
+        ),
+        _spec(
+            skill_name="non-consensus-company-discovery",
+            agent_name="non_consensus",
+            stage="thesis_challenge",
+            prompt_template="使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会",
+            output_dir="output/non-consensus-company-discovery",
             required=False,
         ),
     ]

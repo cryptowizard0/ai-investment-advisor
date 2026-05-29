@@ -46,13 +46,16 @@ SkillSpec(
 )
 ```
 
-`stock_decision_basic` 默认三件套：
+`stock_decision_basic` 默认六维度：
 
 | agent_name | skill_name | prompt_template | required |
 | --- | --- | --- | --- |
 | fundamental | fundamental-analysis | 使用 invest-flow:fundamental-analysis 分析 {ticker} | true |
 | institutional | institutional-accumulation-analysis | 使用 invest-flow:institutional-accumulation-analysis 分析 {ticker} | false |
 | gie | gie-investment-framework | 使用 invest-flow:gie-investment-framework 分析 {ticker} / {company} | true |
+| reflexivity_deep | reflexivity-deep-analysis | 使用 invest-flow:reflexivity-deep-analysis 分析 {ticker} | false |
+| reportify | reportify-stock-analysis | 使用 invest-flow:reportify-stock-analysis 分析 {ticker} | false |
+| non_consensus | non-consensus-company-discovery | 使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会 | false |
 
 ## StageResult
 

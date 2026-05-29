@@ -138,7 +138,7 @@ Active packaged skills:
 `multi-agent-stock-analysis` is implemented by the packaged orchestrator script, not by separate legacy agent-definition files. The current orchestrator:
 
 - resolves the repo root dynamically
-- generates three Codex skill prompts for the basic stock-analysis workflow
+- generates six Codex skill prompts for the basic stock-analysis workflow: fundamental, institutional, GIE, reflexivity deep, reportify, and non-consensus
 - writes a prompt plan Markdown file and orchestration JSON
 - does not execute child skills or launch another agent process
 - supports summary composition from already completed handoff data

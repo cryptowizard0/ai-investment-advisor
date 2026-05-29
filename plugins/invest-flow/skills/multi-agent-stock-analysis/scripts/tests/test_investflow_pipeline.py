@@ -136,6 +136,9 @@ class RegistryTests(unittest.TestCase):
                 "fundamental-analysis",
                 "institutional-accumulation-analysis",
                 "gie-investment-framework",
+                "reflexivity-deep-analysis",
+                "reportify-stock-analysis",
+                "non-consensus-company-discovery",
             ],
         )
         for spec in specs:
@@ -150,11 +153,21 @@ class RegistryTests(unittest.TestCase):
 
         self.assertEqual(
             [spec.agent_name for spec in specs],
-            ["fundamental", "institutional", "gie"],
+            [
+                "fundamental",
+                "institutional",
+                "gie",
+                "reflexivity_deep",
+                "reportify",
+                "non_consensus",
+            ],
         )
         self.assertTrue(specs[0].required)
         self.assertFalse(specs[1].required)
         self.assertTrue(specs[2].required)
+        self.assertFalse(specs[3].required)
+        self.assertFalse(specs[4].required)
+        self.assertFalse(specs[5].required)
 
     def test_gie_prompt_includes_company_fallback_slot(self):
         from investflow_pipeline.registry import build_registry
@@ -164,6 +177,18 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(
             spec.prompt_template,
             "使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}",
+        )
+
+    def test_non_consensus_prompt_evaluates_single_stock_revaluation_thesis(self):
+        from investflow_pipeline.registry import build_registry
+
+        spec = build_registry().get("non-consensus-company-discovery")
+
+        self.assertEqual(spec.agent_name, "non_consensus")
+        self.assertEqual(spec.stage, "thesis_challenge")
+        self.assertEqual(
+            spec.prompt_template,
+            "使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会",
         )
 
 
@@ -193,7 +218,7 @@ class PlannerTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "invalid ticker"):
                     create_stock_request(ticker)
 
-    def test_basic_plan_uses_three_prompt_specs(self):
+    def test_basic_plan_uses_six_prompt_specs(self):
         from investflow_pipeline.planner import create_stock_request, plan_basic_stock_analysis
         from investflow_pipeline.registry import build_registry
 
@@ -202,7 +227,14 @@ class PlannerTests(unittest.TestCase):
 
         self.assertEqual(
             [spec.agent_name for spec in specs],
-            ["fundamental", "institutional", "gie"],
+            [
+                "fundamental",
+                "institutional",
+                "gie",
+                "reflexivity_deep",
+                "reportify",
+                "non_consensus",
+            ],
         )
 
     def test_basic_plan_rejects_non_basic_intent(self):
@@ -535,7 +567,7 @@ class RunnerTests(unittest.TestCase):
             self.assertTrue(json_path.exists())
 
             self.assertEqual(result.status, "prompt_plan")
-            self.assertEqual(len(result.stage_results), 3)
+            self.assertEqual(len(result.stage_results), 6)
             self.assertTrue(all(stage.prompt for stage in result.stage_results))
             self.assertIsNone(result.summary_report_path)
             self.assertEqual(result.failed_required, [])
@@ -555,7 +587,7 @@ class RunnerTests(unittest.TestCase):
             )
 
         self.assertEqual(result.status, "prompt_plan")
-        self.assertEqual(len(result.stage_results), 3)
+        self.assertEqual(len(result.stage_results), 6)
 
     def test_analyze_stock_rejects_deprecated_execution_mode(self):
         from investflow_pipeline.models import OrchestrationConfig
@@ -594,9 +626,9 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
             self.assertTrue(Path(result["prompt_plan_path"]).exists())
 
         self.assertEqual(result["status"], "prompt_plan")
-        self.assertEqual(result["total_count"], 3)
+        self.assertEqual(result["total_count"], 6)
         self.assertEqual(result["completed_count"], 0)
-        self.assertEqual(result["pending_count"], 3)
+        self.assertEqual(result["pending_count"], 6)
         self.assertTrue(result["prompt_plan_path"])
         prompts = [stage["prompt"] for stage in result["stage_results"]]
         self.assertEqual(prompts[0], "使用 invest-flow:fundamental-analysis 分析 MRVL")
@@ -607,6 +639,12 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
         self.assertEqual(
             prompts[2],
             "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology",
+        )
+        self.assertEqual(prompts[3], "使用 invest-flow:reflexivity-deep-analysis 分析 MRVL")
+        self.assertEqual(prompts[4], "使用 invest-flow:reportify-stock-analysis 分析 MRVL")
+        self.assertEqual(
+            prompts[5],
+            "使用 invest-flow:non-consensus-company-discovery 评估 MRVL / Marvell Technology 的非共识重估机会",
         )
 
     def test_orchestrator_cli_prints_prompt_plan_and_returns_zero(self):
