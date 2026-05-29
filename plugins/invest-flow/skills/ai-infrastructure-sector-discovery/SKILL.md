@@ -1,0 +1,89 @@
+---
+name: ai-infrastructure-sector-discovery
+description: "Use when discovering, ranking, or weekly-scanning AI infrastructure sectors before deeper scarcity analysis. Use for AI infrastructure sector candidate pools, quantifiable sector indicators, discovery scores, threshold-based screening, and handoff queues for ai-infrastructure-scarcity-radar."
+---
+
+# AI 基建板块发现
+
+## Overview
+
+本 skill 是 `/ai-infrastructure-scarcity-radar` 的前序，用于每周扫描 AI 基建候选板块，回答“这一周最值得研究哪些板块”。它不做公司深度研究，也不直接给买卖建议；它只输出可量化板块指标、`discovery_score`、触发阈值和后续 radar 深挖命令。
+
+默认输出目录：`./output/ai-infrastructure-sector-discovery/`
+
+## Trigger
+
+在对话中使用：
+- `/ai-infrastructure-sector-discovery`
+- `/ai-infrastructure-sector-discovery 本周 AI 基建板块扫描`
+- `每周扫描 AI 基建板块`
+- `找下周最值得深挖的 AI 基建方向`
+- `只看液冷、电力、光互联三类，做板块发现`
+
+## Workflow
+
+### 1) 确定扫描范围
+- 若用户没有指定范围，默认扫描 `references/sector-taxonomy.md` 的固定种子板块。
+- 同时允许从最新 AI 架构、产品路线图、订单、财报、产能、价格和行业新闻中动态新增候选板块。
+- 若用户指定板块范围，只扫描指定板块，但仍使用同一指标体系。
+
+### 2) 收集可量化指标
+- 涉及 capex、订单、backlog、收入、毛利率、估值、股价、lead time、ASP、产能、良率、客户认证和产品路线图时，必须查询最新公开来源。
+- 优先使用公司财报、Investor Relations、earnings call transcript、交易所公告、hyperscaler capex、供应商订单、权威行业数据和可信新闻。
+- 每个关键指标必须带来源和日期；无法确认时标记 `数据暂缺`，不得主观补分。
+
+### 3) 评分与排序
+读取 `references/methodology.md`，为每个板块计算 `discovery_score`，满分 100：
+
+| 模块 | 权重 |
+|------|------|
+| 架构变化强度 | 15 |
+| 需求动量 | 20 |
+| 单位用量弹性 | 15 |
+| 供给约束 | 20 |
+| 财务兑现 | 15 |
+| 预期差 | 15 |
+| 风险扣分 | -10 |
+
+分类规则：
+- `>= 80`：优先交给 scarcity radar 深挖。
+- `70-79`：进入 radar 队列，若证据置信度中高则深挖。
+- `55-69`：观察池，下周复核。
+- `<55`：暂不深挖，除非出现强订单、价格、交期或财报异常。
+
+### 4) 生成 radar handoff queue
+- 所有 `discovery_score >= 70` 的板块进入 handoff queue。
+- 每个进入队列的板块必须给出后续命令，例如：
+  - `/ai-infrastructure-scarcity-radar CPO 光互联`
+  - `/ai-infrastructure-scarcity-radar AI 数据中心变压器`
+  - `/ai-infrastructure-scarcity-radar 液冷 CDU`
+- 每个命令旁必须列出触发阈值和核心证据。
+
+### 5) 输出并保存周报
+- 使用 `references/report-template.md` 的结构输出中文 Markdown 周报。
+- 输出目录：`./output/ai-infrastructure-sector-discovery/`
+- 文件名：`ai-infrastructure-sector-discovery-{YYYY-MM-DD}.md`
+- 若文件已存在，不要覆盖；追加 `(1)`, `(2)`, `(3)`。
+- 所有输出报告必须包含固定作者字段：`InvestmentFlow`。
+
+## Quality Rules
+
+- 使用中文；财务、技术和市场术语可保留 English。
+- 不得只按热点、涨幅或社交媒体热度排序。
+- 必须用指标、阈值、证据日期和来源支撑每个板块的分数。
+- 必须标记 `数据暂缺`，不能用主观判断补齐缺失数据。
+- 必须区分“新增动态板块”和“固定种子板块”。
+- 必须输出变化方向：上升 / 持平 / 下降 / 新增。
+- 必须输出证据置信度：低 / 中 / 高。
+- 只做板块发现和排序；公司深研交给 `ai-infrastructure-scarcity-radar`、`professional-investment-analyst` 或 `gie-investment-framework`。
+
+## Resources
+
+### references/sector-taxonomy.md
+固定种子板块池，以及每个板块默认应跟踪的量化指标。
+
+### references/methodology.md
+板块发现评分模型、动态新增规则、阈值规则和 radar handoff 规则。
+
+### references/report-template.md
+每周 AI 基建板块发现中文 Markdown 周报模板。

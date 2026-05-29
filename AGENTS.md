@@ -9,7 +9,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 ## Technology Stack
 
 - **Python**: 3.12.10 (virtual environment at `.venv/`)
-- **Node.js**: Codex/OpenCode runtime environment
+- **Node.js**: Codex runtime environment
 - **Key Python Libraries**:
   - `yfinance`
   - `pandas`
@@ -30,23 +30,35 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │       ├── .codex-plugin/plugin.json
 │       ├── assets/
 │       └── skills/
+│           ├── ai-infrastructure-scarcity-radar/
+│           ├── ai-infrastructure-sector-discovery/
 │           ├── fundamental-analysis/
+│           ├── earnings-report-analysis/
 │           ├── institutional-accumulation-analysis/
 │           ├── gie-investment-framework/
+│           ├── non-consensus-company-discovery/
 │           ├── gold-trend-analysis/
 │           ├── reflexivity-quick-scan/
 │           ├── reflexivity-deep-analysis/
+│           ├── professional-investment-analyst/
 │           ├── reportify-stock-analysis/
+│           ├── daily-us-market-scan/
 │           ├── multi-agent-stock-analysis/
 │           └── market-data-router/
 ├── output/
 │   ├── fundamental-analysis/
+│   ├── earnings-report-analysis/
+│   ├── ai-infrastructure-sector-discovery/
+│   ├── ai-infrastructure-scarcity-radar/
 │   ├── institutional-accumulation-analysis/
 │   ├── gie-investment-framework/
+│   ├── non-consensus-company-discovery/
 │   ├── gold-analysis/
 │   ├── reflexivity-quick-scan/
 │   ├── reflexivity-deep-analysis/
+│   ├── professional-investment-analyst/
 │   ├── reportify-stock-analysis/
+│   ├── daily-us-market-scan/
 │   ├── summary/
 │   └── cache/market-data/
 └── .venv/
@@ -64,6 +76,8 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `.agents/plugins/marketplace.json` - repo-local plugin marketplace entry
 - `plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py` - multi-agent orchestration entrypoint
 - `plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py` - market data router entrypoint
+- `plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py` - earnings report analysis skeleton generator
+- `plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py` - non-consensus discovery report skeleton generator
 
 ## Build/Test Commands
 
@@ -79,8 +93,14 @@ python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrato
 # Check market data router CLI
 python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py --help
 
-# Run multi-agent analysis
-python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --execution-mode command
+# Generate a multi-agent Codex prompt plan
+python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
+
+# Generate a non-consensus company discovery report skeleton
+python plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py --theme "AI 数据中心电力"
+
+# Generate an earnings report analysis skeleton
+python plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py --ticker NVDA --company "NVIDIA" --period "FY2026 Q1"
 ```
 
 ## Skill Layout
@@ -97,13 +117,19 @@ skill-name/
 
 Active packaged skills:
 
+- `ai-infrastructure-sector-discovery` - weekly AI infrastructure sector discovery and scoring
+- `ai-infrastructure-scarcity-radar` - AI infrastructure scarcity opportunity and bottleneck analysis
 - `fundamental-analysis` - stock fundamental and technical analysis
+- `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
 - `gie-investment-framework` - 1-3 year golden-shovel style investment framework
+- `non-consensus-company-discovery` - theme-to-company discovery for high-potential non-consensus opportunities
 - `gold-trend-analysis` - gold bubble risk and macro signal analysis
 - `reflexivity-quick-scan` - fast stage judgment with a Soros-style reflexivity lens
 - `reflexivity-deep-analysis` - full-cycle reflexivity research on stocks, sectors, and narratives
+- `professional-investment-analyst` - professional investment research system with evidence, valuation, reflexivity, decision, and tracking dashboard
 - `reportify-stock-analysis` - fixed-template structured stock research report generation
+- `daily-us-market-scan` - Chinese daily US market close scan covering indices, macro, sectors, themes, breadth, technicals, earnings, flows, watchlists, and next-session plans
 - `multi-agent-stock-analysis` - orchestration across multiple analysis skills
 - `market-data-router` - routed market data fetch and fallback logic
 
@@ -112,20 +138,28 @@ Active packaged skills:
 `multi-agent-stock-analysis` is implemented by the packaged orchestrator script, not by separate legacy agent-definition files. The current orchestrator:
 
 - resolves the repo root dynamically
-- executes three skill commands directly
-- validates each result
-- retries once on empty output, timeout, or exception
-- aggregates partial success into a final summary flow
+- generates six Codex skill prompts for the basic stock-analysis workflow: fundamental, institutional, GIE, reflexivity deep, reportify, and non-consensus
+- writes a prompt plan Markdown file and orchestration JSON
+- does not execute child skills or launch another agent process
+- supports summary composition from already completed handoff data
+
+Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 分析 MRVL` in Codex. Codex then executes the child skill prompts in the current session and writes the final Chinese report.
 
 ## Output Conventions
 
 - Fundamental analysis: `output/fundamental-analysis/{ticker}-{company-name}-{date}.md`
+- Earnings report analysis: `output/earnings-report-analysis/earnings-report-analysis-{TICKER}-{period}-{YYYY-MM-DD}.md`
+- AI infrastructure sector discovery: `output/ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-{YYYY-MM-DD}.md`
+- AI infrastructure scarcity radar: `output/ai-infrastructure-scarcity-radar/ai-infrastructure-scarcity-radar-{topic}-{YYYY-MM-DD}.md`
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - GIE framework: `output/gie-investment-framework/gie-{title}-{date}.md`
+- Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`
 - Gold analysis: `output/gold-analysis/gold-{analysis-type}-{date}.md`
 - Reflexivity quick scan: `output/reflexivity-quick-scan/`
 - Reflexivity deep analysis: `output/reflexivity-deep-analysis/`
+- Professional investment analyst: `output/professional-investment-analyst/professional-investment-analyst-{TICKER}-{YYYY-MM-DD}.md`
 - Reportify stock analysis: `output/reportify-stock-analysis/reportify-stock-analysis-{TICKER}-{YYYY-MM-DD}.md`
+- Daily US market scan: `output/daily-us-market-scan/us-market-close-daily-{YYYY-MM-DD}.md`
 - Summary report: `output/summary/综合分析-{TICKER}-{date}.md`
 - Market data cache: `output/cache/market-data/`
 

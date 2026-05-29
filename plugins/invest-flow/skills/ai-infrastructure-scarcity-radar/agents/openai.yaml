@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Infrastructure Scarcity Radar"
+  short_description: "Finds early AI infrastructure scarcity opportunities"
+  default_prompt: "Use $ai-infrastructure-scarcity-radar to analyze CPO optical interconnect opportunities."

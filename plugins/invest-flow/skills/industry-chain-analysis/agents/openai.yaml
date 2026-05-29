@@ -1,0 +1,4 @@
+interface:
+  display_name: "Industry Chain Analysis"
+  short_description: "Maps industry chains in two layers and identifies bottlenecks"
+  default_prompt: "Use $industry-chain-analysis to analyze the AI industry chain down to module-level bottlenecks."
