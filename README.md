@@ -1,6 +1,6 @@
 # InvestFlow
 
-[Chinese version](README.zh-CN.md)
+[中文文档](README.zh-CN.md)
 
 InvestFlow is a repo-local Codex plugin for investment research. It bundles reusable skills for market scans, industry-chain research, non-consensus discovery, single-stock analysis, earnings review, reflexivity analysis, and routed market data.
 
