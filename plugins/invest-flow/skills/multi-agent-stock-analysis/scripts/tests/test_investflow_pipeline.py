@@ -477,6 +477,24 @@ AI 数据中心芯片和互连基础设施上游供应商。
         self.assertIn("缺少最新分部收入", handoff.data_gaps)
         self.assertNotIn("company_profile.one_liner missing", handoff.data_gaps)
 
+    def test_extract_handoff_requires_actual_company_profile_heading(self):
+        from investflow_pipeline.extractors import extract_handoff
+
+        markdown = """
+# TSLA 基本面分析报告
+
+## 核心结论
+模板示例可能写成 `## 一页式公司画像`，但这不是当前报告的真实标题。
+
+## 数据缺口
+- 缺少最新分部收入
+"""
+        handoff = extract_handoff(markdown)
+
+        self.assertIsNone(handoff.company_profile)
+        self.assertIn("缺少最新分部收入", handoff.data_gaps)
+        self.assertNotIn("company_profile.one_liner missing", handoff.data_gaps)
+
 
 class ExecutorTests(unittest.TestCase):
     def test_validate_rejects_short_output(self):

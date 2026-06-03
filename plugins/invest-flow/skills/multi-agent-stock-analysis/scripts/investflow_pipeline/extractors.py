@@ -49,6 +49,14 @@ def _section(markdown: str, names: List[str]) -> str:
     return "\n".join(collected).strip()
 
 
+def _has_company_profile_heading(markdown: str) -> bool:
+    for line in markdown.splitlines():
+        heading = _heading(line)
+        if heading and heading[1] == "一页式公司画像":
+            return True
+    return False
+
+
 def _bullets(text: str) -> List[str]:
     values: List[str] = []
     for line in text.splitlines():
@@ -182,7 +190,7 @@ def _extract_recommendation_like_line(text: str, label: str) -> str:
 
 
 def _extract_company_profile(markdown: str) -> CompanyProfile | None:
-    if "## 一页式公司画像" not in markdown and "# 一页式公司画像" not in markdown:
+    if not _has_company_profile_heading(markdown):
         return None
 
     core_products = _section_bullets(markdown, ["核心业务与收入结构"])

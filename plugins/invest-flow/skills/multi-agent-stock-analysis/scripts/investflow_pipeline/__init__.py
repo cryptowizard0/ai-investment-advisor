@@ -2,6 +2,7 @@
 
 from .models import (
     AnalysisStatus,
+    CompanyProfile,
     Handoff,
     OrchestrationConfig,
     PipelineResult,
@@ -12,6 +13,7 @@ from .models import (
 
 __all__ = [
     "AnalysisStatus",
+    "CompanyProfile",
     "Handoff",
     "OrchestrationConfig",
     "PipelineResult",
