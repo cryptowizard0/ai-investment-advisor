@@ -85,7 +85,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 
 ## Build/Test Commands
 
-This project has no formal test suite. Validation is done through direct script execution and real analysis tasks.
+This project uses lightweight `unittest` coverage for packaged helper scripts. Broader validation is still done through direct script execution and real analysis tasks.
 
 ```bash
 # Activate virtual environment
@@ -96,6 +96,9 @@ python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrato
 
 # Check market data router CLI
 python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py --help
+
+# Run helper script tests
+python -m unittest discover plugins/invest-flow -p 'test_*.py'
 
 # Generate a multi-agent Codex prompt plan
 python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
