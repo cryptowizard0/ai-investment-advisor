@@ -1,9 +1,9 @@
 # {{company}}（{{ticker}}）公司画像报告
 
-作者：InvestmentFlow  
-分析日期：{{YYYY-MM-DD}}  
-研究对象：{{company}} / {{ticker}}  
-交易所：{{exchange}}  
+作者：InvestmentFlow
+分析日期：{{YYYY-MM-DD}}
+研究对象：{{company}} / {{ticker}}
+交易所：{{exchange}}
 币种：{{currency}}
 
 ---
@@ -49,8 +49,8 @@
 
 {{industry_chain_position}}
 
-上游：{{upstream_dependencies}}  
-下游：{{downstream_customers}}  
+上游：{{upstream_dependencies}}
+下游：{{downstream_customers}}
 关键瓶颈：{{value_chain_bottleneck}}
 
 ## 5. AI 产业链相关性
