@@ -17,6 +17,7 @@ class SkillRegistry:
 
     def basic_stock_specs(self) -> List[SkillSpec]:
         return [
+            self.get("company-profile"),
             self.get("fundamental-analysis"),
             self.get("institutional-accumulation-analysis"),
             self.get("gie-investment-framework"),
@@ -48,6 +49,14 @@ def _spec(
 
 def build_registry() -> SkillRegistry:
     specs = [
+        _spec(
+            skill_name="company-profile",
+            agent_name="company_profile",
+            stage="single_asset_context",
+            prompt_template="使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位",
+            output_dir="output/company-profile",
+            required=True,
+        ),
         _spec(
             skill_name="fundamental-analysis",
             agent_name="fundamental",

@@ -181,6 +181,7 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(
             [spec.skill_name for spec in specs],
             [
+                "company-profile",
                 "fundamental-analysis",
                 "institutional-accumulation-analysis",
                 "gie-investment-framework",
@@ -202,6 +203,7 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(
             [spec.agent_name for spec in specs],
             [
+                "company_profile",
                 "fundamental",
                 "institutional",
                 "gie",
@@ -211,11 +213,26 @@ class RegistryTests(unittest.TestCase):
             ],
         )
         self.assertTrue(specs[0].required)
-        self.assertFalse(specs[1].required)
-        self.assertTrue(specs[2].required)
-        self.assertFalse(specs[3].required)
+        self.assertTrue(specs[1].required)
+        self.assertFalse(specs[2].required)
+        self.assertTrue(specs[3].required)
         self.assertFalse(specs[4].required)
         self.assertFalse(specs[5].required)
+        self.assertFalse(specs[6].required)
+
+    def test_company_profile_prompt_captures_business_context(self):
+        from investflow_pipeline.registry import build_registry
+
+        spec = build_registry().get("company-profile")
+
+        self.assertEqual(spec.agent_name, "company_profile")
+        self.assertEqual(spec.stage, "single_asset_context")
+        self.assertTrue(spec.required)
+        self.assertEqual(spec.output_dir, "output/company-profile")
+        self.assertEqual(
+            spec.prompt_template,
+            "使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位",
+        )
 
     def test_gie_prompt_includes_company_fallback_slot(self):
         from investflow_pipeline.registry import build_registry
@@ -266,7 +283,7 @@ class PlannerTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "invalid ticker"):
                     create_stock_request(ticker)
 
-    def test_basic_plan_uses_six_prompt_specs(self):
+    def test_basic_plan_uses_seven_prompt_specs_with_company_profile_first(self):
         from investflow_pipeline.planner import create_stock_request, plan_basic_stock_analysis
         from investflow_pipeline.registry import build_registry
 
@@ -276,6 +293,7 @@ class PlannerTests(unittest.TestCase):
         self.assertEqual(
             [spec.agent_name for spec in specs],
             [
+                "company_profile",
                 "fundamental",
                 "institutional",
                 "gie",
