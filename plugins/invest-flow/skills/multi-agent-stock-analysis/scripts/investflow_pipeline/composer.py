@@ -92,12 +92,17 @@ def _profile_from_stage(stage: StageResult | None) -> CompanyProfile | None:
 
 def _company_profile_summary(results: List[StageResult]) -> str:
     stage = _find_company_profile_stage(results)
+    if stage is not None and stage.status == AnalysisStatus.FAILED:
+        note = "缺少公司画像会降低整体判断可信度。"
+        return (
+            "| 项目 | 内容 |\n"
+            "| --- | --- |\n"
+            f"| 公司画像状态 | {_table_cell(note, '不确定')} |"
+        )
+
     profile = _profile_from_stage(stage)
     if profile is None:
-        if stage is not None and stage.status == AnalysisStatus.FAILED:
-            note = "缺少公司画像会降低整体判断可信度。"
-        else:
-            note = "公司画像未生成，后续结论只能依赖投资维度报告。"
+        note = "公司画像未生成，后续结论只能依赖投资维度报告。"
         return (
             "| 项目 | 内容 |\n"
             "| --- | --- |\n"

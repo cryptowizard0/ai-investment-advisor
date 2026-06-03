@@ -572,7 +572,7 @@ class ComposerTests(unittest.TestCase):
 
     def test_compose_summary_reports_failed_company_profile_as_data_gap(self):
         from investflow_pipeline.composer import compose_summary
-        from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
+        from investflow_pipeline.models import AnalysisStatus, CompanyProfile, Handoff, StageResult
 
         result = self._pipeline_result(
             [
@@ -581,6 +581,11 @@ class ComposerTests(unittest.TestCase):
                     agent_name="company_profile",
                     status=AnalysisStatus.FAILED,
                     errors=["profile report missing"],
+                    handoff=Handoff(
+                        company_profile=CompanyProfile(
+                            one_liner="Partial profile should not be trusted.",
+                        )
+                    ),
                 ),
                 StageResult(
                     skill_name="fundamental-analysis",
@@ -597,6 +602,7 @@ class ComposerTests(unittest.TestCase):
         self.assertIn("## 公司画像摘要", summary)
         self.assertIn("缺少公司画像会降低整体判断可信度", summary)
         self.assertIn("company-profile(company_profile) 失败: profile report missing", summary)
+        self.assertNotIn("Partial profile should not be trusted.", summary)
 
     def test_write_outputs_success_creates_json_and_markdown(self):
         from investflow_pipeline.composer import write_outputs
