@@ -453,7 +453,9 @@ AI 数据中心芯片和互连基础设施上游供应商。
 
         self.assertIsNotNone(handoff.company_profile)
         self.assertIn("company_profile.business_summary missing", handoff.data_gaps)
+        self.assertIn("company_profile.moat_assessment missing", handoff.data_gaps)
         self.assertIn("company_profile.ai_relevance missing", handoff.data_gaps)
+        self.assertIn("company_profile.customers_and_end_markets missing", handoff.data_gaps)
         self.assertIn("company_profile.ai_value_chain_position missing", handoff.data_gaps)
         self.assertIn("company_profile.key_uncertainties missing", handoff.data_gaps)
 

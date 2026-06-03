@@ -240,12 +240,14 @@ def _company_profile_data_gaps(profile: CompanyProfile | None) -> List[str]:
         "one_liner": profile.one_liner,
         "business_summary": profile.business_summary,
         "revenue_model": profile.revenue_model,
+        "moat_assessment": profile.moat_assessment,
         "industry_chain_position": profile.industry_chain_position,
         "ai_relevance": profile.ai_relevance,
         "industry_position": profile.industry_position,
     }
     required_lists = {
         "core_products": profile.core_products,
+        "customers_and_end_markets": profile.customers_and_end_markets,
         "technical_advantages": profile.technical_advantages,
         "ai_value_chain_position": profile.ai_value_chain_position,
         "competitors": profile.competitors,
