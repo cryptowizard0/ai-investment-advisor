@@ -37,6 +37,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── earnings-report-analysis/
 │           ├── institutional-accumulation-analysis/
 │           ├── gie-investment-framework/
+│           ├── industry-chain-analysis/
 │           ├── non-consensus-company-discovery/
 │           ├── gold-trend-analysis/
 │           ├── reflexivity-quick-scan/
@@ -52,6 +53,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── earnings-report-analysis/
 │   ├── ai-infrastructure-sector-discovery/
 │   ├── ai-infrastructure-scarcity-radar/
+│   ├── industry-chain-analysis/
 │   ├── institutional-accumulation-analysis/
 │   ├── gie-investment-framework/
 │   ├── non-consensus-company-discovery/
@@ -126,6 +128,7 @@ Active packaged skills:
 - `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
 - `gie-investment-framework` - 1-3 year golden-shovel style investment framework
+- `industry-chain-analysis` - two-layer industry chain and bottleneck analysis for upstream/midstream/downstream positioning
 - `non-consensus-company-discovery` - theme-to-company discovery for high-potential non-consensus opportunities
 - `gold-trend-analysis` - gold bubble risk and macro signal analysis
 - `reflexivity-quick-scan` - fast stage judgment with a Soros-style reflexivity lens
@@ -155,6 +158,7 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - AI infrastructure sector discovery: `output/ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-{YYYY-MM-DD}.md`
 - AI infrastructure scarcity radar: `output/ai-infrastructure-scarcity-radar/ai-infrastructure-scarcity-radar-{topic}-{YYYY-MM-DD}.md`
 - Company profile: `output/company-profile/company-profile-{TICKER}-{YYYY-MM-DD}.md`
+- Industry chain analysis: `output/industry-chain-analysis/industry-chain-analysis-{topic}-{YYYY-MM-DD}.md`
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - GIE framework: `output/gie-investment-framework/gie-{title}-{date}.md`
 - Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`
