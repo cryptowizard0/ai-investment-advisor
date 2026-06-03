@@ -10,6 +10,7 @@
 - `SkillSpec`
 - `StageResult`
 - `Handoff`
+- `CompanyProfile`
 - `PipelineResult`
 - `OrchestrationConfig`
 
@@ -46,10 +47,11 @@ SkillSpec(
 )
 ```
 
-`stock_decision_basic` 默认六维度：
+`stock_decision_basic` 默认七维度：
 
 | agent_name | skill_name | prompt_template | required |
 | --- | --- | --- | --- |
+| company_profile | company-profile | 使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位 | true |
 | fundamental | fundamental-analysis | 使用 invest-flow:fundamental-analysis 分析 {ticker} | true |
 | institutional | institutional-accumulation-analysis | 使用 invest-flow:institutional-accumulation-analysis 分析 {ticker} | false |
 | gie | gie-investment-framework | 使用 invest-flow:gie-investment-framework 分析 {ticker} / {company} | true |
@@ -99,6 +101,25 @@ Handoff(
     contradiction_points=["分歧1"],
     monitoring_signals=["跟踪指标1"],
     data_gaps=["缺失数据1"],
+)
+```
+
+### CompanyProfile
+
+`company-profile` 阶段会在 `Handoff.company_profile` 中提供结构化公司画像：
+
+```python
+CompanyProfile(
+    one_liner="Marvell 是面向数据基础设施的半导体公司。",
+    business_summary="核心业务包括数据中心、运营商网络、企业网络和存储芯片。",
+    core_products=["高速互连芯片", "定制 ASIC", "存储控制器"],
+    revenue_model="通过芯片销售、定制设计和连接解决方案收费。",
+    technical_advantages=["高速 SerDes", "网络互连 IP"],
+    industry_chain_position="AI 数据中心芯片和互连基础设施上游供应商。",
+    ai_relevance="直接受益",
+    ai_value_chain_position=["网络互连", "定制 ASIC"],
+    competitors=["Broadcom", "NVIDIA"],
+    industry_position="数据基础设施芯片的重要供应商。",
 )
 ```
 

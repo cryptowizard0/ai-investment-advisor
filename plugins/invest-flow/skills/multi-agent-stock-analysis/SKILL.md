@@ -1,24 +1,25 @@
 ---
 name: multi-agent-stock-analysis
-description: "多Agent协同股票分析系统 - 在 Codex 当前会话中按 prompt 编排基本面、机构资金、GIE、反身性、Reportify 和非共识分析，并聚合为中文综合投资判断。适用于：(1) 需要多维度验证的投资决策, (2) 寻找高置信度交易机会, (3) 全面评估标的投资价值。"
+description: "多Agent协同股票分析系统 - 在 Codex 当前会话中按 prompt 编排公司画像、基本面、机构资金、GIE、反身性、Reportify 和非共识分析，并聚合为中文综合投资判断。适用于：(1) 需要多维度验证的投资决策, (2) 寻找高置信度交易机会, (3) 全面评估标的投资价值。"
 ---
 
 # 多Agent协同股票分析系统
 
 ## 概述
 
-本 skill 的当前真实入口是 Codex 会话内的 prompt 编排：解析用户给出的 ticker/company，依次调用六个 InvestFlow 子 skill，收集结论、证据、风险、置信度、数据缺口和非共识变量，然后直接输出中文综合报告。
+本 skill 的当前真实入口是 Codex 会话内的 prompt 编排：解析用户给出的 ticker/company，依次调用七个 InvestFlow 子 skill，收集公司画像、结论、证据、风险、置信度、数据缺口和非共识变量，然后直接输出中文综合报告。
 
 ```text
 用户请求
   -> 解析 ticker/company
+  -> 执行 company-profile prompt
   -> 执行 fundamental-analysis prompt
   -> 执行 institutional-accumulation-analysis prompt
   -> 执行 gie-investment-framework prompt
   -> 执行 reflexivity-deep-analysis prompt
   -> 执行 reportify-stock-analysis prompt
   -> 执行 non-consensus-company-discovery prompt
-  -> 汇总六维度 handoff
+  -> 汇总七维度 handoff
   -> 输出中文综合报告
 ```
 
@@ -45,9 +46,13 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 - `ticker`：标准化为大写，例如 `MRVL`
 - `company`：如果用户提供则保留，例如 `Marvell Technology`；否则使用 ticker
 
-### Step 2: 执行六段子 Skill Prompt
+### Step 2: 执行七段子 Skill Prompt
 
 按顺序在当前 Codex 会话中执行：
+
+```text
+使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位
+```
 
 ```text
 使用 invest-flow:fundamental-analysis 分析 {ticker}
@@ -84,10 +89,11 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 - `monitoring_signals`：后续监控指标
 - `data_gaps`：缺失数据或待验证事实
 
-六个维度的职责：
+七个维度的职责：
 
 | 维度 | 目标 |
 | --- | --- |
+| company-profile | 公司简介、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位 |
 | fundamental-analysis | 公司基本面、财务、估值和技术面 |
 | institutional-accumulation-analysis | 资金行为、量价结构和主力意图 |
 | gie-investment-framework | 1-3 年金铲子属性、供需瓶颈和择时 |
@@ -104,8 +110,9 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 
 作者：InvestmentFlow
 
+## 公司画像摘要
 ## 执行摘要
-## 六维度结论对照
+## 七维度结论对照
 ## 证据汇总
 ## 分歧与冲突
 ## 风险清单
@@ -117,7 +124,7 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 
 综合结论必须说明：
 
-- 六个维度是否互相印证
+- 七个维度是否互相印证
 - 反身性阶段处于启动、强化、透支还是反转
 - Reportify 的标准化结论是否支持其他维度
 - 是否存在可验证的非共识重估变量
@@ -139,7 +146,7 @@ python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrato
 - `output/summary/prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md`
 - `output/summary/orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
 
-它不会执行六个子 skill。真实分析仍由 Codex 当前会话按上面的六段 prompt 完成。
+它不会执行七个子 skill。真实分析仍由 Codex 当前会话按上面的七段 prompt 完成。
 
 ## 汇总已有 Handoff
 
@@ -153,6 +160,7 @@ python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrato
 
 ```text
 output/
+├── company-profile/
 ├── fundamental-analysis/
 ├── institutional-accumulation-analysis/
 ├── gie-investment-framework/
@@ -170,7 +178,7 @@ output/
 ## 注意事项
 
 1. 金融数据和新闻信息具有时效性；分析时必须使用当前可得事实。
-2. 六个维度结论不一致时，不要强行给高置信度结论。
+2. 七个维度结论不一致时，不要强行给高置信度结论。
 3. 机构资金流和技术信号只能作为概率证据，不能替代基本面判断。
 4. GIE 框架偏 1-3 年中期弹性，不能直接等同短线交易信号。
 5. 本报告仅用于研究与教育目的，不构成投资建议。

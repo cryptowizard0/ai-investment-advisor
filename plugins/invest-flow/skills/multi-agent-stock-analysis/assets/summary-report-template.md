@@ -13,6 +13,22 @@
 
 ---
 
+## 公司画像摘要
+
+| 项目 | 内容 |
+|---|---|
+| 公司一句话定义 | {company_one_liner} |
+| 核心业务 | {company_business_summary} |
+| 收入来源 | {company_revenue_model} |
+| 核心技术 / 壁垒 | {company_technical_advantages} |
+| 产业链位置 | {company_industry_chain_position} |
+| AI 相关性 | {company_ai_relevance} |
+| 主要竞争对手 | {company_competitors} |
+| 行业地位 | {company_industry_position} |
+| 关键不确定性 | {company_key_uncertainties} |
+
+---
+
 ## 执行摘要
 
 ### 投资建议
@@ -122,7 +138,7 @@
 #### 反FOMO检查清单
 1. 该趋势是否已在社交媒体霸榜超过2周？{fomo_check_1}
 2. 买入是因为"便宜且有刚需"还是因为"大家都说会涨"？{fomo_check_2}
-3. 如果6个月不看盘，是否依然有信心？{fomo_check_3}
+3. 如果六个月不看盘，是否依然有信心？{fomo_check_3}
 4. 地缘政治对供应链的影响是否已在估值中体现？{fomo_check_4}
 
 ---
@@ -205,6 +221,7 @@
 
 ### 报告文件清单
 - **本报告：** {summary_report_path}
+- **company-profile：** [{company_profile_report_path}]({company_profile_report_link})
 - **基本面分析：** {fundamental_report_path}
 - **机构流向分析：** {institutional_report_path}
 - **GIE框架分析：** {gie_report_path}
@@ -238,6 +255,19 @@ template_variables = {
     "company_name": "Tesla",
     "analysis_date": "2026-02-06",
     "current_price": "$406.01",
+
+    # 公司画像
+    "company_profile_report_path": "./output/company-profile/...",
+    "company_profile_report_link": "./output/company-profile/...",
+    "company_one_liner": "Tesla 是全球领先的电动车和能源科技公司。",
+    "company_business_summary": "核心业务包括电动车、储能、能源服务和自动驾驶软件。",
+    "company_revenue_model": "通过整车销售、能源产品、服务和软件订阅收费。",
+    "company_technical_advantages": "电池系统、制造效率、自动驾驶数据闭环",
+    "company_industry_chain_position": "电动车和能源存储产业链下游整合商。",
+    "company_ai_relevance": "直接受益",
+    "company_competitors": "BYD, Volkswagen, GM",
+    "company_industry_position": "全球电动车头部企业。",
+    "company_key_uncertainties": "自动驾驶商业化节奏、价格竞争、监管变化",
     
     # 综合结论
     "recommendation": "Hold",
