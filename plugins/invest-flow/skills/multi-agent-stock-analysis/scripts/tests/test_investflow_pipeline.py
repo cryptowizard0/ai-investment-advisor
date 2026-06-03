@@ -32,6 +32,54 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(data["handoff"]["data_gaps"], ["等待执行"])
         self.assertFalse(result.is_success)
 
+    def test_company_profile_to_dict_serializes_all_fields(self):
+        from investflow_pipeline.models import CompanyProfile
+
+        profile = CompanyProfile(
+            one_liner="Tesla 是一家垂直整合的电动车和能源技术公司。",
+            business_summary="核心业务包括电动车、储能、能源服务和软件能力。",
+            core_products=["Model 3", "Model Y", "Megapack"],
+            revenue_model="主要通过车辆销售、租赁、能源产品和服务收费。",
+            customers_and_end_markets=["消费者", "车队客户", "电力公用事业"],
+            technical_advantages=["电池系统集成", "软件 OTA", "制造自动化"],
+            moat_assessment="规模、品牌、软件和制造学习曲线构成复合壁垒。",
+            industry_chain_position="新能源车整车、储能系统和能源基础设施。",
+            ai_relevance="间接受益",
+            ai_value_chain_position=["终端应用", "数据", "自动驾驶软件"],
+            competitors=["BYD", "Rivian", "Lucid"],
+            industry_position="全球电动车领先厂商之一。",
+            key_uncertainties=["价格战是否压缩利润率"],
+            pre_analysis_questions=["软件和储能能否抵消汽车毛利压力"],
+            data_sources=["公司 10-K", "投资者关系材料"],
+        )
+
+        data = profile.to_dict()
+
+        self.assertEqual(data["one_liner"], "Tesla 是一家垂直整合的电动车和能源技术公司。")
+        self.assertEqual(data["core_products"], ["Model 3", "Model Y", "Megapack"])
+        self.assertEqual(data["ai_relevance"], "间接受益")
+        self.assertEqual(data["competitors"], ["BYD", "Rivian", "Lucid"])
+        self.assertEqual(data["data_sources"], ["公司 10-K", "投资者关系材料"])
+
+    def test_handoff_serializes_nested_company_profile(self):
+        from investflow_pipeline.models import CompanyProfile, Handoff
+
+        handoff = Handoff(
+            conclusion="公司画像已完成。",
+            company_profile=CompanyProfile(
+                one_liner="Marvell 是数据基础设施半导体公司。",
+                business_summary="面向数据中心、运营商和企业网络销售芯片。",
+                ai_relevance="直接受益",
+                competitors=["Broadcom", "NVIDIA"],
+            ),
+        )
+
+        data = handoff.to_dict()
+
+        self.assertEqual(data["company_profile"]["one_liner"], "Marvell 是数据基础设施半导体公司。")
+        self.assertEqual(data["company_profile"]["ai_relevance"], "直接受益")
+        self.assertEqual(data["company_profile"]["competitors"], ["Broadcom", "NVIDIA"])
+
     def test_pipeline_result_to_dict_counts_success_failed_and_pending(self):
         from investflow_pipeline.models import AnalysisStatus, PipelineResult, StageResult
 

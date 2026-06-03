@@ -15,6 +15,44 @@ class AnalysisStatus(Enum):
 
 
 @dataclass
+class CompanyProfile:
+    one_liner: str = ""
+    business_summary: str = ""
+    core_products: List[str] = field(default_factory=list)
+    revenue_model: str = ""
+    customers_and_end_markets: List[str] = field(default_factory=list)
+    technical_advantages: List[str] = field(default_factory=list)
+    moat_assessment: str = ""
+    industry_chain_position: str = ""
+    ai_relevance: str = ""
+    ai_value_chain_position: List[str] = field(default_factory=list)
+    competitors: List[str] = field(default_factory=list)
+    industry_position: str = ""
+    key_uncertainties: List[str] = field(default_factory=list)
+    pre_analysis_questions: List[str] = field(default_factory=list)
+    data_sources: List[str] = field(default_factory=list)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "one_liner": self.one_liner,
+            "business_summary": self.business_summary,
+            "core_products": list(self.core_products),
+            "revenue_model": self.revenue_model,
+            "customers_and_end_markets": list(self.customers_and_end_markets),
+            "technical_advantages": list(self.technical_advantages),
+            "moat_assessment": self.moat_assessment,
+            "industry_chain_position": self.industry_chain_position,
+            "ai_relevance": self.ai_relevance,
+            "ai_value_chain_position": list(self.ai_value_chain_position),
+            "competitors": list(self.competitors),
+            "industry_position": self.industry_position,
+            "key_uncertainties": list(self.key_uncertainties),
+            "pre_analysis_questions": list(self.pre_analysis_questions),
+            "data_sources": list(self.data_sources),
+        }
+
+
+@dataclass
 class Handoff:
     conclusion: str = ""
     recommendation: str = ""
@@ -24,6 +62,7 @@ class Handoff:
     contradiction_points: List[str] = field(default_factory=list)
     monitoring_signals: List[str] = field(default_factory=list)
     data_gaps: List[str] = field(default_factory=list)
+    company_profile: Optional[CompanyProfile] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -35,6 +74,9 @@ class Handoff:
             "contradiction_points": list(self.contradiction_points),
             "monitoring_signals": list(self.monitoring_signals),
             "data_gaps": list(self.data_gaps),
+            "company_profile": (
+                self.company_profile.to_dict() if self.company_profile else None
+            ),
         }
 
 
