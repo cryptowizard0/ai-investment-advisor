@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import List
 
-from .models import Handoff
+from .models import CompanyProfile, Handoff
 
 
 def _strip_markdown_emphasis(text: str) -> str:
@@ -70,6 +70,35 @@ def _first_nonempty_line(text: str) -> str:
     return ""
 
 
+def _label_value(markdown: str, label: str) -> str:
+    pattern = re.compile(rf"^[\-*]\s*{re.escape(label)}[:：]\s*(.*?)\s*$")
+    for line in markdown.splitlines():
+        match = pattern.match(line.strip())
+        if match:
+            return _strip_markdown_emphasis(match.group(1))
+    return ""
+
+
+def _section_bullets(markdown: str, names: List[str]) -> List[str]:
+    return [_strip_markdown_emphasis(value) for value in _bullets(_section(markdown, names))]
+
+
+def _first_section_line(markdown: str, names: List[str]) -> str:
+    return _first_nonempty_line(_section(markdown, names))
+
+
+def _extract_ai_relevance(markdown: str) -> str:
+    labeled = _label_value(markdown, "相关性")
+    if labeled:
+        return labeled.split("；", 1)[0].split(";", 1)[0].strip()
+    summary = _label_value(markdown, "AI 相关性结论")
+    if "；" in summary:
+        return summary.split("；", 1)[0].strip()
+    if ";" in summary:
+        return summary.split(";", 1)[0].strip()
+    return summary
+
+
 def _extract_recommendation(markdown: str) -> str:
     patterns = [
         r"操作建议[:：]\s*([^\n\r]+)",
@@ -113,6 +142,87 @@ def _extract_confidence(markdown: str) -> int | None:
     return None
 
 
+def _extract_recommendation_like_line(text: str, label: str) -> str:
+    for line in text.splitlines():
+        plain_line = _remove_markdown_markers(line)
+        match = re.search(rf"{re.escape(label)}[:：]\s*([^\n\r]+)", plain_line)
+        if match:
+            return _strip_markdown_emphasis(match.group(1))
+    return ""
+
+
+def _extract_company_profile(markdown: str) -> CompanyProfile | None:
+    if "公司画像" not in markdown:
+        return None
+
+    core_products = _section_bullets(markdown, ["核心业务与收入结构"])
+    technical_advantages = _section_bullets(markdown, ["核心技术优势", "技术壁垒"])
+    ai_positions = []
+    for bullet in _section_bullets(markdown, ["AI 产业链相关性"]):
+        if bullet.startswith("位置："):
+            ai_positions.append(_strip_markdown_emphasis(bullet.split("：", 1)[1]))
+    competitors = _section_bullets(markdown, ["竞争对手与行业地位"])
+    pre_questions = _section_bullets(markdown, ["投资分析前置问题"])
+    data_sources = _section_bullets(markdown, ["数据来源与不确定性"])
+
+    profile = CompanyProfile(
+        one_liner=_label_value(markdown, "公司一句话定义"),
+        business_summary=_label_value(markdown, "核心业务"),
+        core_products=core_products,
+        revenue_model=_label_value(markdown, "收入来源"),
+        customers_and_end_markets=[],
+        technical_advantages=technical_advantages,
+        moat_assessment="",
+        industry_chain_position=_first_section_line(markdown, ["产业链位置"]),
+        ai_relevance=_extract_ai_relevance(markdown),
+        ai_value_chain_position=ai_positions,
+        competitors=competitors,
+        industry_position=_extract_recommendation_like_line(
+            _section(markdown, ["竞争对手与行业地位"]),
+            "行业地位",
+        ),
+        key_uncertainties=[
+            value
+            for value in [_label_value(markdown, "最重要的不确定性")]
+            if value
+        ],
+        pre_analysis_questions=pre_questions,
+        data_sources=data_sources,
+    )
+    return profile
+
+
+def _company_profile_data_gaps(profile: CompanyProfile | None) -> List[str]:
+    if profile is None:
+        return []
+    required_strings = {
+        "one_liner": profile.one_liner,
+        "business_summary": profile.business_summary,
+        "revenue_model": profile.revenue_model,
+        "industry_chain_position": profile.industry_chain_position,
+        "ai_relevance": profile.ai_relevance,
+        "industry_position": profile.industry_position,
+    }
+    required_lists = {
+        "core_products": profile.core_products,
+        "technical_advantages": profile.technical_advantages,
+        "competitors": profile.competitors,
+        "pre_analysis_questions": profile.pre_analysis_questions,
+        "data_sources": profile.data_sources,
+    }
+    gaps = [
+        f"company_profile.{name} missing"
+        for name, value in required_strings.items()
+        if not value
+    ]
+    gaps.extend(
+        f"company_profile.{name} missing"
+        for name, values in required_lists.items()
+        if not values
+    )
+    return gaps
+
+
 def extract_handoff(markdown: str) -> Handoff:
     conclusion_section = _section(markdown, ["核心结论", "投资建议", "执行摘要"])
     evidence_section = _section(markdown, ["核心证据", "关键证据", "核心逻辑"])
@@ -124,6 +234,10 @@ def extract_handoff(markdown: str) -> Handoff:
     if not conclusion:
         conclusion = _first_nonempty_line(markdown)
 
+    company_profile = _extract_company_profile(markdown)
+    data_gaps = _bullets(gaps_section)
+    data_gaps.extend(_company_profile_data_gaps(company_profile))
+
     return Handoff(
         conclusion=conclusion,
         recommendation=_extract_recommendation(markdown),
@@ -132,5 +246,6 @@ def extract_handoff(markdown: str) -> Handoff:
         risk_flags=_bullets(risk_section),
         contradiction_points=_bullets(_section(markdown, ["冲突", "分歧"])),
         monitoring_signals=_bullets(monitoring_section),
-        data_gaps=_bullets(gaps_section),
+        data_gaps=data_gaps,
+        company_profile=company_profile,
     )

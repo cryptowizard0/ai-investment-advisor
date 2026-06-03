@@ -366,6 +366,83 @@ class ExtractorTests(unittest.TestCase):
 
         self.assertIn("长期需求仍在，但盈利拐点需要验证。", handoff.conclusion)
 
+    def test_extract_handoff_reads_company_profile_fields(self):
+        from investflow_pipeline.extractors import extract_handoff
+
+        markdown = """
+# Marvell Technology（MRVL）公司画像报告
+
+## 一页式公司画像
+- 公司一句话定义：Marvell 是面向数据基础设施的半导体公司。
+- 核心业务：数据中心、运营商网络、企业网络和存储相关芯片。
+- 收入来源：芯片销售、定制 ASIC 和连接解决方案。
+- AI 相关性结论：直接受益；网络互连、定制 ASIC、数据中心基础设施。
+- 最重要的不确定性：AI 定制芯片放量节奏和传统业务复苏速度。
+
+## 2. 核心业务与收入结构
+- 数据中心互连芯片
+- 定制 ASIC
+- 存储控制器
+
+## 3. 核心技术优势与技术壁垒
+- 高速 SerDes
+- 网络互连 IP
+- 与云客户协同设计能力
+
+## 4. 产业链位置
+AI 数据中心芯片和互连基础设施上游供应商。
+
+## 5. AI 产业链相关性
+- 相关性：直接受益
+- 位置：网络互连
+- 位置：定制 ASIC
+
+## 6. 竞争对手与行业地位
+- Broadcom
+- NVIDIA
+- Astera Labs
+
+行业地位：数据基础设施芯片的重要供应商。
+
+## 8. 投资分析前置问题
+- AI 收入增长是否能覆盖传统存储周期波动？
+- 定制 ASIC 毛利率是否低于标准产品？
+
+## 9. 数据来源与不确定性
+- 公司年报
+- 投资者日材料
+"""
+        handoff = extract_handoff(markdown)
+        profile = handoff.company_profile
+
+        self.assertIsNotNone(profile)
+        self.assertEqual(profile.one_liner, "Marvell 是面向数据基础设施的半导体公司。")
+        self.assertEqual(profile.business_summary, "数据中心、运营商网络、企业网络和存储相关芯片。")
+        self.assertEqual(profile.revenue_model, "芯片销售、定制 ASIC 和连接解决方案。")
+        self.assertIn("高速 SerDes", profile.technical_advantages)
+        self.assertEqual(profile.industry_chain_position, "AI 数据中心芯片和互连基础设施上游供应商。")
+        self.assertEqual(profile.ai_relevance, "直接受益")
+        self.assertIn("网络互连", profile.ai_value_chain_position)
+        self.assertIn("Broadcom", profile.competitors)
+        self.assertEqual(profile.industry_position, "数据基础设施芯片的重要供应商。")
+        self.assertIn("AI 收入增长是否能覆盖传统存储周期波动？", profile.pre_analysis_questions)
+        self.assertIn("公司年报", profile.data_sources)
+
+    def test_extract_handoff_marks_missing_company_profile_fields_as_data_gaps(self):
+        from investflow_pipeline.extractors import extract_handoff
+
+        markdown = """
+# Unknown（UNKN）公司画像报告
+
+## 一页式公司画像
+- 公司一句话定义：信息很少的公司。
+"""
+        handoff = extract_handoff(markdown)
+
+        self.assertIsNotNone(handoff.company_profile)
+        self.assertIn("company_profile.business_summary missing", handoff.data_gaps)
+        self.assertIn("company_profile.ai_relevance missing", handoff.data_gaps)
+
 
 class ExecutorTests(unittest.TestCase):
     def test_validate_rejects_short_output(self):
