@@ -8,8 +8,9 @@
 用户请求
   -> Codex 解析 ticker/company
   -> Codex 执行七段子 skill prompt
-  -> Codex 提取每个维度 handoff
-  -> Composer 汇总已有 handoff
+  -> 每个子 skill 保存 Markdown 子报告并返回 report_path
+  -> Codex 校验每个维度 report_path 和 handoff
+  -> Composer 汇总已有 report_path + handoff
   -> 中文综合报告
 ```
 
@@ -44,10 +45,13 @@ Registry 为七个维度生成 prompt template：
 
 这些 prompt 由当前 Codex 会话依次执行。Python 层不会启动外部 agent 进程。
 
+实际执行时，每个 prompt 都必须附加落盘要求：保存 Markdown 子报告到对应 `output/<skill-name>/` 目录，并在回复末尾明确写出 `report_path`。只返回对话内容或 handoff 不能算该维度完成。
+
 ### 阶段3: 子 Skill -> Handoff
 
-每个子 skill 完成后，提取并保留：
+每个子 skill 完成后，先校验并保留：
 
+- 子报告路径 `report_path`
 - 核心结论
 - 操作建议
 - 置信度
@@ -56,6 +60,8 @@ Registry 为七个维度生成 prompt template：
 - 分歧点
 - 监控指标
 - 数据缺口
+
+`report_path` 必须指向该子 skill 生成的 Markdown 文件。若缺失，MainAgent 应先补跑该子 skill；只有补跑失败或用户明确允许部分结果时，才可进入 Composer，并在综合报告中标注缺失原因。
 
 `company-profile` 的 handoff 额外包含 `company_profile` 结构化字段。Composer 使用该字段生成 `## 公司画像摘要`；如果 `company_profile` 缺失，则渲染公司画像状态行，而不是用其他 handoff 字段回填。若 `company-profile` 阶段失败，Composer 会明确警告缺少公司画像会降低整体判断可信度。
 
@@ -93,6 +99,8 @@ Composer 根据成功或部分成功的 handoff 生成：
 使用 invest-flow:non-consensus-company-discovery 评估 MRVL / MRVL 的非共识重估机会
 ```
 
+执行时必须要求每个子 skill 保存子报告并返回 `report_path`；不得把 subagent 对话摘要直接当作子报告。
+
 如果用户提供公司名：
 
 ```text
@@ -118,7 +126,7 @@ python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrato
 ## 部分结果处理
 
 - 七个维度都完成：输出完整综合报告。
-- 只有部分维度完成：输出报告，但必须标注缺失维度和数据缺口。
+- 只有部分维度完成：先补跑缺失子报告；补跑失败或用户允许部分结果时，输出报告并标注缺失维度、缺失子报告路径和数据缺口。
 - 七个维度都缺失：只输出 orchestration JSON 或 prompt plan，不输出投资结论。
 
 ## 综合报告原则
@@ -128,3 +136,4 @@ python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrato
 3. 结论冲突时优先写清冲突来源，而不是强行平均。
 4. 非共识观点必须有可验证催化剂和反证条件，不能把冷门等同于机会。
 5. 所有高置信度建议必须附带触发重新评估的监控信号。
+6. 子维度 handoff 不能替代子报告；综合报告必须有子报告索引。

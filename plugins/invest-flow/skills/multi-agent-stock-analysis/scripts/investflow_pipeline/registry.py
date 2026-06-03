@@ -47,13 +47,23 @@ def _spec(
     )
 
 
+def _report_required_prompt(base_prompt: str, output_dir: str) -> str:
+    return (
+        f"{base_prompt}；必须生成并保存 Markdown 子报告到 {output_dir}/，"
+        "并在回复末尾明确写出 report_path"
+    )
+
+
 def build_registry() -> SkillRegistry:
     specs = [
         _spec(
             skill_name="company-profile",
             agent_name="company_profile",
             stage="single_asset_context",
-            prompt_template="使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位",
+            prompt_template=_report_required_prompt(
+                "使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位",
+                "output/company-profile",
+            ),
             output_dir="output/company-profile",
             required=True,
         ),
@@ -61,7 +71,10 @@ def build_registry() -> SkillRegistry:
             skill_name="fundamental-analysis",
             agent_name="fundamental",
             stage="single_asset_validation",
-            prompt_template="使用 invest-flow:fundamental-analysis 分析 {ticker}",
+            prompt_template=_report_required_prompt(
+                "使用 invest-flow:fundamental-analysis 分析 {ticker}",
+                "output/fundamental-analysis",
+            ),
             output_dir="output/fundamental-analysis",
             required=True,
         ),
@@ -69,7 +82,10 @@ def build_registry() -> SkillRegistry:
             skill_name="institutional-accumulation-analysis",
             agent_name="institutional",
             stage="single_asset_validation",
-            prompt_template="使用 invest-flow:institutional-accumulation-analysis 分析 {ticker}",
+            prompt_template=_report_required_prompt(
+                "使用 invest-flow:institutional-accumulation-analysis 分析 {ticker}",
+                "output/institutional-accumulation-analysis",
+            ),
             output_dir="output/institutional-accumulation-analysis",
             required=False,
         ),
@@ -77,7 +93,10 @@ def build_registry() -> SkillRegistry:
             skill_name="gie-investment-framework",
             agent_name="gie",
             stage="single_asset_validation",
-            prompt_template="使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}",
+            prompt_template=_report_required_prompt(
+                "使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}",
+                "output/gie-investment-framework",
+            ),
             output_dir="output/gie-investment-framework",
             required=True,
         ),
@@ -117,7 +136,10 @@ def build_registry() -> SkillRegistry:
             skill_name="reflexivity-deep-analysis",
             agent_name="reflexivity_deep",
             stage="single_asset_validation",
-            prompt_template="使用 invest-flow:reflexivity-deep-analysis 分析 {ticker}",
+            prompt_template=_report_required_prompt(
+                "使用 invest-flow:reflexivity-deep-analysis 分析 {ticker}",
+                "output/reflexivity-deep-analysis",
+            ),
             output_dir="output/reflexivity-deep-analysis",
             required=False,
         ),
@@ -133,7 +155,10 @@ def build_registry() -> SkillRegistry:
             skill_name="reportify-stock-analysis",
             agent_name="reportify",
             stage="decision_report",
-            prompt_template="使用 invest-flow:reportify-stock-analysis 分析 {ticker}",
+            prompt_template=_report_required_prompt(
+                "使用 invest-flow:reportify-stock-analysis 分析 {ticker}",
+                "output/reportify-stock-analysis",
+            ),
             output_dir="output/reportify-stock-analysis",
             required=False,
         ),
@@ -141,7 +166,10 @@ def build_registry() -> SkillRegistry:
             skill_name="non-consensus-company-discovery",
             agent_name="non_consensus",
             stage="thesis_challenge",
-            prompt_template="使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会",
+            prompt_template=_report_required_prompt(
+                "使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会",
+                "output/non-consensus-company-discovery",
+            ),
             output_dir="output/non-consensus-company-discovery",
             required=False,
         ),

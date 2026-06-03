@@ -193,6 +193,8 @@ class RegistryTests(unittest.TestCase):
         for spec in specs:
             self.assertIn("使用 invest-flow:", spec.prompt_template)
             self.assertIn("{ticker}", spec.prompt_template)
+            self.assertIn("必须生成并保存 Markdown 子报告", spec.prompt_template)
+            self.assertIn("report_path", spec.prompt_template)
             self.assertFalse(hasattr(spec, "com" + "mand" + "_template"))
 
     def test_basic_specs_include_expected_agents_and_required_flags(self):
@@ -231,7 +233,7 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(spec.output_dir, "output/company-profile")
         self.assertEqual(
             spec.prompt_template,
-            "使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位",
+            "使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/company-profile/，并在回复末尾明确写出 report_path",
         )
 
     def test_gie_prompt_includes_company_fallback_slot(self):
@@ -241,7 +243,7 @@ class RegistryTests(unittest.TestCase):
 
         self.assertEqual(
             spec.prompt_template,
-            "使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}",
+            "使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}；必须生成并保存 Markdown 子报告到 output/gie-investment-framework/，并在回复末尾明确写出 report_path",
         )
 
     def test_non_consensus_prompt_evaluates_single_stock_revaluation_thesis(self):
@@ -253,7 +255,7 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(spec.stage, "thesis_challenge")
         self.assertEqual(
             spec.prompt_template,
-            "使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会",
+            "使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会；必须生成并保存 Markdown 子报告到 output/non-consensus-company-discovery/，并在回复末尾明确写出 report_path",
         )
 
 
@@ -524,7 +526,7 @@ class ExecutorTests(unittest.TestCase):
         self.assertEqual(result.status, AnalysisStatus.PENDING)
         self.assertEqual(
             result.prompt,
-            "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology",
+            "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology；必须生成并保存 Markdown 子报告到 output/gie-investment-framework/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(result.output, result.prompt)
         self.assertIn("等待 Codex 当前会话执行", result.handoff.data_gaps[0])
@@ -547,7 +549,7 @@ class ExecutorTests(unittest.TestCase):
 
         self.assertEqual(
             result.prompt,
-            "使用 invest-flow:gie-investment-framework 分析 MRVL / MRVL",
+            "使用 invest-flow:gie-investment-framework 分析 MRVL / MRVL；必须生成并保存 Markdown 子报告到 output/gie-investment-framework/，并在回复末尾明确写出 report_path",
         )
 
 
@@ -955,22 +957,31 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
         prompts = [stage["prompt"] for stage in result["stage_results"]]
         self.assertEqual(
             prompts[0],
-            "使用 invest-flow:company-profile 分析 MRVL / Marvell Technology，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位",
+            "使用 invest-flow:company-profile 分析 MRVL / Marvell Technology，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/company-profile/，并在回复末尾明确写出 report_path",
         )
-        self.assertEqual(prompts[1], "使用 invest-flow:fundamental-analysis 分析 MRVL")
+        self.assertEqual(
+            prompts[1],
+            "使用 invest-flow:fundamental-analysis 分析 MRVL；必须生成并保存 Markdown 子报告到 output/fundamental-analysis/，并在回复末尾明确写出 report_path",
+        )
         self.assertEqual(
             prompts[2],
-            "使用 invest-flow:institutional-accumulation-analysis 分析 MRVL",
+            "使用 invest-flow:institutional-accumulation-analysis 分析 MRVL；必须生成并保存 Markdown 子报告到 output/institutional-accumulation-analysis/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(
             prompts[3],
-            "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology",
+            "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology；必须生成并保存 Markdown 子报告到 output/gie-investment-framework/，并在回复末尾明确写出 report_path",
         )
-        self.assertEqual(prompts[4], "使用 invest-flow:reflexivity-deep-analysis 分析 MRVL")
-        self.assertEqual(prompts[5], "使用 invest-flow:reportify-stock-analysis 分析 MRVL")
+        self.assertEqual(
+            prompts[4],
+            "使用 invest-flow:reflexivity-deep-analysis 分析 MRVL；必须生成并保存 Markdown 子报告到 output/reflexivity-deep-analysis/，并在回复末尾明确写出 report_path",
+        )
+        self.assertEqual(
+            prompts[5],
+            "使用 invest-flow:reportify-stock-analysis 分析 MRVL；必须生成并保存 Markdown 子报告到 output/reportify-stock-analysis/，并在回复末尾明确写出 report_path",
+        )
         self.assertEqual(
             prompts[6],
-            "使用 invest-flow:non-consensus-company-discovery 评估 MRVL / Marvell Technology 的非共识重估机会",
+            "使用 invest-flow:non-consensus-company-discovery 评估 MRVL / Marvell Technology 的非共识重估机会；必须生成并保存 Markdown 子报告到 output/non-consensus-company-discovery/，并在回复末尾明确写出 report_path",
         )
 
     def test_orchestrator_cli_prints_prompt_plan_and_returns_zero(self):

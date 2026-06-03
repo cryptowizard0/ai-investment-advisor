@@ -7,7 +7,7 @@ description: "多Agent协同股票分析系统 - 在 Codex 当前会话中按 pr
 
 ## 概述
 
-本 skill 的当前真实入口是 Codex 会话内的 prompt 编排：解析用户给出的 ticker/company，依次调用七个 InvestFlow 子 skill，收集公司画像、结论、证据、风险、置信度、数据缺口和非共识变量，然后直接输出中文综合报告。
+本 skill 的当前真实入口是 Codex 会话内的 prompt 编排：解析用户给出的 ticker/company，依次调用七个 InvestFlow 子 skill，要求每个子 skill 先保存 Markdown 子报告并返回 `report_path`，再收集公司画像、结论、证据、风险、置信度、数据缺口和非共识变量，最后输出中文综合报告。
 
 ```text
 用户请求
@@ -19,11 +19,13 @@ description: "多Agent协同股票分析系统 - 在 Codex 当前会话中按 pr
   -> 执行 reflexivity-deep-analysis prompt
   -> 执行 reportify-stock-analysis prompt
   -> 执行 non-consensus-company-discovery prompt
-  -> 汇总七维度 handoff
+  -> 校验七维度子报告路径和 handoff
   -> 输出中文综合报告
 ```
 
 Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责启动另一个 agent，也不执行外部命令。
+
+**硬性要求：** 除非用户已经明确提供某个维度的现成子报告路径，否则子维度分析不得只返回对话 handoff。每个子 skill 都必须生成自己的 Markdown 子报告，保存到对应 `output/<skill-name>/` 目录，并在返回内容中明确给出 `report_path`。综合报告的 `## 子报告索引` 必须引用这些路径。
 
 ## 推荐使用方式
 
@@ -51,35 +53,36 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 按顺序在当前 Codex 会话中执行：
 
 ```text
-使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位
+使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/company-profile/，并在回复末尾明确写出 report_path
 ```
 
 ```text
-使用 invest-flow:fundamental-analysis 分析 {ticker}
+使用 invest-flow:fundamental-analysis 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/fundamental-analysis/，并在回复末尾明确写出 report_path
 ```
 
 ```text
-使用 invest-flow:institutional-accumulation-analysis 分析 {ticker}
+使用 invest-flow:institutional-accumulation-analysis 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/institutional-accumulation-analysis/，并在回复末尾明确写出 report_path
 ```
 
 ```text
-使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}
+使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}；必须生成并保存 Markdown 子报告到 output/gie-investment-framework/，并在回复末尾明确写出 report_path
 ```
 
 ```text
-使用 invest-flow:reflexivity-deep-analysis 分析 {ticker}
+使用 invest-flow:reflexivity-deep-analysis 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/reflexivity-deep-analysis/，并在回复末尾明确写出 report_path
 ```
 
 ```text
-使用 invest-flow:reportify-stock-analysis 分析 {ticker}
+使用 invest-flow:reportify-stock-analysis 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/reportify-stock-analysis/，并在回复末尾明确写出 report_path
 ```
 
 ```text
-使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会
+使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会；必须生成并保存 Markdown 子报告到 output/non-consensus-company-discovery/，并在回复末尾明确写出 report_path
 ```
 
-执行每个子 skill 后，提取以下 handoff 字段：
+执行每个子 skill 后，先确认 `report_path` 指向已保存的 Markdown 子报告，再提取以下 handoff 字段：
 
+- `report_path`：子报告路径，必须是 `output/<skill-name>/...md`
 - `conclusion`：核心结论
 - `recommendation`：操作建议或评级
 - `confidence`：置信度
@@ -150,11 +153,12 @@ python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrato
 
 ## 汇总已有 Handoff
 
-如果用户已经提供子报告或 handoff，跳过对应子 skill 执行，直接按综合模板汇总。部分缺失时：
+如果用户已经提供子报告路径和 handoff，可跳过对应子 skill 执行，直接按综合模板汇总。只有 handoff、没有子报告路径时，不得默认视为完成；必须补跑该子 skill 生成子报告，或在用户明确要求“不落盘”时把该维度标为缺失。部分缺失时：
 
 - 明确标注缺失维度
 - 不用缺失维度推断强结论
 - 将缺失内容写入“数据缺口与待验证事项”
+- 将缺失的子报告路径写入“子报告索引”，并说明缺失原因
 
 ## 输出路径约定
 
@@ -174,6 +178,8 @@ output/
 ```
 
 如输出文件已存在，脚本应追加 `(1)`、`(2)` 等编号，避免覆盖。
+
+综合报告保存前必须检查七个维度的 `report_path`。若某个子维度没有路径，先补跑该子 skill；只有补跑失败或用户明确允许部分结果时，才允许在综合报告中写入“未生成子报告链接（failed/partial）”。
 
 ## 注意事项
 

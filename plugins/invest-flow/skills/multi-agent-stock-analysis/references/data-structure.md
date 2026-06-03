@@ -27,9 +27,11 @@ TaskRequest(
     company_name="Marvell Technology",
     market="unknown",
     horizon="mixed",
-    requested_outputs=["summary", "handoff_json"],
+requested_outputs=["summary", "handoff_json"],
 )
 ```
+
+实际执行完整分析时，`requested_outputs` 隐含要求每个子 skill 同时产出 Markdown 子报告路径；`handoff_json` 只用于综合，不替代子报告。
 
 ## SkillSpec
 
@@ -87,6 +89,8 @@ StageResult(
 
 `retry_count` 仅保留兼容字段；当前 prompt-native 运行面不会自动重试子 skill。
 
+完整分析中，`success` 阶段必须带有 `report_path`，且路径应指向该阶段对应目录下的 Markdown 文件，例如 `output/fundamental-analysis/HPE-Hewlett-Packard-Enterprise-2026-06-03.md`。如果只有 handoff、没有 `report_path`，应视为 `partial` 或补跑，而不是完整成功。
+
 ## Handoff
 
 所有子 skill 输出都应尽量压缩为以下结构，供综合报告使用：
@@ -103,6 +107,8 @@ Handoff(
     data_gaps=["缺失数据1"],
 )
 ```
+
+Handoff 是综合报告的结构化摘要；它不能替代子报告。MainAgent 汇总前必须同时保存原始子报告路径，供综合报告的 `## 子报告索引` 引用。
 
 ### CompanyProfile
 
@@ -190,3 +196,17 @@ output/summary/
 ```
 
 只有 prompt plan 时不生成综合投资结论；只有至少一个成功 handoff 时才生成综合 Markdown 报告。
+
+正式 multi-agent 分析还应生成七个子报告目录中的 Markdown 文件：
+
+```text
+output/company-profile/
+output/fundamental-analysis/
+output/institutional-accumulation-analysis/
+output/gie-investment-framework/
+output/reflexivity-deep-analysis/
+output/reportify-stock-analysis/
+output/non-consensus-company-discovery/
+```
+
+若某个维度没有 `report_path`，综合报告必须在 `## 数据缺口与待验证事项` 和 `## 子报告索引` 中标注；默认行为是先补跑该维度，而不是直接用 handoff 汇总。
