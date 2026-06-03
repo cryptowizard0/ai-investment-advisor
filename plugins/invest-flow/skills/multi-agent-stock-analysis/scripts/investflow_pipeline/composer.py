@@ -133,6 +133,20 @@ def _company_profile_summary(results: List[StageResult]) -> str:
     return "\n".join(lines)
 
 
+def _subreport_index(results: List[StageResult]) -> str:
+    if not results:
+        return "- 暂无子报告"
+    lines = []
+    for stage in results:
+        if stage.report_path:
+            lines.append(f"- **{stage.skill_name}**：{stage.report_path}")
+        else:
+            lines.append(
+                f"- **{stage.skill_name}**：未生成子报告链接（{stage.status.value}）"
+            )
+    return "\n".join(lines)
+
+
 def compose_summary(result: PipelineResult) -> str:
     success_results = [stage for stage in result.stage_results if stage.is_success]
     failed_results = [stage for stage in result.stage_results if not stage.is_success]
@@ -143,7 +157,6 @@ def compose_summary(result: PipelineResult) -> str:
     decisions: List[str] = []
     data_gaps: List[str] = []
     monitoring_signals: List[str] = []
-    subreports: List[str] = []
     for stage in success_results:
         evidence_items.extend(stage.handoff.key_evidence)
         conflicts.extend(stage.handoff.contradiction_points)
@@ -153,8 +166,6 @@ def compose_summary(result: PipelineResult) -> str:
         )
         data_gaps.extend(stage.handoff.data_gaps)
         monitoring_signals.extend(stage.handoff.monitoring_signals)
-        if stage.report_path:
-            subreports.append(f"{stage.skill_name}: {stage.report_path}")
 
     failed_notes = [
         f"{stage.skill_name}({stage.agent_name}) 失败: {'; '.join(stage.errors) or '未知错误'}"
@@ -183,7 +194,7 @@ def compose_summary(result: PipelineResult) -> str:
         f"## 决策看板\n{_line_items(decisions, '暂无可执行建议')}\n\n"
         f"## 数据缺口与失败阶段说明\n{_line_items(data_gaps, '无明显数据缺口')}\n\n"
         f"## 后续跟踪信号\n{_line_items(monitoring_signals, '暂无后续跟踪信号')}\n\n"
-        f"## 子报告索引\n{_line_items(subreports, '暂无子报告路径')}\n\n"
+        f"## 子报告索引\n{_subreport_index(result.stage_results)}\n\n"
         f"## 投资免责声明\n"
         f"- 本报告仅用于研究与教育目的，不构成任何投资建议。\n"
         f"- 市场有风险，投资需结合个人风险承受能力独立决策。\n"

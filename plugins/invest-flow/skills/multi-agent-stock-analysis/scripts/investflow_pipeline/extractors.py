@@ -182,7 +182,7 @@ def _extract_recommendation_like_line(text: str, label: str) -> str:
 
 
 def _extract_company_profile(markdown: str) -> CompanyProfile | None:
-    if "公司画像" not in markdown:
+    if "## 一页式公司画像" not in markdown and "# 一页式公司画像" not in markdown:
         return None
 
     core_products = _section_bullets(markdown, ["核心业务与收入结构"])

@@ -225,6 +225,9 @@
 - **基本面分析：** {fundamental_report_path}
 - **机构流向分析：** {institutional_report_path}
 - **GIE框架分析：** {gie_report_path}
+- **反身性深度分析：** {reflexivity_deep_report_path}
+- **Reportify标准报告：** {reportify_report_path}
+- **非共识重估分析：** {non_consensus_report_path}
 
 ### 免责声明
 本报告仅供参考，不构成投资建议。投资有风险，入市需谨慎。请根据自身风险承受能力做出投资决策。

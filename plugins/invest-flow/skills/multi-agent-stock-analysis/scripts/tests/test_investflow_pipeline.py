@@ -459,6 +459,24 @@ AI 数据中心芯片和互连基础设施上游供应商。
         self.assertIn("company_profile.ai_value_chain_position missing", handoff.data_gaps)
         self.assertIn("company_profile.key_uncertainties missing", handoff.data_gaps)
 
+    def test_extract_handoff_does_not_treat_context_mentions_as_company_profile(self):
+        from investflow_pipeline.extractors import extract_handoff
+
+        markdown = """
+# TSLA 基本面分析报告
+
+## 核心结论
+公司画像背景可作为辅助阅读，但本报告不是 company-profile 模板。
+
+## 数据缺口
+- 缺少最新分部收入
+"""
+        handoff = extract_handoff(markdown)
+
+        self.assertIsNone(handoff.company_profile)
+        self.assertIn("缺少最新分部收入", handoff.data_gaps)
+        self.assertNotIn("company_profile.one_liner missing", handoff.data_gaps)
+
 
 class ExecutorTests(unittest.TestCase):
     def test_validate_rejects_short_output(self):
@@ -741,6 +759,60 @@ class ComposerTests(unittest.TestCase):
         self.assertIn("## 后续跟踪信号", summary)
         self.assertIn("毛利率连续两个季度改善", summary)
         self.assertIn("订单增速跌破收入增速", summary)
+
+    def test_compose_summary_subreport_index_lists_all_seven_dimensions(self):
+        from investflow_pipeline.composer import compose_summary
+        from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
+
+        stages = [
+            StageResult(
+                "company-profile",
+                "company_profile",
+                AnalysisStatus.SUCCESS,
+                report_path="output/company-profile/company-profile-TSLA-2026-06-03.md",
+            ),
+            StageResult(
+                "fundamental-analysis",
+                "fundamental",
+                AnalysisStatus.SUCCESS,
+                report_path="output/fundamental-analysis/TSLA-Tesla-2026-06-03.md",
+                handoff=Handoff(recommendation="观望"),
+            ),
+            StageResult(
+                "institutional-accumulation-analysis",
+                "institutional",
+                AnalysisStatus.FAILED,
+                errors=["timeout"],
+            ),
+            StageResult("gie-investment-framework", "gie", AnalysisStatus.PENDING),
+            StageResult("reflexivity-deep-analysis", "reflexivity_deep", AnalysisStatus.PENDING),
+            StageResult("reportify-stock-analysis", "reportify", AnalysisStatus.PENDING),
+            StageResult("non-consensus-company-discovery", "non_consensus", AnalysisStatus.PENDING),
+        ]
+        result = self._pipeline_result(stages, status="partial_success")
+
+        summary = compose_summary(result)
+
+        self.assertIn("## 子报告索引", summary)
+        self.assertIn(
+            "- **company-profile**：output/company-profile/company-profile-TSLA-2026-06-03.md",
+            summary,
+        )
+        self.assertIn(
+            "- **fundamental-analysis**：output/fundamental-analysis/TSLA-Tesla-2026-06-03.md",
+            summary,
+        )
+        self.assertIn(
+            "- **institutional-accumulation-analysis**：未生成子报告链接（failed）",
+            summary,
+        )
+        self.assertIn("- **gie-investment-framework**：未生成子报告链接（pending）", summary)
+        self.assertIn("- **reflexivity-deep-analysis**：未生成子报告链接（pending）", summary)
+        self.assertIn("- **reportify-stock-analysis**：未生成子报告链接（pending）", summary)
+        self.assertIn(
+            "- **non-consensus-company-discovery**：未生成子报告链接（pending）",
+            summary,
+        )
 
 
 class RunnerTests(unittest.TestCase):
