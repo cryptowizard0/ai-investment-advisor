@@ -1231,7 +1231,7 @@ In `workflow-guide.md`, change "六个分析维度" wording to "七个分析维�
 Add this handoff note:
 
 ```markdown
-`company-profile` 的 handoff 额外包含 `company_profile` 结构化字段。Composer 必须优先使用该字段生成 `## 公司画像摘要`；字段缺失时回退到 conclusion 和 key_evidence。
+`company-profile` 的 handoff 额外包含 `company_profile` 结构化字段。Composer 使用该字段生成 `## 公司画像摘要`；如果 `company_profile` 缺失，则渲染公司画像状态行，而不是用其他 handoff 字段回填。若 `company-profile` 阶段失败，Composer 会明确警告缺少公司画像会降低整体判断可信度。
 ```
 
 - [ ] **Step 3: Update `data-structure.md`**

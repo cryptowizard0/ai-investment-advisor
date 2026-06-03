@@ -224,10 +224,11 @@ The final multi-agent report should start with company understanding:
 {execution_summary}
 ```
 
-The composer should prefer structured `company_profile` fields. If they are absent,
-it should fall back to the `company-profile` handoff conclusion and evidence. If
+The composer should use structured `company_profile` fields to generate
+`## 公司画像摘要` when present. If `company_profile` is absent, it should render a
+company profile status row instead of falling back to other handoff fields. If
 `company-profile` fails, the report can still be produced as partial output, but it
-must state that missing company context lowers confidence in the overall judgment.
+must warn that missing company context lowers confidence in the overall judgment.
 
 `子报告索引` must list all seven dimensions, including `company-profile`.
 
