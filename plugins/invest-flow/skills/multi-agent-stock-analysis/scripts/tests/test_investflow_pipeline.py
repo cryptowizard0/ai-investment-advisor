@@ -797,7 +797,8 @@ class RunnerTests(unittest.TestCase):
             self.assertTrue(json_path.exists())
 
             self.assertEqual(result.status, "prompt_plan")
-            self.assertEqual(len(result.stage_results), 6)
+            self.assertEqual(len(result.stage_results), 7)
+            self.assertEqual(result.stage_results[0].skill_name, "company-profile")
             self.assertTrue(all(stage.prompt for stage in result.stage_results))
             self.assertIsNone(result.summary_report_path)
             self.assertEqual(result.failed_required, [])
@@ -817,7 +818,8 @@ class RunnerTests(unittest.TestCase):
             )
 
         self.assertEqual(result.status, "prompt_plan")
-        self.assertEqual(len(result.stage_results), 6)
+        self.assertEqual(len(result.stage_results), 7)
+        self.assertEqual(result.stage_results[0].agent_name, "company_profile")
 
     def test_analyze_stock_rejects_deprecated_execution_mode(self):
         from investflow_pipeline.models import OrchestrationConfig
@@ -856,24 +858,28 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
             self.assertTrue(Path(result["prompt_plan_path"]).exists())
 
         self.assertEqual(result["status"], "prompt_plan")
-        self.assertEqual(result["total_count"], 6)
+        self.assertEqual(result["total_count"], 7)
         self.assertEqual(result["completed_count"], 0)
-        self.assertEqual(result["pending_count"], 6)
+        self.assertEqual(result["pending_count"], 7)
         self.assertTrue(result["prompt_plan_path"])
         prompts = [stage["prompt"] for stage in result["stage_results"]]
-        self.assertEqual(prompts[0], "使用 invest-flow:fundamental-analysis 分析 MRVL")
         self.assertEqual(
-            prompts[1],
+            prompts[0],
+            "使用 invest-flow:company-profile 分析 MRVL / Marvell Technology，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位",
+        )
+        self.assertEqual(prompts[1], "使用 invest-flow:fundamental-analysis 分析 MRVL")
+        self.assertEqual(
+            prompts[2],
             "使用 invest-flow:institutional-accumulation-analysis 分析 MRVL",
         )
         self.assertEqual(
-            prompts[2],
+            prompts[3],
             "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology",
         )
-        self.assertEqual(prompts[3], "使用 invest-flow:reflexivity-deep-analysis 分析 MRVL")
-        self.assertEqual(prompts[4], "使用 invest-flow:reportify-stock-analysis 分析 MRVL")
+        self.assertEqual(prompts[4], "使用 invest-flow:reflexivity-deep-analysis 分析 MRVL")
+        self.assertEqual(prompts[5], "使用 invest-flow:reportify-stock-analysis 分析 MRVL")
         self.assertEqual(
-            prompts[5],
+            prompts[6],
             "使用 invest-flow:non-consensus-company-discovery 评估 MRVL / Marvell Technology 的非共识重估机会",
         )
 
@@ -897,6 +903,7 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
         self.assertEqual(exit_code, 0)
         self.assertIn("状态: prompt_plan", output)
         self.assertIn("Prompt计划:", output)
+        self.assertIn("使用 invest-flow:company-profile 分析 MRVL / Marvell Technology", output)
         self.assertIn("使用 invest-flow:fundamental-analysis 分析 MRVL", output)
 
     def test_scripts_do_not_call_external_agent_runtime(self):
