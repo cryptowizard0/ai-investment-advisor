@@ -206,7 +206,9 @@ def _company_profile_data_gaps(profile: CompanyProfile | None) -> List[str]:
     required_lists = {
         "core_products": profile.core_products,
         "technical_advantages": profile.technical_advantages,
+        "ai_value_chain_position": profile.ai_value_chain_position,
         "competitors": profile.competitors,
+        "key_uncertainties": profile.key_uncertainties,
         "pre_analysis_questions": profile.pre_analysis_questions,
         "data_sources": profile.data_sources,
     }

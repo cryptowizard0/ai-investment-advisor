@@ -419,12 +419,14 @@ AI 数据中心芯片和互连基础设施上游供应商。
         self.assertEqual(profile.one_liner, "Marvell 是面向数据基础设施的半导体公司。")
         self.assertEqual(profile.business_summary, "数据中心、运营商网络、企业网络和存储相关芯片。")
         self.assertEqual(profile.revenue_model, "芯片销售、定制 ASIC 和连接解决方案。")
+        self.assertIn("数据中心互连芯片", profile.core_products)
         self.assertIn("高速 SerDes", profile.technical_advantages)
         self.assertEqual(profile.industry_chain_position, "AI 数据中心芯片和互连基础设施上游供应商。")
         self.assertEqual(profile.ai_relevance, "直接受益")
         self.assertIn("网络互连", profile.ai_value_chain_position)
         self.assertIn("Broadcom", profile.competitors)
         self.assertEqual(profile.industry_position, "数据基础设施芯片的重要供应商。")
+        self.assertIn("AI 定制芯片放量节奏和传统业务复苏速度。", profile.key_uncertainties)
         self.assertIn("AI 收入增长是否能覆盖传统存储周期波动？", profile.pre_analysis_questions)
         self.assertIn("公司年报", profile.data_sources)
 
@@ -442,6 +444,8 @@ AI 数据中心芯片和互连基础设施上游供应商。
         self.assertIsNotNone(handoff.company_profile)
         self.assertIn("company_profile.business_summary missing", handoff.data_gaps)
         self.assertIn("company_profile.ai_relevance missing", handoff.data_gaps)
+        self.assertIn("company_profile.ai_value_chain_position missing", handoff.data_gaps)
+        self.assertIn("company_profile.key_uncertainties missing", handoff.data_gaps)
 
 
 class ExecutorTests(unittest.TestCase):
