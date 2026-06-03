@@ -274,7 +274,10 @@ Add or update unit tests for:
 Run:
 
 ```bash
-python -m unittest discover plugins/invest-flow -p 'test_*.py'
+python -m unittest \
+  plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/tests/test_investflow_pipeline.py \
+  plugins/invest-flow/skills/non-consensus-company-discovery/scripts/tests/test_generate_report.py \
+  plugins/invest-flow/skills/daily-us-market-scan/scripts/tests/test_create_report.py
 ```
 
 ## Rollout
