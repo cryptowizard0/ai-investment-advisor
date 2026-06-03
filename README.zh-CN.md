@@ -35,7 +35,7 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 | 从产业链找到非共识标的 | 先用 `industry-chain-analysis` 拆产业链和瓶颈，再用 `non-consensus-company-discovery` 分析最有潜力的环节或模块。 |
 | 每日市场复盘 | 美股收盘后使用 `daily-us-market-scan`。 |
 | 跟踪叙事和反身性风险 | 定期用 `reflexivity-quick-scan` 判断阶段；当阶段变化或仓位较重时升级到 `reflexivity-deep-analysis`。 |
-| 快速研究单只股票 | 用 `multi-agent-stock-analysis` 同时交叉验证基本面、资金流、GIE、反身性、Reportify 和非共识视角。 |
+| 快速研究单只股票 | 用 `multi-agent-stock-analysis` 先生成 `company-profile` 公司画像，再交叉验证基本面、资金流、GIE、反身性、Reportify 和非共识视角。 |
 | 解读财报 | 公司发布财报后用 `earnings-report-analysis` 判断预期差，再更新个股投资判断。 |
 | 生成正式个股报告 | 用 `professional-investment-analyst` 生成买方研究风格报告，或用 `reportify-stock-analysis` 生成标准化结构报告。 |
 | 获取市场数据 | 当其他研究流程需要行情、期权或缓存数据时，使用 `market-data-router`。 |
@@ -46,6 +46,7 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 |---|---|---|
 | `ai-infrastructure-sector-discovery` | 扫描并评分 AI 基建板块。 | 想找下一步最值得研究的 AI 基建方向。 |
 | `ai-infrastructure-scarcity-radar` | 深挖 AI 基建稀缺环节和瓶颈。 | 已经锁定主题，需要判断稀缺是否真实且可投资。 |
+| `company-profile` | 生成投资分析前置公司画像。 | 用户第一次听说某家公司时，用于快速理解公司简介、核心业务、技术壁垒、产业链位置、AI 相关性、竞争对手和行业地位。 |
 | `daily-us-market-scan` | 生成中文美股收盘复盘和次日计划。 | 想每日跟踪指数、板块、主题、市场宽度、财报和观察名单。 |
 | `earnings-report-analysis` | 从机构视角分析财报、指引、电话会和预期差。 | 公司刚发布财报，需要判断投资逻辑是否改变。 |
 | `fundamental-analysis` | 做单股基本面、估值和技术面分析。 | 需要快速形成一家公司是否值得继续研究的结构化判断。 |
@@ -82,6 +83,7 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 
 | 流程 | 输出路径 |
 |---|---|
+| 公司画像 | `output/company-profile/` |
 | 基本面分析 | `output/fundamental-analysis/` |
 | 财报分析 | `output/earnings-report-analysis/` |
 | AI 基建板块扫描 | `output/ai-infrastructure-sector-discovery/` |

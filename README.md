@@ -35,7 +35,7 @@ If the plugin does not appear, confirm these files exist:
 | Map a sector and find non-consensus names | Start with `industry-chain-analysis`, then use `non-consensus-company-discovery` on the most interesting bottleneck or module. |
 | Run daily market review | Use `daily-us-market-scan` after the US close. |
 | Track narrative and reflexivity risk | Use `reflexivity-quick-scan` regularly; upgrade to `reflexivity-deep-analysis` when the stage changes or the position is material. |
-| Research one stock quickly | Use `multi-agent-stock-analysis` for cross-checking across fundamentals, flows, GIE, reflexivity, Reportify, and non-consensus views. |
+| Quick single-stock research | Use `multi-agent-stock-analysis` to start with `company-profile`, then cross-check fundamentals, capital flow, GIE, reflexivity, Reportify, and non-consensus views. |
 | Review earnings | Use `earnings-report-analysis` after a company reports, then update the single-stock thesis if guidance or expectations changed. |
 | Produce a formal stock report | Use `professional-investment-analyst` for a buy-side style report, or `reportify-stock-analysis` for a standardized structured report. |
 | Pull market data | Use `market-data-router` when another workflow needs bars, quote data, options context, or cached market data. |
@@ -46,6 +46,7 @@ If the plugin does not appear, confirm these files exist:
 |---|---|---|
 | `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring. | You want to identify the best AI infrastructure themes to research next. |
 | `ai-infrastructure-scarcity-radar` | Deep scarcity and bottleneck analysis for AI infrastructure. | You already have a theme and need to judge whether scarcity is real and investable. |
+| `company-profile` | Builds a company primer before investment analysis. | Use when a user is hearing about a company for the first time and needs business, technology, value-chain, AI relevance, competitors, and industry-position context. |
 | `daily-us-market-scan` | Chinese US market close report and next-session review. | You want a daily read on indices, sectors, themes, breadth, earnings, and watchlists. |
 | `earnings-report-analysis` | Institutional earnings, guidance, call, and expectation-gap analysis. | A company has reported and you need to know whether the thesis changed. |
 | `fundamental-analysis` | Single-stock fundamental, valuation, and technical analysis. | You need a fast but structured view of a company. |
@@ -82,6 +83,7 @@ Generated reports and cache files are written under `output/`:
 
 | Workflow | Output path |
 |---|---|
+| Company profile | `output/company-profile/` |
 | Fundamental analysis | `output/fundamental-analysis/` |
 | Earnings report analysis | `output/earnings-report-analysis/` |
 | AI infrastructure sector discovery | `output/ai-infrastructure-sector-discovery/` |

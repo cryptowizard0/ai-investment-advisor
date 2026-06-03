@@ -32,6 +32,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │       └── skills/
 │           ├── ai-infrastructure-scarcity-radar/
 │           ├── ai-infrastructure-sector-discovery/
+│           ├── company-profile/
 │           ├── fundamental-analysis/
 │           ├── earnings-report-analysis/
 │           ├── institutional-accumulation-analysis/
@@ -46,6 +47,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── multi-agent-stock-analysis/
 │           └── market-data-router/
 ├── output/
+│   ├── company-profile/
 │   ├── fundamental-analysis/
 │   ├── earnings-report-analysis/
 │   ├── ai-infrastructure-sector-discovery/
@@ -119,6 +121,7 @@ Active packaged skills:
 
 - `ai-infrastructure-sector-discovery` - weekly AI infrastructure sector discovery and scoring
 - `ai-infrastructure-scarcity-radar` - AI infrastructure scarcity opportunity and bottleneck analysis
+- `company-profile` - company primer covering overview, core business, technology barriers, industry-chain position, AI relevance, competitors, and industry position
 - `fundamental-analysis` - stock fundamental and technical analysis
 - `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
@@ -138,7 +141,7 @@ Active packaged skills:
 `multi-agent-stock-analysis` is implemented by the packaged orchestrator script, not by separate legacy agent-definition files. The current orchestrator:
 
 - resolves the repo root dynamically
-- generates six Codex skill prompts for the basic stock-analysis workflow: fundamental, institutional, GIE, reflexivity deep, reportify, and non-consensus
+- generates seven Codex skill prompts for the basic stock-analysis workflow: company profile, fundamental, institutional, GIE, reflexivity deep, reportify, and non-consensus
 - writes a prompt plan Markdown file and orchestration JSON
 - does not execute child skills or launch another agent process
 - supports summary composition from already completed handoff data
@@ -151,6 +154,7 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Earnings report analysis: `output/earnings-report-analysis/earnings-report-analysis-{TICKER}-{period}-{YYYY-MM-DD}.md`
 - AI infrastructure sector discovery: `output/ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-{YYYY-MM-DD}.md`
 - AI infrastructure scarcity radar: `output/ai-infrastructure-scarcity-radar/ai-infrastructure-scarcity-radar-{topic}-{YYYY-MM-DD}.md`
+- Company profile: `output/company-profile/company-profile-{TICKER}-{YYYY-MM-DD}.md`
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - GIE framework: `output/gie-investment-framework/gie-{title}-{date}.md`
 - Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`
