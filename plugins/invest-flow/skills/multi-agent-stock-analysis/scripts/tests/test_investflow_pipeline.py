@@ -533,6 +533,71 @@ class ComposerTests(unittest.TestCase):
             orchestration_json_path=None,
         )
 
+    def test_compose_summary_places_company_profile_before_execution_summary(self):
+        from investflow_pipeline.composer import compose_summary
+        from investflow_pipeline.models import AnalysisStatus, CompanyProfile, Handoff, StageResult
+
+        result = self._pipeline_result(
+            [
+                StageResult(
+                    skill_name="company-profile",
+                    agent_name="company_profile",
+                    status=AnalysisStatus.SUCCESS,
+                    report_path="output/company-profile/company-profile-TSLA-2026-06-02.md",
+                    handoff=Handoff(
+                        company_profile=CompanyProfile(
+                            one_liner="Tesla 是电动车、储能和软件能力结合的能源技术公司。",
+                            business_summary="电动车、储能系统、能源服务和自动驾驶软件。",
+                            revenue_model="车辆销售、租赁、能源产品和服务。",
+                            technical_advantages=["电池系统集成", "软件 OTA"],
+                            industry_chain_position="新能源车整车与储能系统。",
+                            ai_relevance="间接受益",
+                            ai_value_chain_position=["终端应用", "自动驾驶软件"],
+                            competitors=["BYD", "Rivian"],
+                            industry_position="全球电动车领先厂商之一。",
+                            key_uncertainties=["汽车毛利率压力"],
+                        )
+                    ),
+                )
+            ],
+            status="success",
+        )
+
+        summary = compose_summary(result)
+
+        self.assertLess(summary.index("## 公司画像摘要"), summary.index("## 执行摘要"))
+        self.assertIn("| 公司一句话定义 | Tesla 是电动车、储能和软件能力结合的能源技术公司。 |", summary)
+        self.assertIn("| AI 相关性 | 间接受益 / 终端应用、自动驾驶软件 |", summary)
+        self.assertIn("| 主要竞争对手 | BYD、Rivian |", summary)
+
+    def test_compose_summary_reports_failed_company_profile_as_data_gap(self):
+        from investflow_pipeline.composer import compose_summary
+        from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
+
+        result = self._pipeline_result(
+            [
+                StageResult(
+                    skill_name="company-profile",
+                    agent_name="company_profile",
+                    status=AnalysisStatus.FAILED,
+                    errors=["profile report missing"],
+                ),
+                StageResult(
+                    skill_name="fundamental-analysis",
+                    agent_name="fundamental",
+                    status=AnalysisStatus.SUCCESS,
+                    handoff=Handoff(recommendation="观望"),
+                ),
+            ],
+            status="partial_success",
+        )
+
+        summary = compose_summary(result)
+
+        self.assertIn("## 公司画像摘要", summary)
+        self.assertIn("缺少公司画像会降低整体判断可信度", summary)
+        self.assertIn("company-profile(company_profile) 失败: profile report missing", summary)
+
     def test_write_outputs_success_creates_json_and_markdown(self):
         from investflow_pipeline.composer import write_outputs
         from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult

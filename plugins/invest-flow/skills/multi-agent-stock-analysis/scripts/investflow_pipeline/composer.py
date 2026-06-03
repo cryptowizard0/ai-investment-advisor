@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from .models import AnalysisStatus, PipelineResult, StageResult
+from .models import AnalysisStatus, CompanyProfile, PipelineResult, StageResult
 from .paths import ensure_output_dir, unique_path
 
 
@@ -72,6 +72,62 @@ def _stage_table(results: List[StageResult]) -> str:
     return "\n".join(lines)
 
 
+def _join_values(values: List[str], fallback: str = "不确定") -> str:
+    cleaned = [_normalize_text(value) for value in values if _normalize_text(value)]
+    return "、".join(cleaned) if cleaned else fallback
+
+
+def _find_company_profile_stage(results: List[StageResult]) -> StageResult | None:
+    for stage in results:
+        if stage.skill_name == "company-profile":
+            return stage
+    return None
+
+
+def _profile_from_stage(stage: StageResult | None) -> CompanyProfile | None:
+    if stage is None:
+        return None
+    return stage.handoff.company_profile
+
+
+def _company_profile_summary(results: List[StageResult]) -> str:
+    stage = _find_company_profile_stage(results)
+    profile = _profile_from_stage(stage)
+    if profile is None:
+        if stage is not None and stage.status == AnalysisStatus.FAILED:
+            note = "缺少公司画像会降低整体判断可信度。"
+        else:
+            note = "公司画像未生成，后续结论只能依赖投资维度报告。"
+        return (
+            "| 项目 | 内容 |\n"
+            "| --- | --- |\n"
+            f"| 公司画像状态 | {_table_cell(note, '不确定')} |"
+        )
+
+    ai_context = profile.ai_relevance or "不确定"
+    ai_positions = _join_values(profile.ai_value_chain_position, "")
+    if ai_positions:
+        ai_context = f"{ai_context} / {ai_positions}"
+
+    rows = [
+        ("公司一句话定义", profile.one_liner),
+        ("核心业务", profile.business_summary),
+        ("收入来源", profile.revenue_model),
+        ("核心技术 / 壁垒", _join_values(profile.technical_advantages)),
+        ("产业链位置", profile.industry_chain_position),
+        ("AI 相关性", ai_context),
+        ("主要竞争对手", _join_values(profile.competitors)),
+        ("行业地位", profile.industry_position),
+        ("关键不确定性", _join_values(profile.key_uncertainties)),
+    ]
+    lines = ["| 项目 | 内容 |", "| --- | --- |"]
+    lines.extend(
+        f"| {_table_cell(label, '-')} | {_table_cell(value, '不确定')} |"
+        for label, value in rows
+    )
+    return "\n".join(lines)
+
+
 def compose_summary(result: PipelineResult) -> str:
     success_results = [stage for stage in result.stage_results if stage.is_success]
     failed_results = [stage for stage in result.stage_results if not stage.is_success]
@@ -113,6 +169,7 @@ def compose_summary(result: PipelineResult) -> str:
     return (
         f"# 综合分析报告 - {result.ticker}\n\n"
         f"作者：InvestmentFlow\n\n"
+        f"## 公司画像摘要\n{_company_profile_summary(result.stage_results)}\n\n"
         f"## 执行摘要\n{execution_summary}\n\n"
         f"## 分析维度总览\n{_stage_table(result.stage_results)}\n\n"
         f"## 证据汇总\n{_line_items(evidence_items, '暂无关键证据')}\n\n"
