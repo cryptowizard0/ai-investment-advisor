@@ -66,6 +66,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── daily-us-market-scan/
 │   ├── summary/
 │   ├── index.md
+│   ├── index.html
 │   └── cache/market-data/
 └── .venv/
 ```
@@ -85,6 +86,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py` - earnings report analysis skeleton generator
 - `plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py` - non-consensus discovery report skeleton generator
 - `plugins/invest-flow/skills/output-report-index/scripts/generate_index.py` - output report index generator
+- `plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py` - UTF-8 local report static server
 
 ## Build/Test Commands
 
@@ -105,7 +107,8 @@ python -m unittest \
   plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/tests/test_investflow_pipeline.py \
   plugins/invest-flow/skills/non-consensus-company-discovery/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/daily-us-market-scan/scripts/tests/test_create_report.py \
-  plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py
+  plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py \
+  plugins/invest-flow/skills/output-report-index/scripts/tests/test_serve_reports.py
 
 # Generate a multi-agent Codex prompt plan
 python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
@@ -116,8 +119,11 @@ python plugins/invest-flow/skills/non-consensus-company-discovery/scripts/genera
 # Generate an earnings report analysis skeleton
 python plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py --ticker NVDA --company "NVIDIA" --period "FY2026 Q1"
 
-# Generate or update the output report index
+# Generate or update the Markdown and HTML output report indexes
 python plugins/invest-flow/skills/output-report-index/scripts/generate_index.py
+
+# Serve output reports with UTF-8 Markdown/HTML headers
+python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py --port 8000
 ```
 
 ## Skill Layout
@@ -150,7 +156,7 @@ Active packaged skills:
 - `reportify-stock-analysis` - fixed-template structured stock research report generation
 - `daily-us-market-scan` - Chinese daily US market close scan covering indices, macro, sectors, themes, breadth, technicals, earnings, flows, watchlists, and next-session plans
 - `multi-agent-stock-analysis` - orchestration across multiple analysis skills
-- `output-report-index` - explicit report index generator for `output/index.md`
+- `output-report-index` - explicit Markdown and HTML report index generator for `output/index.md` and `output/index.html`
 - `market-data-router` - routed market data fetch and fallback logic
 
 ## Orchestrator Notes
@@ -183,8 +189,10 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Reportify stock analysis: `output/reportify-stock-analysis/reportify-stock-analysis-{TICKER}-{YYYY-MM-DD}.md`
 - Daily US market scan: `output/daily-us-market-scan/us-market-close-daily-{YYYY-MM-DD}.md`
 - Summary report: `output/summary/综合分析-{TICKER}-{date}.md`
-- Report index: `output/index.md`
+- Report index: `output/index.md` and `output/index.html`
 - Market data cache: `output/cache/market-data/`
+
+Open the HTML report reader through the UTF-8 report server, for example `python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py --port 8000` from the repo root and then `http://127.0.0.1:8000/output/index.html`, so the page can fetch Markdown reports on demand and direct `.md` links render Chinese correctly.
 
 If an output file already exists, scripts should append numbered suffixes like `(1)` and `(2)` instead of overwriting.
 

@@ -38,9 +38,15 @@ class GenerateIndexTests(unittest.TestCase):
             institutional_dir.mkdir()
 
             old_report = fundamental_dir / "AAA-Old-2026-01-02.md"
-            old_report.write_text("# Old Fundamental Report\n\nBody", encoding="utf-8")
+            old_report.write_text(
+                "# Old Fundamental Report\n\nPrivate old report body should not be embedded.",
+                encoding="utf-8",
+            )
             new_report = fundamental_dir / "BBB-New-2026-01-05.md"
-            new_report.write_text("# New Fundamental Report\n\nBody", encoding="utf-8")
+            new_report.write_text(
+                "# New Fundamental Report\n\nPrivate new report body should not be embedded.",
+                encoding="utf-8",
+            )
             untitled_report = daily_dir / "us market close 2026-01-03.md"
             untitled_report.write_text("No level one title\n", encoding="utf-8")
             compact_date_report = institutional_dir / "机构操作分析-20260104-测试(1).md"
@@ -53,8 +59,13 @@ class GenerateIndexTests(unittest.TestCase):
 
             result_path = generator.generate_index(output_dir=output_dir)
             index_text = result_path.read_text(encoding="utf-8")
+            index_bytes = result_path.read_bytes()
+            html_path = output_dir / "index.html"
+            html_text = html_path.read_text(encoding="utf-8")
 
             self.assertEqual(result_path, index_path)
+            self.assertTrue(index_bytes.startswith(b"\xef\xbb\xbf"))
+            self.assertTrue(html_path.exists())
             self.assertIn("# Output 报告索引", index_text)
             self.assertIn("## daily-us-market-scan", index_text)
             self.assertIn("## fundamental-analysis", index_text)
@@ -85,6 +96,69 @@ class GenerateIndexTests(unittest.TestCase):
             new_position = index_text.index("| 2026-01-05 | New Fundamental Report |")
             self.assertLess(no_date_position, dated_daily_position)
             self.assertLess(old_position, new_position)
+
+            self.assertIn("<title>Reports by AI Investment Advisor</title>", html_text)
+            self.assertIn("<h1>Reports by AI Investment Advisor</h1>", html_text)
+            self.assertIn('<div class="sidebar-header">', html_text)
+            self.assertIn('<div class="sidebar-content">', html_text)
+            self.assertIn('class="sidebar-toggle"', html_text)
+            self.assertIn('id="sidebarToggle"', html_text)
+            self.assertIn('aria-label="收起侧边栏"', html_text)
+            self.assertNotIn("topbar-actions", html_text)
+            self.assertLess(
+                html_text.index('<aside class="sidebar"'),
+                html_text.index('id="sidebarToggle"'),
+            )
+            self.assertIn(".app-shell.sidebar-collapsed", html_text)
+            self.assertIn("toggleSidebar", html_text)
+            self.assertIn("sidebarToggle.addEventListener", html_text)
+            self.assertIn("grid-template-columns: minmax(280px, 380px) minmax(0, 1fr)", html_text)
+            self.assertIn("grid-template-columns: 52px minmax(0, 1fr)", html_text)
+            self.assertIn(".app-shell.sidebar-collapsed .sidebar-content", html_text)
+            self.assertIn(".app-shell.sidebar-collapsed .reader", html_text)
+            self.assertIn("height: 100vh", html_text)
+            self.assertIn("overflow: hidden", html_text)
+            self.assertIn(".reader {", html_text)
+            self.assertIn("overflow: auto", html_text)
+            self.assertIn('class="category-items"', html_text)
+            self.assertIn("category-section.collapsed .category-items", html_text)
+            self.assertIn('aria-expanded="true"', html_text)
+            self.assertIn("toggleCategorySection", html_text)
+            self.assertIn("报告总数", html_text)
+            self.assertIn("分类总数", html_text)
+            self.assertIn("最新日期", html_text)
+            self.assertIn("最新报告", html_text)
+            self.assertIn('<span class="metric-value">5</span>', html_text)
+            self.assertIn('<span class="metric-value">3</span>', html_text)
+            self.assertIn('<span class="metric-value">2026-01-05</span>', html_text)
+            self.assertIn("New Fundamental Report", html_text)
+            self.assertIn(
+                '<a class="metric-value metric-link" href="#fundamental-analysis/BBB-New-2026-01-05.md">New Fundamental Report</a>',
+                html_text,
+            )
+            self.assertIn("const REPORTS =", html_text)
+            self.assertIn("BBB-New-2026-01-05.md", html_text)
+            self.assertIn("fetch(report.path)", html_text)
+            self.assertIn("renderMarkdown(markdown)", html_text)
+            self.assertIn("location.hash", html_text)
+            self.assertIn("decodeURIComponent", html_text)
+            self.assertIn("href=\"#fundamental-analysis/BBB-New-2026-01-05.md\"", html_text)
+            self.assertIn(
+                "href=\"./fundamental-analysis/BBB-New-2026-01-05.md\"",
+                html_text,
+            )
+            self.assertIn("function renderMarkdown", html_text)
+            self.assertIn("function renderTable", html_text)
+            self.assertIn("function escapeHtml", html_text)
+            self.assertNotIn("Private old report body should not be embedded.", html_text)
+            self.assertNotIn("Private new report body should not be embedded.", html_text)
+
+            generated_html_reports = [
+                path
+                for path in output_dir.rglob("*.html")
+                if path.name != "index.html"
+            ]
+            self.assertEqual(generated_html_reports, [])
 
 
 if __name__ == "__main__":

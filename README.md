@@ -39,7 +39,7 @@ If the plugin does not appear, confirm these files exist:
 | Review earnings | Use `earnings-report-analysis` after a company reports, then update the single-stock thesis if guidance or expectations changed. |
 | Produce a formal stock report | Use `professional-investment-analyst` for a buy-side style report, or `reportify-stock-analysis` for a standardized structured report. |
 | Pull market data | Use `market-data-router` when another workflow needs bars, quote data, options context, or cached market data. |
-| Index generated reports | Use `output-report-index` when you explicitly want to generate or update `output/index.md`. |
+| Index generated reports | Use `output-report-index` when you explicitly want to generate or update `output/index.md` and `output/index.html`. |
 
 ## Skill List
 
@@ -58,7 +58,7 @@ If the plugin does not appear, confirm these files exist:
 | `market-data-router` | Routed market-data fetching and fallback logic. | You need bars, quote data, options context, or cached market data for analysis. |
 | `multi-agent-stock-analysis` | Codex-native orchestration across multiple stock-analysis skills. | You want one stock analyzed from several independent angles. |
 | `non-consensus-company-discovery` | Theme-to-company discovery for high-potential non-consensus opportunities. | You want names the market may still value using the wrong framework. |
-| `output-report-index` | Markdown index page for generated reports. | You explicitly ask to generate or update the report index under `output/`. |
+| `output-report-index` | Markdown and static HTML index pages for generated reports. | You explicitly ask to generate or update the report index under `output/`. |
 | `professional-investment-analyst` | Buy-side style company research system. | You need a formal, trackable, evidence-based stock report. |
 | `reflexivity-deep-analysis` | Full reflexivity-cycle analysis for a stock, sector, asset, or narrative. | You need to map narrative, price, reality, marginal change, and reversal risk. |
 | `reflexivity-quick-scan` | Fast reflexivity stage check. | You need a quick read on whether a narrative is starting, strengthening, exhausted, or reversing. |
@@ -102,10 +102,54 @@ Generated reports and cache files are written under `output/`:
 | Reportify stock analysis | `output/reportify-stock-analysis/` |
 | Daily US market scan | `output/daily-us-market-scan/` |
 | Multi-agent summaries | `output/summary/` |
-| Report index | `output/index.md` |
+| Report index | `output/index.md`, `output/index.html` |
 | Market data cache | `output/cache/market-data/` |
 
 Existing files should not be overwritten. Skills append suffixes such as `(1)` and `(2)` when needed.
+
+Open the HTML report reader through the UTF-8 report server so it can fetch Markdown files on demand and direct `.md` links render Chinese correctly:
+
+```bash
+python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py --port 8000
+# then open http://127.0.0.1:8000/output/index.html
+```
+
+## Report Index Reader
+
+`output-report-index` builds two local index files from the Markdown reports already under `output/`:
+
+- `output/index.md` - a Markdown index grouped by first-level output category.
+- `output/index.html` - a static single-page report reader with metrics, search, collapsible categories, and on-demand Markdown rendering.
+
+The skill is intentionally passive. It should only run when the user explicitly asks to generate or update the index, for example:
+
+```text
+生成索引
+更新索引
+Use invest-flow:output-report-index to update the output report index.
+```
+
+To regenerate the files manually:
+
+```bash
+python plugins/invest-flow/skills/output-report-index/scripts/generate_index.py
+```
+
+The generated HTML page does not convert each report into a separate HTML file. Report links use hash routes inside `output/index.html`; when a report is selected, the page calls `fetch()` for the original `.md` file and renders it in the reader pane. The "原文" links still point directly to the source Markdown files.
+
+For local preview, use the bundled UTF-8 server:
+
+```bash
+python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py --port 8000
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/output/index.html
+```
+
+Avoid using bare `python -m http.server` for this reader. Python's default static server can serve `.md` files without `charset=utf-8`, and Chrome may display Chinese report text as mojibake when opening direct Markdown links. The bundled `serve_reports.py` sets UTF-8 headers for `.md` and `.html` files.
 
 ## Maintenance Notes
 
