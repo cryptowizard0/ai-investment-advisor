@@ -39,6 +39,7 @@ If the plugin does not appear, confirm these files exist:
 | Review earnings | Use `earnings-report-analysis` after a company reports, then update the single-stock thesis if guidance or expectations changed. |
 | Produce a formal stock report | Use `professional-investment-analyst` for a buy-side style report, or `reportify-stock-analysis` for a standardized structured report. |
 | Pull market data | Use `market-data-router` when another workflow needs bars, quote data, options context, or cached market data. |
+| Index generated reports | Use `output-report-index` when you explicitly want to generate or update `output/index.md`. |
 
 ## Skill List
 
@@ -57,6 +58,7 @@ If the plugin does not appear, confirm these files exist:
 | `market-data-router` | Routed market-data fetching and fallback logic. | You need bars, quote data, options context, or cached market data for analysis. |
 | `multi-agent-stock-analysis` | Codex-native orchestration across multiple stock-analysis skills. | You want one stock analyzed from several independent angles. |
 | `non-consensus-company-discovery` | Theme-to-company discovery for high-potential non-consensus opportunities. | You want names the market may still value using the wrong framework. |
+| `output-report-index` | Markdown index page for generated reports. | You explicitly ask to generate or update the report index under `output/`. |
 | `professional-investment-analyst` | Buy-side style company research system. | You need a formal, trackable, evidence-based stock report. |
 | `reflexivity-deep-analysis` | Full reflexivity-cycle analysis for a stock, sector, asset, or narrative. | You need to map narrative, price, reality, marginal change, and reversal risk. |
 | `reflexivity-quick-scan` | Fast reflexivity stage check. | You need a quick read on whether a narrative is starting, strengthening, exhausted, or reversing. |
@@ -73,6 +75,7 @@ Use invest-flow:industry-chain-analysis to map the HBM industry chain.
 Use invest-flow:non-consensus-company-discovery to find non-consensus opportunities in AI data center power.
 Use invest-flow:reflexivity-quick-scan to check NVIDIA's current narrative stage.
 Use invest-flow:earnings-report-analysis to analyze NVIDIA's latest earnings.
+Use invest-flow:output-report-index to update the output report index.
 ```
 
 For provider-backed market data, create a local `.env` from `.env_example` and add the relevant API keys.
@@ -99,6 +102,7 @@ Generated reports and cache files are written under `output/`:
 | Reportify stock analysis | `output/reportify-stock-analysis/` |
 | Daily US market scan | `output/daily-us-market-scan/` |
 | Multi-agent summaries | `output/summary/` |
+| Report index | `output/index.md` |
 | Market data cache | `output/cache/market-data/` |
 
 Existing files should not be overwritten. Skills append suffixes such as `(1)` and `(2)` when needed.

@@ -46,6 +46,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── reportify-stock-analysis/
 │           ├── daily-us-market-scan/
 │           ├── multi-agent-stock-analysis/
+│           ├── output-report-index/
 │           └── market-data-router/
 ├── output/
 │   ├── company-profile/
@@ -64,6 +65,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── reportify-stock-analysis/
 │   ├── daily-us-market-scan/
 │   ├── summary/
+│   ├── index.md
 │   └── cache/market-data/
 └── .venv/
 ```
@@ -82,6 +84,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py` - market data router entrypoint
 - `plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py` - earnings report analysis skeleton generator
 - `plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py` - non-consensus discovery report skeleton generator
+- `plugins/invest-flow/skills/output-report-index/scripts/generate_index.py` - output report index generator
 
 ## Build/Test Commands
 
@@ -101,7 +104,8 @@ python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.p
 python -m unittest \
   plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/tests/test_investflow_pipeline.py \
   plugins/invest-flow/skills/non-consensus-company-discovery/scripts/tests/test_generate_report.py \
-  plugins/invest-flow/skills/daily-us-market-scan/scripts/tests/test_create_report.py
+  plugins/invest-flow/skills/daily-us-market-scan/scripts/tests/test_create_report.py \
+  plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py
 
 # Generate a multi-agent Codex prompt plan
 python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
@@ -111,6 +115,9 @@ python plugins/invest-flow/skills/non-consensus-company-discovery/scripts/genera
 
 # Generate an earnings report analysis skeleton
 python plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py --ticker NVDA --company "NVIDIA" --period "FY2026 Q1"
+
+# Generate or update the output report index
+python plugins/invest-flow/skills/output-report-index/scripts/generate_index.py
 ```
 
 ## Skill Layout
@@ -143,6 +150,7 @@ Active packaged skills:
 - `reportify-stock-analysis` - fixed-template structured stock research report generation
 - `daily-us-market-scan` - Chinese daily US market close scan covering indices, macro, sectors, themes, breadth, technicals, earnings, flows, watchlists, and next-session plans
 - `multi-agent-stock-analysis` - orchestration across multiple analysis skills
+- `output-report-index` - explicit report index generator for `output/index.md`
 - `market-data-router` - routed market data fetch and fallback logic
 
 ## Orchestrator Notes
@@ -175,6 +183,7 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Reportify stock analysis: `output/reportify-stock-analysis/reportify-stock-analysis-{TICKER}-{YYYY-MM-DD}.md`
 - Daily US market scan: `output/daily-us-market-scan/us-market-close-daily-{YYYY-MM-DD}.md`
 - Summary report: `output/summary/综合分析-{TICKER}-{date}.md`
+- Report index: `output/index.md`
 - Market data cache: `output/cache/market-data/`
 
 If an output file already exists, scripts should append numbered suffixes like `(1)` and `(2)` instead of overwriting.
