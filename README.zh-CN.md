@@ -2,7 +2,7 @@
 
 [英文版本](README.md)
 
-InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫描、产业链研究、非共识发现、个股分析、财报解读、反身性分析和市场数据路由封装成可复用的技能。
+InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫描、产业链研究、非共识发现、个股分析、买入可行性评分、财报解读、反身性分析和市场数据路由封装成可复用的技能。
 
 标准插件包位于 `plugins/invest-flow/`。所有打包技能位于 `plugins/invest-flow/skills/`。
 
@@ -37,6 +37,7 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 | 跟踪叙事和反身性风险 | 定期用 `reflexivity-quick-scan` 判断阶段；当阶段变化或仓位较重时升级到 `reflexivity-deep-analysis`。 |
 | 快速研究单只股票 | 用 `multi-agent-stock-analysis` 先生成 `company-profile` 公司画像，再交叉验证基本面、资金流、GIE、反身性、Reportify 和非共识视角。 |
 | 解读财报 | 公司发布财报后用 `earnings-report-analysis` 判断预期差，再更新个股投资判断。 |
+| 判断股票能不能买 | 用 `company-buyability-score` 量化 AI 受益、产业链位置、增长、回撤、情绪错位和风险负面因素。 |
 | 生成正式个股报告 | 用 `professional-investment-analyst` 生成买方研究风格报告，或用 `reportify-stock-analysis` 生成标准化结构报告。 |
 | 获取市场数据 | 当其他研究流程需要行情、期权或缓存数据时，使用 `market-data-router`。 |
 
@@ -47,6 +48,7 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 | `ai-infrastructure-sector-discovery` | 扫描并评分 AI 基建板块。 | 想找下一步最值得研究的 AI 基建方向。 |
 | `ai-infrastructure-scarcity-radar` | 深挖 AI 基建稀缺环节和瓶颈。 | 已经锁定主题，需要判断稀缺是否真实且可投资。 |
 | `company-profile` | 生成投资分析前置公司画像。 | 用户第一次听说某家公司时，用于快速理解公司简介、核心业务、技术壁垒、产业链位置、AI 相关性、竞争对手和行业地位。 |
+| `company-buyability-score` | 对美股或 ADR 生成买入可行性量化评分。 | 需要判断一家公司能不能买，并同时检查 AI 受益、产业链位置、增长、回撤、情绪错位和负面因素。 |
 | `daily-us-market-scan` | 生成中文美股收盘复盘和次日计划。 | 想每日跟踪指数、板块、主题、市场宽度、财报和观察名单。 |
 | `earnings-report-analysis` | 从机构视角分析财报、指引、电话会和预期差。 | 公司刚发布财报，需要判断投资逻辑是否改变。 |
 | `fundamental-analysis` | 做单股基本面、估值和技术面分析。 | 需要快速形成一家公司是否值得继续研究的结构化判断。 |
@@ -72,6 +74,7 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 使用 invest-flow:industry-chain-analysis 拆解 HBM 产业链
 使用 invest-flow:non-consensus-company-discovery 发现 AI 数据中心电力里的非共识机会
 使用 invest-flow:reflexivity-quick-scan 判断 NVIDIA 当前叙事阶段
+使用 invest-flow:company-buyability-score 判断 NVIDIA 能不能买
 使用 invest-flow:earnings-report-analysis 解读 NVIDIA 最新财报
 ```
 
@@ -84,6 +87,7 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 | 流程 | 输出路径 |
 |---|---|
 | 公司画像 | `output/company-profile/` |
+| 买入可行性评分 | `output/company-buyability-score/` |
 | 基本面分析 | `output/fundamental-analysis/` |
 | 财报分析 | `output/earnings-report-analysis/` |
 | AI 基建板块扫描 | `output/ai-infrastructure-sector-discovery/` |

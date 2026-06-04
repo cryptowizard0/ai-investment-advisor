@@ -33,6 +33,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── ai-infrastructure-scarcity-radar/
 │           ├── ai-infrastructure-sector-discovery/
 │           ├── company-profile/
+│           ├── company-buyability-score/
 │           ├── fundamental-analysis/
 │           ├── earnings-report-analysis/
 │           ├── institutional-accumulation-analysis/
@@ -50,6 +51,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           └── market-data-router/
 ├── output/
 │   ├── company-profile/
+│   ├── company-buyability-score/
 │   ├── fundamental-analysis/
 │   ├── earnings-report-analysis/
 │   ├── ai-infrastructure-sector-discovery/
@@ -83,6 +85,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `.agents/plugins/marketplace.json` - repo-local plugin marketplace entry
 - `plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py` - multi-agent orchestration entrypoint
 - `plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py` - market data router entrypoint
+- `plugins/invest-flow/skills/company-buyability-score/scripts/generate_report.py` - buyability score skeleton generator
 - `plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py` - earnings report analysis skeleton generator
 - `plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py` - non-consensus discovery report skeleton generator
 - `plugins/invest-flow/skills/output-report-index/scripts/generate_index.py` - output report index generator
@@ -105,6 +108,7 @@ python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.p
 # Run helper script tests
 python -m unittest \
   plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/tests/test_investflow_pipeline.py \
+  plugins/invest-flow/skills/company-buyability-score/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/non-consensus-company-discovery/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/daily-us-market-scan/scripts/tests/test_create_report.py \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py \
@@ -118,6 +122,9 @@ python plugins/invest-flow/skills/non-consensus-company-discovery/scripts/genera
 
 # Generate an earnings report analysis skeleton
 python plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py --ticker NVDA --company "NVIDIA" --period "FY2026 Q1"
+
+# Generate a company buyability score skeleton
+python plugins/invest-flow/skills/company-buyability-score/scripts/generate_report.py --ticker NVDA --company "NVIDIA"
 
 # Generate or update the Markdown and HTML output report indexes
 python plugins/invest-flow/skills/output-report-index/scripts/generate_index.py
@@ -143,6 +150,7 @@ Active packaged skills:
 - `ai-infrastructure-sector-discovery` - weekly AI infrastructure sector discovery and scoring
 - `ai-infrastructure-scarcity-radar` - AI infrastructure scarcity opportunity and bottleneck analysis
 - `company-profile` - company primer covering overview, core business, technology barriers, industry-chain position, AI relevance, competitors, and industry position
+- `company-buyability-score` - quantified buyability score for US-listed equities/ADRs covering AI exposure, value-chain position, growth, drawdown risk, sentiment mismatch, and negative factors
 - `fundamental-analysis` - stock fundamental and technical analysis
 - `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
@@ -178,6 +186,7 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - AI infrastructure sector discovery: `output/ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-{YYYY-MM-DD}.md`
 - AI infrastructure scarcity radar: `output/ai-infrastructure-scarcity-radar/ai-infrastructure-scarcity-radar-{topic}-{YYYY-MM-DD}.md`
 - Company profile: `output/company-profile/company-profile-{TICKER}-{YYYY-MM-DD}.md`
+- Company buyability score: `output/company-buyability-score/company-buyability-score-{TICKER}-{YYYY-MM-DD}.md`
 - Industry chain analysis: `output/industry-chain-analysis/industry-chain-analysis-{topic}-{YYYY-MM-DD}.md`
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - GIE framework: `output/gie-investment-framework/gie-{title}-{date}.md`
