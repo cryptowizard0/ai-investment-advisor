@@ -8,7 +8,7 @@ import threading
 import unittest
 from http.server import ThreadingHTTPServer
 from pathlib import Path
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "serve_reports.py"
@@ -53,12 +53,23 @@ class ServeReportsTests(unittest.TestCase):
                     body = response.read().decode("utf-8")
                 with urlopen(f"{base_url}/output/index.html") as response:
                     html_content_type = response.headers.get("Content-Type", "")
+                    cache_control = response.headers.get("Cache-Control", "")
+                cached_request = Request(
+                    f"{base_url}/output/index.html",
+                    headers={"If-Modified-Since": "Wed, 09 Jun 2099 10:00:00 GMT"},
+                )
+                with urlopen(cached_request) as response:
+                    cached_status = response.status
+                    cached_body = response.read().decode("utf-8")
 
                 self.assertIn("text/markdown", content_type)
                 self.assertIn("charset=utf-8", content_type.lower())
                 self.assertIn("# 中文报告", body)
                 self.assertIn("text/html", html_content_type)
                 self.assertIn("charset=utf-8", html_content_type.lower())
+                self.assertIn("no-store", cache_control)
+                self.assertEqual(200, cached_status)
+                self.assertIn("中文", cached_body)
             finally:
                 httpd.shutdown()
                 httpd.server_close()

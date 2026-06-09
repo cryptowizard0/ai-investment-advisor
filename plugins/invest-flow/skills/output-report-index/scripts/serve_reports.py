@@ -17,6 +17,25 @@ DEFAULT_PORT = 8000
 class Utf8ReportRequestHandler(SimpleHTTPRequestHandler):
     """Static file handler that declares UTF-8 for report text files."""
 
+    def do_GET(self) -> None:
+        self._drop_conditional_cache_headers()
+        super().do_GET()
+
+    def do_HEAD(self) -> None:
+        self._drop_conditional_cache_headers()
+        super().do_HEAD()
+
+    def end_headers(self) -> None:
+        self.send_header("Cache-Control", "no-store, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
+
+    def _drop_conditional_cache_headers(self) -> None:
+        for header in ("If-Modified-Since", "If-None-Match"):
+            if header in self.headers:
+                del self.headers[header]
+
     def guess_type(self, path: str) -> str:
         content_type = super().guess_type(path)
         suffix = Path(path).suffix.lower()
