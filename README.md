@@ -41,6 +41,7 @@ If the plugin does not appear, confirm these files exist:
 | Goal | Recommended flow |
 |---|---|
 | Find AI infrastructure opportunities | Start with `ai-infrastructure-sector-discovery`, then use `ai-infrastructure-scarcity-radar` on the strongest scarcity theme. |
+| Find investable companies from an industry chain | Use `chain-alpha-pipeline` for the full mismatch -> monopoly -> verification funnel, or run `chain-alpha-mismatch-discovery` alone first to confirm the mismatch links cheaply. |
 | Map a sector and find non-consensus names | Start with `industry-chain-analysis`, then use `non-consensus-company-discovery` on the most interesting bottleneck or module. |
 | Run daily market review | Use `daily-us-market-scan` after the US close. |
 | Track narrative and reflexivity risk | Use `reflexivity-quick-scan` regularly; upgrade to `reflexivity-deep-analysis` when the stage changes or the position is material. |
@@ -57,6 +58,10 @@ If the plugin does not appear, confirm these files exist:
 |---|---|---|
 | `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring. | You want to identify the best AI infrastructure themes to research next. |
 | `ai-infrastructure-scarcity-radar` | Deep scarcity and bottleneck analysis for AI infrastructure. | You already have a theme and need to judge whether scarcity is real and investable. |
+| `chain-alpha-mismatch-discovery` | Full industry-chain panorama and supply-demand mismatch link discovery. | You have a big theme and need the whole chain mapped plus the links where demand outruns supply. |
+| `chain-alpha-monopoly-screen` | Sub-link breakdown and monopoly screening with CR3, margin, and revenue-share gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
+| `chain-alpha-verification` | 100-point four-tier company verification with drawdown-based position sizing. | You have US-listed candidates and need a buy/watch/reject grade plus a position cap. |
+| `chain-alpha-pipeline` | In-session orchestration of the three chain-alpha steps with funnel discipline. | You want the full theme-to-company workflow in one run. |
 | `company-profile` | Builds a company primer before investment analysis. | Use when a user is hearing about a company for the first time and needs business, technology, value-chain, AI relevance, competitors, and industry-position context. |
 | `company-buyability-score` | Quantified buyability score for a US-listed company or ADR. | You need to judge whether a company is buyable using AI exposure, value-chain position, growth, drawdown risk, sentiment mismatch, and negative factors. |
 | `daily-us-market-scan` | Chinese US market close report and next-session review. | You want a daily read on indices, sectors, themes, breadth, earnings, and watchlists. |
@@ -84,6 +89,7 @@ Use invest-flow:multi-agent-stock-analysis to analyze TSLA.
 Use invest-flow:daily-us-market-scan to scan today's US market close.
 Use invest-flow:industry-chain-analysis to map the HBM industry chain.
 Use invest-flow:non-consensus-company-discovery to find non-consensus opportunities in AI data center power.
+Use invest-flow:chain-alpha-pipeline to find investable companies in AI data center power.
 Use invest-flow:reflexivity-quick-scan to check NVIDIA's current narrative stage.
 Use invest-flow:company-buyability-score to score whether NVIDIA is buyable.
 Use invest-flow:earnings-report-analysis to analyze NVIDIA's latest earnings.
@@ -104,6 +110,10 @@ Generated reports and cache files are written under `output/`:
 | Earnings report analysis | `output/earnings-report-analysis/` |
 | AI infrastructure sector discovery | `output/ai-infrastructure-sector-discovery/` |
 | AI infrastructure scarcity radar | `output/ai-infrastructure-scarcity-radar/` |
+| Chain-alpha mismatch discovery | `output/chain-alpha-mismatch-discovery/` |
+| Chain-alpha monopoly screen | `output/chain-alpha-monopoly-screen/` |
+| Chain-alpha verification | `output/chain-alpha-verification/` |
+| Chain-alpha pipeline summary | `output/chain-alpha-pipeline/` |
 | Industry-chain analysis | `output/industry-chain-analysis/` |
 | Institutional analysis | `output/institutional-accumulation-analysis/` |
 | GIE framework | `output/gie-investment-framework/` |
