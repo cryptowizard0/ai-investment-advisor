@@ -172,7 +172,7 @@ class PathTests(unittest.TestCase):
 
 
 class RegistryTests(unittest.TestCase):
-    def test_basic_specs_are_codex_prompt_templates(self):
+    def test_basic_specs_are_agent_prompt_templates(self):
         from investflow_pipeline.registry import build_registry
 
         registry = build_registry()
@@ -529,7 +529,7 @@ class ExecutorTests(unittest.TestCase):
             "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology；必须生成并保存 Markdown 子报告到 output/gie-investment-framework/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(result.output, result.prompt)
-        self.assertIn("等待 Codex 当前会话执行", result.handoff.data_gaps[0])
+        self.assertIn("等待当前 agent 会话执行", result.handoff.data_gaps[0])
 
     def test_blank_company_formats_as_target(self):
         import asyncio
@@ -723,7 +723,7 @@ class ComposerTests(unittest.TestCase):
             payload = json.loads(json_path.read_text(encoding="utf-8"))
 
         self.assertIsNone(written.summary_report_path)
-        self.assertIn("Codex Prompt 编排计划", plan)
+        self.assertIn("Agent Prompt 编排计划", plan)
         self.assertIn("使用 invest-flow:fundamental-analysis 分析 MRVL", plan)
         self.assertEqual(payload["status"], "prompt_plan")
         self.assertEqual(payload["pending_count"], 1)

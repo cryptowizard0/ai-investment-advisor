@@ -1,15 +1,15 @@
 # 多Agent协同分析 - Prompt-Native 工作流指南
 
-> 当前实现以 Codex 会话内 prompt 编排为准。`scripts/orchestrator.py` 只生成 prompt plan 和 orchestration JSON，方便检查或 handoff，不负责执行子 skill。
+> 当前实现以 agent 会话（Codex / Claude Code）内 prompt 编排为准。`scripts/orchestrator.py` 只生成 prompt plan 和 orchestration JSON，方便检查或 handoff，不负责执行子 skill。
 
 ## 当前执行路径
 
 ```text
 用户请求
-  -> Codex 解析 ticker/company
-  -> Codex 执行七段子 skill prompt
+  -> agent 解析 ticker/company
+  -> agent 执行七段子 skill prompt
   -> 每个子 skill 保存 Markdown 子报告并返回 report_path
-  -> Codex 校验每个维度 report_path 和 handoff
+  -> agent 校验每个维度 report_path 和 handoff
   -> Composer 汇总已有 report_path + handoff
   -> 中文综合报告
 ```
@@ -43,7 +43,7 @@ Registry 为七个维度生成 prompt template：
 使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会
 ```
 
-这些 prompt 由当前 Codex 会话依次执行。Python 层不会启动外部 agent 进程。
+这些 prompt 由当前 agent 会话依次执行。Python 层不会启动外部 agent 进程。
 
 实际执行时，每个 prompt 都必须附加落盘要求：保存 Markdown 子报告到对应 `output/<skill-name>/` 目录，并在回复末尾明确写出 `report_path`。只返回对话内容或 handoff 不能算该维度完成。
 
@@ -81,13 +81,13 @@ Composer 根据成功或部分成功的 handoff 生成：
 
 ## 推荐入口
 
-在 Codex 中说：
+在 Codex 或 Claude Code 中说：
 
 ```text
 使用 invest-flow:multi-agent-stock-analysis 分析 MRVL
 ```
 
-然后 Codex 应执行：
+然后 agent 应执行：
 
 ```text
 使用 invest-flow:company-profile 分析 MRVL / MRVL，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位

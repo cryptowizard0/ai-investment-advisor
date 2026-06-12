@@ -184,7 +184,7 @@ OrchestrationConfig(
 )
 ```
 
-`execution_mode` 只接受 `prompt`。子 skill 的真实执行由 Codex 当前会话完成。
+`execution_mode` 只接受 `prompt`。子 skill 的真实执行由当前 agent 会话完成。
 
 ## 输出文件
 

@@ -41,7 +41,7 @@ async def analyze_stock(
 ) -> PipelineResult:
     effective_config = config or OrchestrationConfig()
     if effective_config.execution_mode != "prompt":
-        raise ValueError("外部执行模式已废弃；请在 Codex 会话中使用 prompt 编排")
+        raise ValueError("外部执行模式已废弃；请在当前 agent 会话中使用 prompt 编排")
     root = (project_root or find_project_root()).resolve()
 
     request = create_stock_request(ticker, company)

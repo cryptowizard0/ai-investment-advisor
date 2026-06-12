@@ -211,7 +211,7 @@ def compose_prompt_plan(result: PipelineResult) -> str:
         )
 
     return (
-        f"# Codex Prompt 编排计划 - {result.ticker}\n\n"
+        f"# Agent Prompt 编排计划 - {result.ticker}\n\n"
         f"作者：InvestmentFlow\n\n"
         f"## 任务信息\n"
         f"- 任务ID：{result.task_id}\n"
@@ -220,7 +220,7 @@ def compose_prompt_plan(result: PipelineResult) -> str:
         f"- 开始时间：{result.started_at}\n"
         f"- 生成时间：{result.ended_at}\n\n"
         f"## 执行方式\n"
-        f"在当前 Codex 会话中依次执行以下 prompt，完成所有子 skill 后，"
+        f"在当前 agent 会话（Codex / Claude Code）中依次执行以下 prompt，完成所有子 skill 后，"
         f"按综合模板汇总结论、证据、分歧、风险和数据缺口。\n\n"
         f"## 子 Skill Prompts\n\n"
         f"{chr(10).join(prompt_lines)}\n"
