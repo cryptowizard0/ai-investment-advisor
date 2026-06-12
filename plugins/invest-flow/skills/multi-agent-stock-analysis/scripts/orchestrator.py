@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prompt-plan helper for the Codex-native multi-agent stock analysis skill."""
+"""Prompt-plan helper for the agent-session multi-agent stock analysis skill."""
 
 import argparse
 import sys
@@ -26,11 +26,11 @@ def analyze_stock_with_retry(
     if not isinstance(compatibility_config, OrchestrationConfig):
         compatibility_config = OrchestrationConfig()
     if compatibility_config.execution_mode != "prompt":
-        raise ValueError("外部执行模式已废弃；请在 Codex 会话中使用 prompt 编排")
+        raise ValueError("外部执行模式已废弃；请在当前 agent 会话中使用 prompt 编排")
 
     requested_mode = kwargs.get("execution_mode")
     if requested_mode not in (None, "prompt"):
-        raise ValueError("外部执行模式已废弃；请在 Codex 会话中使用 prompt 编排")
+        raise ValueError("外部执行模式已废弃；请在当前 agent 会话中使用 prompt 编排")
 
     project_root = kwargs.get("project_root")
     if project_root is not None:
@@ -59,7 +59,7 @@ def analyze_stock_with_retry(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="多Agent Codex Prompt 编排计划生成器")
+    parser = argparse.ArgumentParser(description="多Agent Prompt 编排计划生成器")
     parser.add_argument("ticker", nargs="?", default="TSLA", help="股票代码（默认 TSLA）")
     parser.add_argument("--company", default="", help="公司名称（可选）")
     parser.add_argument(
@@ -75,7 +75,7 @@ def main() -> int:
         project_root=args.project_root,
     )
 
-    print("=== 多Agent Codex Prompt 编排计划 ===")
+    print("=== 多Agent Prompt 编排计划 ===")
     print(f"状态: {result['status']}")
     print(f"待执行: {result['pending_count']}/{result['total_count']}")
     print(f"Prompt计划: {result.get('prompt_plan_path') or 'N/A'}")

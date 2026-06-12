@@ -2,18 +2,27 @@
 
 [英文版本](README.md)
 
-InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫描、产业链研究、非共识发现、个股分析、买入可行性评分、财报解读、反身性分析和市场数据路由封装成可复用的技能。
+InvestFlow 是一个仓库内置的投资研究插件，同时兼容 Codex 和 Claude Code。它把市场扫描、产业链研究、非共识发现、个股分析、买入可行性评分、财报解读、反身性分析和市场数据路由封装成可复用的技能。
 
-标准插件包位于 `plugins/invest-flow/`。所有打包技能位于 `plugins/invest-flow/skills/`。
+标准插件包位于 `plugins/invest-flow/`。所有打包技能位于 `plugins/invest-flow/skills/`，两个平台共享同一份技能。
 
 ## 快速上手
+
+### Codex
 
 1. 在 Codex 中打开这个仓库。
 2. 重新加载 Codex，让它读取 `.agents/plugins/marketplace.json`。
 3. 在本地插件市场安装 `InvestFlow`。
 4. 在 Codex 对话中直接调用技能。
 
-示例：
+### Claude Code
+
+1. 在本仓库目录启动 `claude`。
+2. 添加本地插件市场：`/plugin marketplace add .`
+3. 安装插件：`/plugin install invest-flow@investflow-local`
+4. 在对话中直接调用技能，或用 `/invest-flow:技能名` 显式触发。
+
+示例（两个平台通用）：
 
 ```text
 使用 InvestFlow 分析 TSLA
@@ -24,8 +33,8 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 
 如果插件没有出现，先确认这些文件存在：
 
-- `plugins/invest-flow/.codex-plugin/plugin.json`
-- `.agents/plugins/marketplace.json`
+- Codex：`plugins/invest-flow/.codex-plugin/plugin.json` 和 `.agents/plugins/marketplace.json`
+- Claude Code：`plugins/invest-flow/.claude-plugin/plugin.json` 和 `.claude-plugin/marketplace.json`
 
 ## 推荐工作流
 
@@ -57,7 +66,7 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 | `industry-chain-analysis` | 做两层产业链和瓶颈拆解。 | 需要看清上游、中游、下游和模块级约束。 |
 | `institutional-accumulation-analysis` | 分析机构吸筹、派发和资金行为。 | 想判断主力资金是在买入、出货还是对冲。 |
 | `market-data-router` | 路由行情数据并提供降级兜底。 | 研究流程需要 K 线、报价、期权背景或缓存市场数据。 |
-| `multi-agent-stock-analysis` | 在 Codex 会话中编排多个个股分析技能。 | 想从多个独立视角交叉验证一只股票。 |
+| `multi-agent-stock-analysis` | 在当前 agent 会话中编排多个个股分析技能。 | 想从多个独立视角交叉验证一只股票。 |
 | `non-consensus-company-discovery` | 从主题到公司，发现高潜力非共识机会。 | 想寻找市场仍用旧框架定价的公司。 |
 | `professional-investment-analyst` | 生成买方研究风格的个股报告。 | 需要可跟踪、可复盘、有证据链的正式报告。 |
 | `reflexivity-deep-analysis` | 做完整反身性周期分析。 | 需要拆解叙事、价格、现实验证、边际变化和反转风险。 |
@@ -66,7 +75,7 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 
 ## 在智能体内使用技能
 
-在 Codex 智能体中用自然语言调用 InvestFlow。需要指定流程时，建议直接写出技能名称：
+在 Codex 或 Claude Code 智能体中用自然语言调用 InvestFlow。需要指定流程时，建议直接写出技能名称：
 
 ```text
 使用 invest-flow:multi-agent-stock-analysis 分析 TSLA
@@ -110,6 +119,7 @@ InvestFlow 是一个仓库内置的 Codex 投资研究插件。它把市场扫�
 ## 维护说明
 
 - 这是仓库内置插件，不是远程市场包。
-- 投资技能只维护在 `plugins/invest-flow/skills/`。
-- 插件发现元数据位于 `.agents/plugins/marketplace.json`。
+- 投资技能只维护在 `plugins/invest-flow/skills/`，两个平台共享同一份。
+- Codex 插件发现元数据位于 `.agents/plugins/marketplace.json`，Claude Code 位于 `.claude-plugin/marketplace.json`。
+- 插件打包信息变更时，需同步更新两个清单（`.codex-plugin/plugin.json` 和 `.claude-plugin/plugin.json`）并保持版本一致。
 - README 中的技能名称应与 `plugins/invest-flow/skills/` 下的目录保持一致。

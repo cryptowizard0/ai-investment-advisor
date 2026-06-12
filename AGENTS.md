@@ -2,14 +2,14 @@
 
 ## Project Overview
 
-This repository is an AI-driven investment analysis system packaged as a repo-local Codex plugin. The canonical runtime surface is `plugins/invest-flow/`, which contains the plugin manifest, assets, and all investment skills.
+This repository is an AI-driven investment analysis system packaged as a repo-local plugin compatible with both Codex and Claude Code. The canonical runtime surface is `plugins/invest-flow/`, which contains the plugin manifests, assets, and all investment skills. The skills directory is shared by both platforms; only the manifest/marketplace wrappers differ.
 
 **Project Language**: Documentation and investment reports are primarily in Chinese (中文). Code comments are in English. Financial terms remain in English (RSI, MACD, P/E, OBV, etc.).
 
 ## Technology Stack
 
 - **Python**: 3.12.10 (virtual environment at `.venv/`)
-- **Node.js**: Codex runtime environment
+- **Agent runtimes**: Codex and Claude Code
 - **Key Python Libraries**:
   - `yfinance`
   - `pandas`
@@ -21,13 +21,17 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 ```text
 .
 ├── AGENTS.md
+├── CLAUDE.md            # imports AGENTS.md for Claude Code
 ├── README.md
 ├── .agents/
 │   └── plugins/
-│       └── marketplace.json
+│       └── marketplace.json        # Codex local marketplace
+├── .claude-plugin/
+│   └── marketplace.json            # Claude Code local marketplace
 ├── plugins/
 │   └── invest-flow/
-│       ├── .codex-plugin/plugin.json
+│       ├── .codex-plugin/plugin.json    # Codex manifest
+│       ├── .claude-plugin/plugin.json   # Claude Code manifest
 │       ├── assets/
 │       └── skills/
 │           ├── ai-infrastructure-scarcity-radar/
@@ -75,14 +79,18 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 
 ## Source Of Truth
 
-- Investment skills live only in `plugins/invest-flow/skills/`.
-- Plugin discovery metadata lives in `.agents/plugins/marketplace.json`.
+- Investment skills live only in `plugins/invest-flow/skills/`. Both Codex and Claude Code load the same skill files.
+- Codex plugin discovery metadata lives in `.agents/plugins/marketplace.json`.
+- Claude Code plugin discovery metadata lives in `.claude-plugin/marketplace.json`.
 - Do not reintroduce duplicate investment skills under `.agents/skills/`, `.claude/skills/`, or legacy agent-definition folders.
 
 ## Key Files
 
-- `plugins/invest-flow/.codex-plugin/plugin.json` - plugin manifest
-- `.agents/plugins/marketplace.json` - repo-local plugin marketplace entry
+- `plugins/invest-flow/.codex-plugin/plugin.json` - Codex plugin manifest
+- `plugins/invest-flow/.claude-plugin/plugin.json` - Claude Code plugin manifest
+- `.agents/plugins/marketplace.json` - repo-local Codex marketplace entry
+- `.claude-plugin/marketplace.json` - repo-local Claude Code marketplace entry
+- `CLAUDE.md` - Claude Code memory entry that imports this file via `@AGENTS.md`
 - `plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py` - multi-agent orchestration entrypoint
 - `plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py` - market data router entrypoint
 - `plugins/invest-flow/skills/company-buyability-score/scripts/generate_report.py` - buyability score skeleton generator
@@ -114,7 +122,7 @@ python -m unittest \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_serve_reports.py
 
-# Generate a multi-agent Codex prompt plan
+# Generate a multi-agent prompt plan
 python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py TSLA --company "Tesla"
 
 # Generate a non-consensus company discovery report skeleton
@@ -172,12 +180,12 @@ Active packaged skills:
 `multi-agent-stock-analysis` is implemented by the packaged orchestrator script, not by separate legacy agent-definition files. The current orchestrator:
 
 - resolves the repo root dynamically
-- generates seven Codex skill prompts for the basic stock-analysis workflow: company profile, fundamental, institutional, GIE, reflexivity deep, reportify, and non-consensus
+- generates seven skill prompts for the basic stock-analysis workflow: company profile, fundamental, institutional, GIE, reflexivity deep, reportify, and non-consensus
 - writes a prompt plan Markdown file and orchestration JSON
 - does not execute child skills or launch another agent process
 - supports summary composition from already completed handoff data
 
-Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 分析 MRVL` in Codex. Codex then executes the child skill prompts in the current session and writes the final Chinese report.
+Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 分析 MRVL` in Codex or Claude Code. The agent then executes the child skill prompts in the current session and writes the final Chinese report.
 
 ## Output Conventions
 
@@ -249,4 +257,5 @@ pip install yfinance pandas requests pyyaml
 
 - When updating investment workflows, edit the packaged plugin content directly under `plugins/invest-flow/`.
 - Keep `README.md` and this file aligned with the actual on-disk structure.
-- If plugin packaging changes, update both `plugins/invest-flow/.codex-plugin/plugin.json` and `.agents/plugins/marketplace.json`.
+- If plugin packaging changes, update all four metadata files together and keep versions in sync: `plugins/invest-flow/.codex-plugin/plugin.json`, `plugins/invest-flow/.claude-plugin/plugin.json`, `.agents/plugins/marketplace.json`, and `.claude-plugin/marketplace.json`.
+- Keep skill wording platform-neutral (say "agent 会话" or mention both Codex and Claude Code) so the same SKILL.md works on both platforms.

@@ -7,10 +7,12 @@ from typing import Iterable, Optional
 def _is_project_root(candidate: Path) -> bool:
     if not (candidate / "AGENTS.md").exists():
         return False
-    plugin_manifest = (
-        candidate / "plugins" / "invest-flow" / ".codex-plugin" / "plugin.json"
+    plugin_dir = candidate / "plugins" / "invest-flow"
+    manifests = (
+        plugin_dir / ".codex-plugin" / "plugin.json",
+        plugin_dir / ".claude-plugin" / "plugin.json",
     )
-    return plugin_manifest.is_file()
+    return any(manifest.is_file() for manifest in manifests)
 
 
 def _is_relative_to(path: Path, parent: Path) -> bool:

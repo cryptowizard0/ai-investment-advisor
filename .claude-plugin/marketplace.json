@@ -1,0 +1,19 @@
+{
+  "name": "investflow-local",
+  "metadata": {
+    "description": "Repo-local marketplace for the InvestFlow investment research plugin."
+  },
+  "owner": {
+    "name": "Potter",
+    "email": "45678072+cryptowizard0@users.noreply.github.com",
+    "url": "https://github.com/cryptowizard0/ai-investment-advisor"
+  },
+  "plugins": [
+    {
+      "name": "invest-flow",
+      "source": "./plugins/invest-flow",
+      "description": "Investment research, reflexivity analysis, and market data workflows: multi-agent stock analysis, buyability scoring, earnings review, daily US market scans, non-consensus discovery, and report indexing.",
+      "category": "productivity"
+    }
+  ]
+}

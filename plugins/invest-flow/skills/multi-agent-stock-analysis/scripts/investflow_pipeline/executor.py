@@ -38,7 +38,7 @@ class PipelineExecutor:
             output=prompt,
             handoff=Handoff(
                 data_gaps=[
-                    "等待 Codex 当前会话执行该 prompt 后回填 handoff 或生成综合报告"
+                    "等待当前 agent 会话执行该 prompt 后回填 handoff 或生成综合报告"
                 ]
             ),
             prompt=prompt,

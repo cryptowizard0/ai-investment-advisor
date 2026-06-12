@@ -1,13 +1,13 @@
 ---
 name: multi-agent-stock-analysis
-description: "多Agent协同股票分析系统 - 在 Codex 当前会话中按 prompt 编排公司画像、基本面、机构资金、GIE、反身性、Reportify 和非共识分析，并聚合为中文综合投资判断。适用于：(1) 需要多维度验证的投资决策, (2) 寻找高置信度交易机会, (3) 全面评估标的投资价值。"
+description: "多Agent协同股票分析系统 - 在当前 agent 会话（Codex / Claude Code）中按 prompt 编排公司画像、基本面、机构资金、GIE、反身性、Reportify 和非共识分析，并聚合为中文综合投资判断。适用于：(1) 需要多维度验证的投资决策, (2) 寻找高置信度交易机会, (3) 全面评估标的投资价值。"
 ---
 
 # 多Agent协同股票分析系统
 
 ## 概述
 
-本 skill 的当前真实入口是 Codex 会话内的 prompt 编排：解析用户给出的 ticker/company，依次调用七个 InvestFlow 子 skill，要求每个子 skill 先保存 Markdown 子报告并返回 `report_path`，再收集公司画像、结论、证据、风险、置信度、数据缺口和非共识变量，最后输出中文综合报告。
+本 skill 的当前真实入口是 agent 会话（Codex / Claude Code）内的 prompt 编排：解析用户给出的 ticker/company，依次调用七个 InvestFlow 子 skill，要求每个子 skill 先保存 Markdown 子报告并返回 `report_path`，再收集公司画像、结论、证据、风险、置信度、数据缺口和非共识变量，最后输出中文综合报告。
 
 ```text
 用户请求
@@ -29,7 +29,7 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 
 ## 推荐使用方式
 
-在 Codex 中直接说：
+在 Codex 或 Claude Code 中直接说：
 
 ```text
 使用 invest-flow:multi-agent-stock-analysis 分析 MRVL
@@ -50,7 +50,7 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 
 ### Step 2: 执行七段子 Skill Prompt
 
-按顺序在当前 Codex 会话中执行：
+按顺序在当前 agent 会话中执行：
 
 ```text
 使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/company-profile/，并在回复末尾明确写出 report_path
@@ -149,7 +149,7 @@ python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrato
 - `output/summary/prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md`
 - `output/summary/orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
 
-它不会执行七个子 skill。真实分析仍由 Codex 当前会话按上面的七段 prompt 完成。
+它不会执行七个子 skill。真实分析仍由当前 agent 会话按上面的七段 prompt 完成。
 
 ## 汇总已有 Handoff
 

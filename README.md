@@ -2,18 +2,27 @@
 
 [中文文档](README.zh-CN.md)
 
-InvestFlow is a repo-local Codex plugin for investment research. It bundles reusable skills for market scans, industry-chain research, non-consensus discovery, single-stock analysis, buyability scoring, earnings review, reflexivity analysis, and routed market data.
+InvestFlow is a repo-local agent plugin for investment research, compatible with both Codex and Claude Code. It bundles reusable skills for market scans, industry-chain research, non-consensus discovery, single-stock analysis, buyability scoring, earnings review, reflexivity analysis, and routed market data.
 
-The canonical plugin package lives in `plugins/invest-flow/`. Packaged skills live in `plugins/invest-flow/skills/`.
+The canonical plugin package lives in `plugins/invest-flow/`. Packaged skills live in `plugins/invest-flow/skills/` and are shared by both platforms.
 
 ## Quick Start
+
+### Codex
 
 1. Open this repository in Codex.
 2. Reload Codex so it reads `.agents/plugins/marketplace.json`.
 3. Install `InvestFlow` from the local plugin marketplace.
 4. Use the skills directly in Codex prompts.
 
-Examples:
+### Claude Code
+
+1. Start `claude` in this repository.
+2. Add the local marketplace: `/plugin marketplace add .`
+3. Install the plugin: `/plugin install invest-flow@investflow-local`
+4. Use the skills directly in prompts, or invoke a specific skill with `/invest-flow:skill-name`.
+
+Examples (both platforms):
 
 ```text
 Use InvestFlow to run a multi-agent analysis for TSLA.
@@ -24,8 +33,8 @@ Use InvestFlow to analyze the HBM industry chain.
 
 If the plugin does not appear, confirm these files exist:
 
-- `plugins/invest-flow/.codex-plugin/plugin.json`
-- `.agents/plugins/marketplace.json`
+- Codex: `plugins/invest-flow/.codex-plugin/plugin.json` and `.agents/plugins/marketplace.json`
+- Claude Code: `plugins/invest-flow/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
 
 ## Recommended Workflows
 
@@ -58,7 +67,7 @@ If the plugin does not appear, confirm these files exist:
 | `industry-chain-analysis` | Two-layer industry-chain and bottleneck mapping. | You need to understand upstream, midstream, downstream, and module-level constraints. |
 | `institutional-accumulation-analysis` | Institutional accumulation and distribution analysis. | You want to judge whether major players are buying, distributing, or hedging. |
 | `market-data-router` | Routed market-data fetching and fallback logic. | You need bars, quote data, options context, or cached market data for analysis. |
-| `multi-agent-stock-analysis` | Codex-native orchestration across multiple stock-analysis skills. | You want one stock analyzed from several independent angles. |
+| `multi-agent-stock-analysis` | In-session orchestration across multiple stock-analysis skills. | You want one stock analyzed from several independent angles. |
 | `non-consensus-company-discovery` | Theme-to-company discovery for high-potential non-consensus opportunities. | You want names the market may still value using the wrong framework. |
 | `output-report-index` | Markdown and static HTML index pages for generated reports. | You explicitly ask to generate or update the report index under `output/`. |
 | `professional-investment-analyst` | Buy-side style company research system. | You need a formal, trackable, evidence-based stock report. |
@@ -68,7 +77,7 @@ If the plugin does not appear, confirm these files exist:
 
 ## Use Skills In Agent
 
-Use InvestFlow through natural-language prompts in the Codex agent. Prefer skill names when you want a specific workflow:
+Use InvestFlow through natural-language prompts in Codex or Claude Code. Prefer skill names when you want a specific workflow:
 
 ```text
 Use invest-flow:multi-agent-stock-analysis to analyze TSLA.
@@ -158,6 +167,7 @@ Avoid using bare `python -m http.server` for this reader. Python's default stati
 ## Maintenance Notes
 
 - This is a repo-local plugin, not a remote marketplace package.
-- Keep investment skills under `plugins/invest-flow/skills/`.
-- Keep plugin discovery metadata in `.agents/plugins/marketplace.json`.
+- Keep investment skills under `plugins/invest-flow/skills/`; both platforms load the same skill files.
+- Keep Codex plugin discovery metadata in `.agents/plugins/marketplace.json` and Claude Code metadata in `.claude-plugin/marketplace.json`.
+- When plugin packaging changes, update both manifests (`.codex-plugin/plugin.json` and `.claude-plugin/plugin.json`) and keep versions in sync.
 - Keep README skill names aligned with the directories under `plugins/invest-flow/skills/`.
