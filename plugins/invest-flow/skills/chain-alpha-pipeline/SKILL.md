@@ -39,7 +39,7 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 - 全景不可分，不 fan-out。
 
 ### Step 2: chain-alpha-monopoly-screen（步内 fan-out）
-- 并行模式：每个错位环节派一个 subagent（按 `subagent-prompts.md` 的 Step 2 模板），N≤4，单波 ≤6。
+- 并行模式：每个错位环节派一个 subagent（按 `subagent-prompts.md` 的 Step 2 模板），N≤4（在单波 ≤6 上限内，无需分批）。
 - 串行模式：在当前会话内对每个环节顺序执行。
 - 每个工作单元产出：该环节 ≤10 家候选（25 分排序），标注是否 US-listed/ADR。
 - 主 agent 收齐各环节交接字段，汇总候选池，按 25 分排序，挑美股/ADR 候选 top-K（默认 6）进入 Step 3。
