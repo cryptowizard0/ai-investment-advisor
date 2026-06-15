@@ -169,7 +169,7 @@ Active packaged skills:
 - `chain-alpha-mismatch-discovery` - chain-alpha step 1: full industry-chain panorama list plus supply-demand mismatch link discovery with hard evidence gates and 20-point mismatch scoring
 - `chain-alpha-monopoly-screen` - chain-alpha step 2: sub-link breakdown, global landscape including mainland China and JP/KR/TW/EU, CR3/margin/revenue-share hard gates, 25-point candidate scoring
 - `chain-alpha-verification` - chain-alpha step 3: dual-track revenue-share gate, 100-point four-tier grading (gold pool/pass/pending/reject), drawdown inference and risk-budget position sizing for US-listed candidates
-- `chain-alpha-pipeline` - chain-alpha orchestration: runs the three steps in-session with funnel discipline (2-4 links, <=10 candidates per link, 2-3 deep dives) and a Chinese summary report
+- `chain-alpha-pipeline` - chain-alpha orchestration: main agent runs the three steps serially with in-step subagent fan-out (parallel on Claude Code, serial fallback on Codex), enforces funnel discipline (2-4 links, <=10 candidates per link, 2-3 deep dives), and writes a Chinese summary report
 - `company-buyability-score` - quantified buyability score for US-listed equities/ADRs covering AI exposure, value-chain position, growth, drawdown risk, sentiment mismatch, and negative factors
 - `fundamental-analysis` - stock fundamental and technical analysis
 - `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
