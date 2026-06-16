@@ -1,13 +1,13 @@
 ---
 name: chain-alpha-verification
-description: "chain-alpha 工作流第三步：对 US-listed/ADR 候选公司做最终验证——环节收入占比双轨硬门槛（≥40% 纯正 / 20-40% 增量贡献测试 / <20% 剔除）、100 分模型四档分级（金池子/通过/待验证/剔除）、最大回撤推断与风险预算法仓位上限。适用于：(1) 验证产业链筛出的候选公司是否可投并定仓位, (2) chain-alpha-pipeline 的第三步。输出保存至 ./output/chain-alpha-verification/。"
+description: "chain-alpha 工作流第三步：对全球主要可投市场（美股/ADR、A 股、港股、日股、台股主板）候选公司做最终验证——环节收入占比双轨硬门槛（≥40% 纯正 / 20-40% 增量贡献测试 / <20% 剔除）、100 分模型四档分级（金池子/通过/待验证/剔除）、最大回撤推断与风险预算法仓位上限。适用于：(1) 验证产业链筛出的候选公司是否可投并定仓位, (2) chain-alpha-pipeline 的第三步。输出保存至 ./output/chain-alpha-verification/。"
 ---
 
 # chain-alpha 公司验证与仓位
 
 ## Overview
 
-本 skill 是 chain-alpha 工作流的第三步：验证候选公司，给出四档结论和仓位上限。输入为 US-listed equities/ADRs 候选（通常来自 `chain-alpha-monopoly-screen`）。
+本 skill 是 chain-alpha 工作流的第三步：验证候选公司，给出四档结论和仓位上限。输入为全球主要可投市场候选（美股/ADR、A 股、港股、日股、台股主板，通常来自 `chain-alpha-monopoly-screen`）。
 
 默认输出目录：`./output/chain-alpha-verification/`
 
@@ -16,7 +16,7 @@ description: "chain-alpha 工作流第三步：对 US-listed/ADR 候选公司做
 - `使用 invest-flow:chain-alpha-verification 验证 <TICKER 或候选清单>`
 - 作为 `chain-alpha-pipeline` 的第三步被调用
 
-非美股公司不做验证和仓位建议；用户提供非美股标的时说明范围限制并仅做定性参考。
+非美股不再自动排除；A 股、港股、日股、台股主板候选按各自上市地市场口径验证并给仓位。未上市或仅 OTC 粉单标的只列背景参考，不给仓位建议。
 
 ## Workflow
 
@@ -55,6 +55,7 @@ description: "chain-alpha 工作流第三步：对 US-listed/ADR 候选公司做
 ### 5) 最大回撤推断与仓位
 - 最大回撤取三者最大值：历史回撤、估值压缩情景、业绩 miss 情景。
 - 仓位上限 = 单笔风险预算（默认组合的 2%，可参数化）÷ 预估最大回撤。
+- 仓位为组合占比 %，与候选公司计价币种无关。
 - 档位"通过"再 × 0.5；弹性标的（占比 20-40%）再 × 0.5（可叠乘）。
 - 例：预估回撤 40%，风险预算 2%，仓位上限 5%；档位"通过"则 2.5%。
 
