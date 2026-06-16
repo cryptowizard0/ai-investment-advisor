@@ -7,7 +7,7 @@ description: "chain-alpha 工作流第二步：把单个供需错位环节拆成
 
 ## Overview
 
-本 skill 是 chain-alpha 工作流的第二步：找壁垒、找垄断、排除低端竞争。输入一个供需错位环节（通常来自 `chain-alpha-mismatch-discovery`），输出该环节内 ≤10 家通过硬门槛的候选公司，并标注哪些是 US-listed/ADR。
+本 skill 是 chain-alpha 工作流的第二步：找壁垒、找垄断、排除低端竞争。输入一个供需错位环节（通常来自 `chain-alpha-mismatch-discovery`），输出该环节内 ≤10 家通过硬门槛的候选公司，并标注上市地与可投性。
 
 默认输出目录：`./output/chain-alpha-monopoly-screen/`
 
@@ -29,7 +29,7 @@ description: "chain-alpha 工作流第二步：把单个供需错位环节拆成
 
 ### 3) 列全球公司格局
 - 每个子环节列出全球公司格局，**必须含中国大陆及日韩台欧供应商**——中国是全球供应链不可缺少的一环，缺了 CR3 判断失真。
-- 每家公司标注：总部/上市地、是否 US-listed/ADR、在该子环节的产品和份额估计。
+- 每家公司标注：总部/上市地、可投性（可投主板 / 仅粉单 / 未上市）、在该子环节的产品和份额估计。
 
 ### 4) 硬门槛（一票否决，先于评分执行）
 读取 `references/methodology.md`：
@@ -52,7 +52,7 @@ description: "chain-alpha 工作流第二步：把单个供需错位环节拆成
 
 ### 6) 输出报告
 - 使用 `references/report-template.md` 输出中文 Markdown 报告。
-- 标注哪些候选是 US-listed/ADR（仅这些进第三步 `chain-alpha-verification`）；非美股垄断者（含中国大陆/港股/A股公司）作为产业格局背景保留在报告中。
+- 标注每家候选的上市地与可投性；所有可投主板候选（美股/ADR、A 股、港股、日股、台股主板）均可进入第三步 `chain-alpha-verification`。仅粉单/未上市的最强格局者作为产业格局背景保留在报告中。
 - 保存至 `./output/chain-alpha-monopoly-screen/chain-alpha-monopoly-screen-{环节}-{YYYY-MM-DD}.md`。
 - 文件已存在时追加 `(1)`, `(2)`，不覆盖。
 - 报告必须包含固定作者字段：`InvestmentFlow`。
@@ -71,4 +71,4 @@ description: "chain-alpha 工作流第二步：把单个供需错位环节拆成
 子环节拆分标准、CR3 证据等级规则、毛利率/壁垒排除规则、占比初筛口径、25 分候选评分细则。
 
 ### references/report-template.md
-固定中文 Markdown 报告模板：环节定义、子环节拆解、全球格局表、硬门槛筛选记录、候选评分表、US-investable 候选清单、数据来源。
+固定中文 Markdown 报告模板：环节定义、子环节拆解、全球格局表、硬门槛筛选记录、候选评分表、可投候选清单、数据来源。
