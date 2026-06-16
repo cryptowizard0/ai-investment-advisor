@@ -1,6 +1,6 @@
 ---
 name: chain-alpha-pipeline
-description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串行调度三步（chain-alpha-mismatch-discovery 产业链全景+供需错位环节、chain-alpha-monopoly-screen 拆环节找垄断、chain-alpha-verification 验证定仓位），步内 fan-out 到 subagent 并行（Claude Code），不支持时降级为会话内串行（Codex），强制漏斗纪律并生成中文汇总报告。适用于：(1) 用户从一个大主题出发想走完整的'拆产业链 -> 找关键环节 -> 找可投公司'流程, (2) 用户说'用 chain-alpha 分析 <主题>'。输出保存至 ./output/chain-alpha-pipeline/。"
+description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串行调度三步（chain-alpha-mismatch-discovery 产业链全景+供需错位环节、chain-alpha-monopoly-screen 拆环节找垄断、chain-alpha-verification 验证定仓位），步内 fan-out 到 subagent 并行（Claude Code 原生支持；Codex 在用户明确要求 subagent/并行 agent 且工具可用时启用），不满足并行条件时降级为会话内串行，强制漏斗纪律并生成中文汇总报告。适用于：(1) 用户从一个大主题出发想走完整的'拆产业链 -> 找关键环节 -> 找可投公司'流程, (2) 用户说'用 chain-alpha 分析 <主题>'。输出保存至 ./output/chain-alpha-pipeline/。"
 ---
 
 # chain-alpha 产业链选股工作流
@@ -9,7 +9,7 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 
 本 skill 编排 chain-alpha 三步工作流：拆解产业链 -> 分析关键环节 -> 找到可投资公司。它不引入新的分析逻辑，只负责调度三个步骤 skill、传递交接数据、执行漏斗纪律和生成最终汇总。
 
-调度形态：主 agent 跨步串行；步内对可拆分单元 fan-out 到 subagent 并行（第二步按环节、第三步按公司）。不支持 subagent 派发的 agent 会话降级为会话内串行，产出格式一致。
+调度形态：主 agent 跨步串行；步内对可拆分单元 fan-out 到 subagent 并行（第二步按环节、第三步按公司）。支持且允许 subagent 派发的 agent 会话进入并行模式；不满足并行条件时降级为会话内串行，产出格式一致。
 
 投资逻辑：找需求增量大、供给跟不上的错位环节；在错位环节里找 CR3 > 50% 的垄断公司、排除低端竞争；最后验证产业位置、收入占比、业绩、估值，推断最大回撤定仓位。
 
@@ -28,9 +28,10 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 读取 `references/methodology.md`（执行模式、fan-out 规则、失败处理）和 `references/subagent-prompts.md`（派发模板）后执行。
 
 ### Step 0: 能力探测
-判断当前 agent 会话是否支持派发 subagent：
-- 支持（如 Claude Code）：并行模式。
-- 不支持（如 Codex）：串行降级模式，行为与产出格式等价。
+判断当前 agent 会话是否支持且允许派发 subagent：
+- Claude Code：若平台支持 Task/subagent 派发，进入并行模式。
+- Codex：仅当用户明确要求 subagent、delegation 或 parallel agent work，且当前会话暴露 subagent 派发工具时，进入并行模式。
+- 其他情况（未授权、工具不可用或探测失败）：串行降级模式，行为与产出格式等价。
 
 ### Step 1: chain-alpha-mismatch-discovery（主 agent 自己做）
 - 输入：大主题。
@@ -80,7 +81,7 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 执行模式与能力探测、fan-out 规则、漏斗纪律、交接字段、并行失败与降级处理、会话成本控制。
 
 ### references/subagent-prompts.md
-Step 2 / Step 3 的 subagent 派发模板与交接字段契约，含串行降级说明。
+Step 2 / Step 3 的 subagent 派发模板与交接字段契约，含 Codex 并行约束与串行降级说明。
 
 ### references/report-template.md
 最终汇总报告模板：主题、全景摘要、错位环节、候选漏斗、Top 2-3 深挖卡、金池子/通过清单、跟踪计划。
