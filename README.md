@@ -42,6 +42,7 @@ If the plugin does not appear, confirm these files exist:
 |---|---|
 | Find AI infrastructure opportunities | Start with `ai-infrastructure-sector-discovery`, then use `ai-infrastructure-scarcity-radar` on the strongest scarcity theme. |
 | Find investable companies from an industry chain | Use `chain-alpha-pipeline` for the full mismatch -> monopoly -> verification funnel, or run `chain-alpha-mismatch-discovery` alone first to confirm the mismatch links cheaply. |
+| Track whether a 待验证 name's revenue is delivering | After the funnel leaves a name at `待验证`, use `chain-alpha-delivery-tracking` for a quarterly revenue-delivery read (5-gate ladder + growth/attribution/valuation engines) that feeds the grade back into `chain-alpha-verification`. |
 | Map a sector and find non-consensus names | Start with `industry-chain-analysis`, then use `non-consensus-company-discovery` on the most interesting bottleneck or module. |
 | Run daily market review | Use `daily-us-market-scan` after the US close. |
 | Track narrative and reflexivity risk | Use `reflexivity-quick-scan` regularly; upgrade to `reflexivity-deep-analysis` when the stage changes or the position is material. |
