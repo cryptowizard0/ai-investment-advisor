@@ -62,6 +62,7 @@ If the plugin does not appear, confirm these files exist:
 | `chain-alpha-monopoly-screen` | Sub-link breakdown and monopoly screening with CR3, margin, and revenue-share gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
 | `chain-alpha-verification` | 100-point four-tier company verification with drawdown-based position sizing. | You have US-listed candidates and need a buy/watch/reject grade plus a position cap. |
 | `chain-alpha-pipeline` | Orchestrates the three chain-alpha steps with in-step subagent fan-out (Claude Code parallel; Codex parallel when explicitly requested and available; otherwise serial fallback) and funnel discipline. | You want the full theme-to-company workflow in one run. |
+| `chain-alpha-delivery-tracking` | Forward-looking revenue-delivery tracking for 待验证 candidates with a 5-gate ladder, growth/attribution/dynamic-valuation engines, and symmetric grade up/down. | You hold a 待验证 name (e.g. 绿的谐波) and need a quarterly read on whether revenue is actually being delivered. |
 | `company-profile` | Builds a company primer before investment analysis. | Use when a user is hearing about a company for the first time and needs business, technology, value-chain, AI relevance, competitors, and industry-position context. |
 | `company-buyability-score` | Quantified buyability score for a US-listed company or ADR. | You need to judge whether a company is buyable using AI exposure, value-chain position, growth, drawdown risk, sentiment mismatch, and negative factors. |
 | `daily-us-market-scan` | Chinese US market close report and next-session review. | You want a daily read on indices, sectors, themes, breadth, earnings, and watchlists. |
@@ -114,6 +115,7 @@ Generated reports and cache files are written under `output/`:
 | Chain-alpha monopoly screen | `output/chain-alpha-monopoly-screen/` |
 | Chain-alpha verification | `output/chain-alpha-verification/` |
 | Chain-alpha pipeline summary | `output/chain-alpha-pipeline/` |
+| Chain-alpha delivery tracking | `output/chain-alpha-delivery-tracking/` |
 | Industry-chain analysis | `output/industry-chain-analysis/` |
 | Institutional analysis | `output/institutional-accumulation-analysis/` |
 | GIE framework | `output/gie-investment-framework/` |
