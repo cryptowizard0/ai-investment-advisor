@@ -1,6 +1,6 @@
 ---
 name: chain-alpha-pipeline
-description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串行调度三步（chain-alpha-mismatch-discovery 产业链全景+供需错位环节、chain-alpha-monopoly-screen 拆环节找垄断、chain-alpha-verification 验证定仓位），步内 fan-out 到 subagent 并行（Claude Code 原生支持；Codex 在用户明确要求 subagent/并行 agent 且工具可用时启用），不满足并行条件时降级为会话内串行，强制漏斗纪律并生成中文汇总报告。适用于：(1) 用户从一个大主题出发想走完整的'拆产业链 -> 找关键环节 -> 找可投公司'流程, (2) 用户说'用 chain-alpha 分析 <主题>'。输出保存至 ./output/chain-alpha-pipeline/。"
+description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串行调度三步（chain-alpha-mismatch-discovery 产业链全景+供需错位环节、chain-alpha-monopoly-screen 拆环节找垄断、chain-alpha-verification 验证定仓位），步内默认 fan-out 到 subagent 并行（Claude Code 原生支持；Codex 在 subagent 派发工具可用时默认启用），不满足并行条件时降级为会话内串行，强制漏斗纪律并生成中文汇总报告。适用于：(1) 用户从一个大主题出发想走完整的'拆产业链 -> 找关键环节 -> 找可投公司'流程, (2) 用户说'用 chain-alpha 分析 <主题>'。输出保存至 ./output/chain-alpha-pipeline/。"
 ---
 
 # chain-alpha 产业链选股工作流
@@ -28,10 +28,10 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 读取 `references/methodology.md`（执行模式、fan-out 规则、失败处理）和 `references/subagent-prompts.md`（派发模板）后执行。
 
 ### Step 0: 能力探测
-判断当前 agent 会话是否支持且允许派发 subagent：
+判断当前 agent 会话是否支持派发 subagent：
 - Claude Code：若平台支持 Task/subagent 派发，进入并行模式。
-- Codex：仅当用户明确要求 subagent、delegation 或 parallel agent work，且当前会话暴露 subagent 派发工具时，进入并行模式。
-- 其他情况（未授权、工具不可用或探测失败）：串行降级模式，行为与产出格式等价。
+- Codex：若当前会话暴露 subagent 派发工具，默认进入并行模式。
+- 其他情况（工具不可用、探测失败或派发失败）：串行降级模式，行为与产出格式等价。
 
 ### Step 1: chain-alpha-mismatch-discovery（主 agent 自己做）
 - 输入：大主题。
@@ -65,6 +65,7 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 1. 先单独跑 Step 1（成本低）：`使用 invest-flow:chain-alpha-mismatch-discovery 分析 <主题>`。
 2. 人工确认错位环节靠谱后，再对选中的 1-2 个环节跑 Step 2、3。
 3. 完整 pipeline 建议在单独会话运行；并行模式下 subagent 各自独立上下文，主会话只保留交接字段。
+4. 进入 `待验证` 的标的，后续用 `使用 invest-flow:chain-alpha-delivery-tracking 跟踪 <TICKER>` 做按季营收兑现追踪与升降档，不必每次重跑完整 pipeline。
 
 ## Quality Rules
 
