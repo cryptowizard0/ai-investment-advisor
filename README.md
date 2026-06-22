@@ -4,6 +4,8 @@
 
 InvestFlow is a repo-local agent plugin for investment research, compatible with both Codex and Claude Code. It bundles reusable skills for market scans, industry-chain research, non-consensus discovery, single-stock analysis, buyability scoring, earnings review, reflexivity analysis, and routed market data.
 
+Its flagship workflow is **chain-alpha** — a theme → industry-chain → investable-company funnel with ongoing revenue-delivery tracking. See [Featured Workflow: chain-alpha](#featured-workflow-chain-alpha).
+
 The canonical plugin package lives in `plugins/invest-flow/`. Packaged skills live in `plugins/invest-flow/skills/` and are shared by both platforms.
 
 ## Quick Start
@@ -35,6 +37,25 @@ If the plugin does not appear, confirm these files exist:
 
 - Codex: `plugins/invest-flow/.codex-plugin/plugin.json` and `.agents/plugins/marketplace.json`
 - Claude Code: `plugins/invest-flow/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+
+## Featured Workflow: chain-alpha
+
+chain-alpha is InvestFlow's flagship workflow: it turns a big theme into investable companies and then keeps tracking whether their revenue actually delivers. Five skills form a closed loop, orchestrated end-to-end by `chain-alpha-pipeline`:
+
+```text
+theme ─▶ mismatch-discovery ─▶ monopoly-screen ─▶ verification ⇄ delivery-tracking
+        panorama + mismatch    sub-links +         4-tier grade +    quarterly revenue-
+        links                  ≤10 candidates      position size     delivery tracking
+        └──────────────── orchestrated by chain-alpha-pipeline ──────────────┘
+```
+
+Run the whole funnel in one command:
+
+```text
+Use invest-flow:chain-alpha-pipeline to find investable companies in humanoid robots (具身智能).
+```
+
+Funnel discipline: 2-4 mismatch links → ≤10 candidates per link → top-6 into verification → 2-3 deep dives. Names left at `待验证` are then tracked quarterly with `chain-alpha-delivery-tracking`, whose grade changes feed back into `chain-alpha-verification`. Each step can also run standalone — start with `chain-alpha-mismatch-discovery` to confirm the mismatch links cheaply before committing to the full run.
 
 ## Recommended Workflows
 
