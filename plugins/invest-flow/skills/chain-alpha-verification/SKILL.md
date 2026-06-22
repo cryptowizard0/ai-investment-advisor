@@ -76,6 +76,10 @@ description: "chain-alpha 工作流第三步：对全球主要可投市场（美
 - 估值透支判断必须同时看当前估值和远期估值。
 - 输出是研究与跟踪优先级，不是自动交易指令。
 
+## 下游跟踪
+
+`待验证` 与在监控的 `通过 / 金池子` 标的，用 `invest-flow:chain-alpha-delivery-tracking` 做周期性营收兑现追踪（验证链阶段闸门 + 增速 / 归因 / 动态估值三引擎），并据其结论回灌本 skill 的档位与仓位。
+
 ## Resources
 
 ### references/methodology.md
