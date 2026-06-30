@@ -36,6 +36,10 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │       └── skills/
 │           ├── ai-infrastructure-scarcity-radar/
 │           ├── ai-infrastructure-sector-discovery/
+│           ├── chain-alpha-mismatch-discovery/
+│           ├── chain-alpha-monopoly-screen/
+│           ├── chain-alpha-verification/
+│           ├── chain-alpha-pipeline/
 │           ├── company-profile/
 │           ├── company-buyability-score/
 │           ├── fundamental-analysis/
@@ -54,6 +58,10 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── output-report-index/
 │           └── market-data-router/
 ├── output/
+│   ├── chain-alpha-mismatch-discovery/
+│   ├── chain-alpha-monopoly-screen/
+│   ├── chain-alpha-verification/
+│   ├── chain-alpha-pipeline/
 │   ├── company-profile/
 │   ├── company-buyability-score/
 │   ├── fundamental-analysis/
@@ -158,6 +166,11 @@ Active packaged skills:
 - `ai-infrastructure-sector-discovery` - weekly AI infrastructure sector discovery and scoring
 - `ai-infrastructure-scarcity-radar` - AI infrastructure scarcity opportunity and bottleneck analysis
 - `company-profile` - company primer covering overview, core business, technology barriers, industry-chain position, AI relevance, competitors, and industry position
+- `chain-alpha-mismatch-discovery` - chain-alpha step 1: full industry-chain panorama list plus supply-demand mismatch link discovery with hard evidence gates and 20-point mismatch scoring
+- `chain-alpha-monopoly-screen` - chain-alpha step 2: sub-link breakdown, global landscape including mainland China and JP/KR/TW/EU, CR3/margin/revenue-share hard gates, 25-point candidate scoring
+- `chain-alpha-verification` - chain-alpha step 3: dual-track revenue-share gate, 100-point four-tier grading (gold pool/pass/pending/reject), drawdown inference and risk-budget position sizing for US-listed candidates
+- `chain-alpha-pipeline` - chain-alpha orchestration: main agent runs the three steps serially with in-step subagent fan-out (parallel on Claude Code; parallel on Codex when explicitly requested and available; otherwise serial fallback), enforces funnel discipline (2-4 links, <=10 candidates per link, 2-3 deep dives), and writes a Chinese summary report
+- `chain-alpha-delivery-tracking` - chain-alpha follow-on: forward-looking revenue-delivery tracking for 待验证 candidates via a 5-gate validation ladder (order->capacity->ramp->revenue->profit), growth/attribution/dynamic-valuation (PE&PS dual-track) engines, and symmetric grade up/down that feeds back into chain-alpha
 - `company-buyability-score` - quantified buyability score for US-listed equities/ADRs covering AI exposure, value-chain position, growth, drawdown risk, sentiment mismatch, and negative factors
 - `fundamental-analysis` - stock fundamental and technical analysis
 - `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
@@ -193,6 +206,11 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Earnings report analysis: `output/earnings-report-analysis/earnings-report-analysis-{TICKER}-{period}-{YYYY-MM-DD}.md`
 - AI infrastructure sector discovery: `output/ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-{YYYY-MM-DD}.md`
 - AI infrastructure scarcity radar: `output/ai-infrastructure-scarcity-radar/ai-infrastructure-scarcity-radar-{topic}-{YYYY-MM-DD}.md`
+- Chain-alpha mismatch discovery: `output/chain-alpha-mismatch-discovery/chain-alpha-mismatch-discovery-{主题}-{YYYY-MM-DD}.md`
+- Chain-alpha monopoly screen: `output/chain-alpha-monopoly-screen/chain-alpha-monopoly-screen-{环节}-{YYYY-MM-DD}.md`
+- Chain-alpha verification: `output/chain-alpha-verification/chain-alpha-verification-{TICKER或环节}-{YYYY-MM-DD}.md`
+- Chain-alpha pipeline summary: `output/chain-alpha-pipeline/chain-alpha-pipeline-{主题}-{YYYY-MM-DD}.md`
+- Chain-alpha delivery tracking: `output/chain-alpha-delivery-tracking/chain-alpha-delivery-tracking-{TICKER}-{YYYY-MM-DD}.md`
 - Company profile: `output/company-profile/company-profile-{TICKER}-{YYYY-MM-DD}.md`
 - Company buyability score: `output/company-buyability-score/company-buyability-score-{TICKER}-{YYYY-MM-DD}.md`
 - Industry chain analysis: `output/industry-chain-analysis/industry-chain-analysis-{topic}-{YYYY-MM-DD}.md`

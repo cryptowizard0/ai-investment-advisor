@@ -1,7 +1,7 @@
 {
   "name": "invest-flow",
-  "version": "0.2.1",
-  "description": "Bundle investment research skills, buyability scoring, earnings report analysis, non-consensus company discovery, professional investment analyst reports, daily market scans, reflexivity workflows, report generation, multi-agent analysis, and market data routing.",
+  "version": "0.3.3",
+  "description": "Bundle investment research skills, buyability scoring, earnings report analysis, non-consensus company discovery, professional investment analyst reports, daily market scans, reflexivity workflows, report generation, multi-agent analysis, chain-alpha industry-chain stock selection pipeline, and market data routing.",
   "author": {
     "name": "Potter",
     "email": "45678072+cryptowizard0@users.noreply.github.com",
@@ -9,7 +9,7 @@
   },
   "homepage": "https://github.com/cryptowizard0/ai-investment-advisor",
   "repository": "https://github.com/cryptowizard0/ai-investment-advisor",
-  "keywords": ["investment", "finance", "stocks", "buyability", "scoring", "earnings", "financial-results", "gold", "analysis", "reflexivity", "research", "market-scan", "non-consensus", "company-discovery"],
+  "keywords": ["investment", "finance", "stocks", "buyability", "scoring", "earnings", "financial-results", "gold", "analysis", "reflexivity", "research", "market-scan", "non-consensus", "company-discovery", "industry-chain", "supply-demand", "chain-alpha"],
   "skills": "./skills/",
   "interface": {
     "displayName": "InvestFlow",
@@ -27,7 +27,8 @@
       "Use InvestFlow to generate a daily US market close report.",
       "Use InvestFlow to perform a reflexivity quick scan on NVIDIA.",
       "Use InvestFlow to generate a structured stock report for AAPL.",
-      "Use InvestFlow to find non-consensus companies in AI data center power."
+      "Use InvestFlow to find non-consensus companies in AI data center power.",
+      "Use InvestFlow to run the chain-alpha pipeline on AI data center power."
     ],
     "brandColor": "#F5F5F7",
     "composerIcon": "./assets/icon.png",
