@@ -1,6 +1,6 @@
 ---
 name: chain-alpha-pipeline
-description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串行调度三步（chain-alpha-mismatch-discovery 产业链全景+供需错位环节、chain-alpha-monopoly-screen 拆环节找垄断、chain-alpha-verification 验证定仓位），步内默认 fan-out 到 subagent 并行（Claude Code 原生支持；Codex 在 subagent 派发工具可用时默认启用），不满足并行条件时降级为会话内串行，强制漏斗纪律并生成中文汇总报告。适用于：(1) 用户从一个大主题出发想走完整的'拆产业链 -> 找关键环节 -> 找可投公司'流程, (2) 用户说'用 chain-alpha 分析 <主题>'。输出保存至 ./output/chain-alpha-pipeline/。"
+description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串行调度三步（chain-alpha-mismatch-discovery 产业链全景+供需错位环节、chain-alpha-monopoly-screen 拆环节找垄断、chain-alpha-verification 验证定仓位），步内默认 fan-out 到 subagent 并行（Claude Code 原生支持；Codex 在 subagent 派发工具可用时默认启用），不满足并行条件时降级为会话内串行，强制漏斗纪律并生成中文汇总报告。适用于：(1) 用户从一个大主题出发想走完整的'拆产业链 -> 找关键环节 -> 找可投公司'流程, (2) 用户说'用 chain-alpha 分析 「主题」'。输出保存至 ./output/chain-alpha-pipeline/。"
 ---
 
 # chain-alpha 产业链选股工作流
