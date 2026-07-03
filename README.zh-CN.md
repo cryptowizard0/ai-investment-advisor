@@ -79,7 +79,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 |---|---|---|
 | `ai-infrastructure-sector-discovery` | 扫描并评分 AI 基建板块。 | 想找下一步最值得研究的 AI 基建方向。 |
 | `ai-infrastructure-scarcity-radar` | 深挖 AI 基建稀缺环节和瓶颈。 | 已经锁定主题，需要判断稀缺是否真实且可投资。 |
-| `chain-alpha-mismatch-discovery` | 行业定义 + 增长门槛 + 产业链全景 + 供需错位环节发现。 | 有一个大主题，需要判断行业是什么、增长是否足够快且可持续、拆出整条产业链，并找到需求超过供给且能落到利润增速的错位环节。 |
+| `chain-alpha-mismatch-discovery` | 行业白话定义 + 增长门槛与产业周期定位（四阶段时间表 + 当前节点）+ 产业链全景 + 供需错位环节发现。 | 有一个大主题，需要用白话搞懂行业到底是什么、处于哪个产业周期阶段、增速为何能维持高位、拆出整条产业链，并找到需求超过供给且能落到利润增速的错位环节。 |
 | `chain-alpha-monopoly-screen` | 错位环节拆子环节 + 用 CR3/毛利/收入占比/利润增速硬门槛做垄断筛选。 | 已确认某个错位环节，需要找出其中最强的 ≤10 家公司。 |
 | `chain-alpha-verification` | 100 分四档公司验证 + 利润增速硬门槛 + 基于回撤的仓位上限。 | 有候选公司，需要金池子/通过/待验证/剔除分级和仓位上限。 |
 | `chain-alpha-pipeline` | 编排 chain-alpha 三步，步内 fan-out 到 subagent（Claude Code 原生并行；Codex 工具可用时并行；否则串行降级）并强制漏斗纪律。 | 想一次跑完"主题 → 公司"的完整流程。 |
