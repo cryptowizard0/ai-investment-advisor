@@ -44,8 +44,8 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 
 ```text
 主题 ─▶ mismatch-discovery ─▶ monopoly-screen ─▶ verification ⇄ delivery-tracking
-       行业定义+增长初筛       拆子环节+≤10候选     四档分级+定仓位    按季营收兑现追踪
-       +产业链全景+错位环节
+       行业定义+增长初筛       拆子环节+≤10候选     四档分级+定仓位    按季营收/利润
+       +产业链全景+错位环节                                          兑现追踪
        └──────────────── 由 chain-alpha-pipeline 编排 ──────────────┘
 ```
 
@@ -62,7 +62,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | 目标 | 推荐流程 |
 |---|---|
 | 从产业链找到可投公司（首推） | 用 `chain-alpha-pipeline` 跑完整的 行业定义 → 增长初筛 → 错位发现 → 垄断筛选 → 验证定仓 漏斗；也可先单独跑 `chain-alpha-mismatch-discovery` 低成本完成行业定义、增长初筛并确认错位环节。 |
-| 跟踪待验证标的的营收兑现 | 漏斗把标的留在 `待验证` 后，用 `chain-alpha-delivery-tracking` 做按季营收兑现追踪（5 级验证链 + 增速/归因/估值引擎），结论回灌 `chain-alpha-verification`。 |
+| 跟踪待验证标的的营收/利润兑现 | 漏斗把标的留在 `待验证` 后，用 `chain-alpha-delivery-tracking` 做按季营收与利润兑现追踪（5 级验证链 + 兑现窗口超时 + 增速/归因/估值引擎 + 格局哨兵），结论回灌 `chain-alpha-verification`。 |
 | 发现 AI 基建机会 | 先用 `ai-infrastructure-sector-discovery` 扫描板块，再用 `ai-infrastructure-scarcity-radar` 深挖最强稀缺主题。 |
 | 从产业链找到非共识标的 | 先用 `industry-chain-analysis` 拆产业链和瓶颈，再用 `non-consensus-company-discovery` 分析最有潜力的环节或模块。 |
 | 每日市场复盘 | 美股收盘后使用 `daily-us-market-scan`。 |
@@ -80,10 +80,10 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | `ai-infrastructure-sector-discovery` | 扫描并评分 AI 基建板块。 | 想找下一步最值得研究的 AI 基建方向。 |
 | `ai-infrastructure-scarcity-radar` | 深挖 AI 基建稀缺环节和瓶颈。 | 已经锁定主题，需要判断稀缺是否真实且可投资。 |
 | `chain-alpha-mismatch-discovery` | 行业定义 + 增长门槛 + 产业链全景 + 供需错位环节发现。 | 有一个大主题，需要判断行业是什么、增长是否足够快且可持续、拆出整条产业链，并找到需求超过供给且能落到利润增速的错位环节。 |
-| `chain-alpha-monopoly-screen` | 错位环节拆子环节 + 用 CR3/毛利/收入占比硬门槛做垄断筛选。 | 已确认某个错位环节，需要找出其中最强的 ≤10 家公司。 |
-| `chain-alpha-verification` | 100 分四档公司验证 + 基于回撤的仓位上限。 | 有候选公司，需要金池子/通过/待验证/剔除分级和仓位上限。 |
+| `chain-alpha-monopoly-screen` | 错位环节拆子环节 + 用 CR3/毛利/收入占比/利润增速硬门槛做垄断筛选。 | 已确认某个错位环节，需要找出其中最强的 ≤10 家公司。 |
+| `chain-alpha-verification` | 100 分四档公司验证 + 利润增速硬门槛 + 基于回撤的仓位上限。 | 有候选公司，需要金池子/通过/待验证/剔除分级和仓位上限。 |
 | `chain-alpha-pipeline` | 编排 chain-alpha 三步，步内 fan-out 到 subagent（Claude Code 原生并行；Codex 工具可用时并行；否则串行降级）并强制漏斗纪律。 | 想一次跑完"主题 → 公司"的完整流程。 |
-| `chain-alpha-delivery-tracking` | 对待验证标的做前瞻性营收兑现追踪：5 级验证链 + 增速/归因/动态估值引擎 + 双向升降档。 | 持有待验证标的（如绿的谐波），需要按季判断营收是否真兑现。 |
+| `chain-alpha-delivery-tracking` | 对待验证标的做前瞻性营收/利润兑现追踪：5 级验证链 + 兑现窗口超时判死 + 增速/归因/动态估值引擎 + 格局哨兵 + 双向升降档。 | 持有待验证标的（如绿的谐波），需要按季判断营收和利润增速是否真兑现。 |
 | `company-profile` | 生成投资分析前置公司画像。 | 用户第一次听说某家公司时，用于快速理解公司简介、核心业务、技术壁垒、产业链位置、AI 相关性、竞争对手和行业地位。 |
 | `company-buyability-score` | 对美股或 ADR 生成买入可行性量化评分。 | 需要判断一家公司能不能买，并同时检查 AI 受益、产业链位置、增长、回撤、情绪错位和负面因素。 |
 | `daily-us-market-scan` | 生成中文美股收盘复盘和次日计划。 | 想每日跟踪指数、板块、主题、市场宽度、财报和观察名单。 |
