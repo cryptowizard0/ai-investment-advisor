@@ -1,17 +1,17 @@
 ---
 name: chain-alpha-pipeline
-description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串行调度三步（chain-alpha-mismatch-discovery 产业链全景+供需错位环节、chain-alpha-monopoly-screen 拆环节找垄断、chain-alpha-verification 验证定仓位），步内默认 fan-out 到 subagent 并行（Claude Code 原生支持；Codex 在 subagent 派发工具可用时默认启用），不满足并行条件时降级为会话内串行，强制漏斗纪律并生成中文汇总报告。适用于：(1) 用户从一个大主题出发想走完整的'拆产业链 -> 找关键环节 -> 找可投公司'流程, (2) 用户说'用 chain-alpha 分析 「主题」'。输出保存至 ./output/chain-alpha-pipeline/。"
+description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串行调度三步（chain-alpha-mismatch-discovery 行业定义+增长初筛+产业链全景+供需错位环节、chain-alpha-monopoly-screen 拆环节找垄断、chain-alpha-verification 验证定仓位），步内默认 fan-out 到 subagent 并行（Claude Code 原生支持；Codex 在 subagent 派发工具可用时默认启用），不满足并行条件时降级为会话内串行，强制漏斗纪律并生成中文汇总报告。适用于：(1) 用户从一个大主题出发想走完整的'行业是什么 -> 增长快吗 -> 错位环节 -> 垄断公司 -> 可买公司'流程, (2) 用户说'用 chain-alpha 分析 「主题」'。输出保存至 ./output/chain-alpha-pipeline/。"
 ---
 
 # chain-alpha 产业链选股工作流
 
 ## Overview
 
-本 skill 编排 chain-alpha 三步工作流：拆解产业链 -> 分析关键环节 -> 找到可投资公司。它不引入新的分析逻辑，只负责调度三个步骤 skill、传递交接数据、执行漏斗纪律和生成最终汇总。
+本 skill 编排 chain-alpha 三步工作流：行业定义与增长初筛 -> 拆解产业链并找供需错位 -> 分析关键环节垄断格局 -> 找到可投资公司。它不引入新的分析逻辑，只负责调度三个步骤 skill、传递交接数据、执行漏斗纪律和生成最终汇总。
 
 调度形态：主 agent 跨步串行；步内对可拆分单元 fan-out 到 subagent 并行（第二步按环节、第三步按公司）。支持且允许 subagent 派发的 agent 会话进入并行模式；不满足并行条件时降级为会话内串行，产出格式一致。
 
-投资逻辑：找需求增量大、供给跟不上的错位环节；确认错位能落到可持续利润增速（最低 20%，优选 30%+）；在错位环节里找 CR3 > 50% 的垄断公司、排除低端竞争；最后验证产业位置、收入占比、利润增速、估值，推断最大回撤定仓位。
+投资逻辑：先判断行业是什么和增长是否足够快，再从完整产业链中寻找供需错位环节，随后筛选 CR3 高、壁垒强、扩产难的垄断公司，最后验证利润增速、估值和仓位。行业/收入增速 >20% 是进入后续环节的初筛硬门槛；若行业增长门槛失败，pipeline 在 Step 1 终止。行业/环节和公司筛选最终都必须回到可持续利润增速（最低 20%，优选 30%+）。
 
 默认输出目录：`./output/chain-alpha-pipeline/`
 
@@ -33,9 +33,10 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 - Codex：若当前会话暴露 subagent 派发工具，默认进入并行模式。
 - 其他情况（工具不可用、探测失败或派发失败）：串行降级模式，行为与产出格式等价。
 
-### Step 1: chain-alpha-mismatch-discovery（主 agent 自己做）
+### Step 1: chain-alpha-mismatch-discovery（行业定义与增长初筛，主 agent 自己做）
 - 输入：大主题。
-- 产出：产业链全景列表 + 2-4 个错位环节（含错位强度评分和利润增速落点）。
+- 产出：行业定义 + 增长判断 + 产业链全景列表 + 2-4 个错位环节（含错位强度评分和利润增速落点）。
+- 增长门槛：行业 / 关键环节收入增速 >20%、增长原因清楚、可持续窗口至少 6 个月；任一项失败则终止 pipeline，不进入 Step 2/3。
 - 漏斗规则：最多 4 个环节进入下一步；硬门槛未过的环节不得放行。
 - 全景不可分，不 fan-out。
 
@@ -71,6 +72,7 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 
 - 漏斗纪律强制执行：2-4 个环节 -> 每环节 ≤10 家 -> 深挖 2-3 家。fan-out 不放宽任何门槛。
 - 利润增速门槛强制执行：行业/环节和公司筛选都必须回到利润增速，低于 20% 不放行，20-30% 低档通过，30% 以上优先。
+- 行业增长门槛强制执行：Step 1 增长判断失败时必须终止，不得继续执行 monopoly-screen 或 verification。
 - 每步必须遵守对应步骤 skill 的硬门槛；编排层不得放宽。
 - 并行与串行两模式的硬门槛、交接字段、报告格式必须一致。
 - subagent 失败不整体中止：按 `methodology.md` 第 5 节标注并降级。

@@ -44,7 +44,8 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 
 ```text
 主题 ─▶ mismatch-discovery ─▶ monopoly-screen ─▶ verification ⇄ delivery-tracking
-       产业链全景+错位环节     拆子环节+≤10候选     四档分级+定仓位    按季营收兑现追踪
+       行业定义+增长初筛       拆子环节+≤10候选     四档分级+定仓位    按季营收兑现追踪
+       +产业链全景+错位环节
        └──────────────── 由 chain-alpha-pipeline 编排 ──────────────┘
 ```
 
@@ -54,13 +55,13 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 使用 invest-flow:chain-alpha-pipeline 分析具身智能（人形机器人）
 ```
 
-漏斗纪律：2-4 个错位环节 → 每环节 ≤10 候选 → top-6 进入验证 → 深挖 2-3 家。落在 `待验证` 的标的，用 `chain-alpha-delivery-tracking` 按季跟踪营收兑现，其升降档结论回灌 `chain-alpha-verification`。每一步也可单独运行——先用 `chain-alpha-mismatch-discovery` 低成本确认错位环节，再决定是否跑完整流程。
+漏斗纪律：行业定义与增长门槛 → 2-4 个错位环节 → 每环节 ≤10 候选 → top-6 进入验证 → 深挖 2-3 家。行业/关键环节收入增速必须 >20%、增长原因清楚、持续窗口至少 6 个月，才进入后续环节；最终仍必须落到可持续利润增速：≥30% 优先，20% 是最低放行线，<20% 筛掉。落在 `待验证` 的标的，用 `chain-alpha-delivery-tracking` 按季跟踪营收兑现，其升降档结论回灌 `chain-alpha-verification`。每一步也可单独运行——先用 `chain-alpha-mismatch-discovery` 低成本完成行业定义、增长门槛并确认错位环节，再决定是否跑完整流程。
 
 ## 推荐工作流
 
 | 目标 | 推荐流程 |
 |---|---|
-| 从产业链找到可投公司（首推） | 用 `chain-alpha-pipeline` 跑完整的 错位发现 → 垄断筛选 → 验证定仓 漏斗；也可先单独跑 `chain-alpha-mismatch-discovery` 低成本确认错位环节。 |
+| 从产业链找到可投公司（首推） | 用 `chain-alpha-pipeline` 跑完整的 行业定义 → 增长初筛 → 错位发现 → 垄断筛选 → 验证定仓 漏斗；也可先单独跑 `chain-alpha-mismatch-discovery` 低成本完成行业定义、增长初筛并确认错位环节。 |
 | 跟踪待验证标的的营收兑现 | 漏斗把标的留在 `待验证` 后，用 `chain-alpha-delivery-tracking` 做按季营收兑现追踪（5 级验证链 + 增速/归因/估值引擎），结论回灌 `chain-alpha-verification`。 |
 | 发现 AI 基建机会 | 先用 `ai-infrastructure-sector-discovery` 扫描板块，再用 `ai-infrastructure-scarcity-radar` 深挖最强稀缺主题。 |
 | 从产业链找到非共识标的 | 先用 `industry-chain-analysis` 拆产业链和瓶颈，再用 `non-consensus-company-discovery` 分析最有潜力的环节或模块。 |
@@ -78,7 +79,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 |---|---|---|
 | `ai-infrastructure-sector-discovery` | 扫描并评分 AI 基建板块。 | 想找下一步最值得研究的 AI 基建方向。 |
 | `ai-infrastructure-scarcity-radar` | 深挖 AI 基建稀缺环节和瓶颈。 | 已经锁定主题，需要判断稀缺是否真实且可投资。 |
-| `chain-alpha-mismatch-discovery` | 产业链全景 + 供需错位环节发现。 | 有一个大主题，需要拆出整条产业链并找到需求超过供给的错位环节。 |
+| `chain-alpha-mismatch-discovery` | 行业定义 + 增长门槛 + 产业链全景 + 供需错位环节发现。 | 有一个大主题，需要判断行业是什么、增长是否足够快且可持续、拆出整条产业链，并找到需求超过供给且能落到利润增速的错位环节。 |
 | `chain-alpha-monopoly-screen` | 错位环节拆子环节 + 用 CR3/毛利/收入占比硬门槛做垄断筛选。 | 已确认某个错位环节，需要找出其中最强的 ≤10 家公司。 |
 | `chain-alpha-verification` | 100 分四档公司验证 + 基于回撤的仓位上限。 | 有候选公司，需要金池子/通过/待验证/剔除分级和仓位上限。 |
 | `chain-alpha-pipeline` | 编排 chain-alpha 三步，步内 fan-out 到 subagent（Claude Code 原生并行；Codex 工具可用时并行；否则串行降级）并强制漏斗纪律。 | 想一次跑完"主题 → 公司"的完整流程。 |
