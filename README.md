@@ -4,7 +4,7 @@
 
 InvestFlow is a repo-local agent plugin for investment research, compatible with both Codex and Claude Code. It bundles reusable skills for market scans, industry-chain research, non-consensus discovery, single-stock analysis, buyability scoring, earnings review, reflexivity analysis, and routed market data.
 
-Its flagship workflow is **chain-alpha** — a theme → industry-chain → investable-company funnel with ongoing revenue-delivery tracking. See [Featured Workflow: chain-alpha](#featured-workflow-chain-alpha).
+Its flagship workflow is **chain-alpha** — a theme → industry-chain → investable-company funnel with ongoing revenue/profit-delivery tracking. See [Featured Workflow: chain-alpha](#featured-workflow-chain-alpha).
 
 The canonical plugin package lives in `plugins/invest-flow/`. Packaged skills live in `plugins/invest-flow/skills/` and are shared by both platforms.
 
@@ -40,12 +40,12 @@ If the plugin does not appear, confirm these files exist:
 
 ## Featured Workflow: chain-alpha
 
-chain-alpha is InvestFlow's flagship workflow: it turns a big theme into investable companies and then keeps tracking whether their revenue actually delivers. Five skills form a closed loop, orchestrated end-to-end by `chain-alpha-pipeline`:
+chain-alpha is InvestFlow's flagship workflow: it turns a big theme into investable companies and then keeps tracking whether their revenue and profit growth actually deliver. Five skills form a closed loop, orchestrated end-to-end by `chain-alpha-pipeline`:
 
 ```text
 theme ─▶ mismatch-discovery ─▶ monopoly-screen ─▶ verification ⇄ delivery-tracking
-        panorama + mismatch    sub-links +         4-tier grade +    quarterly revenue-
-        links                  ≤10 candidates      position size     delivery tracking
+        industry + growth      sub-links +         4-tier grade +    quarterly revenue/
+        screen + mismatch      ≤10 candidates      position size     profit tracking
         └──────────────── orchestrated by chain-alpha-pipeline ──────────────┘
 ```
 
@@ -55,15 +55,15 @@ Run the whole funnel in one command:
 Use invest-flow:chain-alpha-pipeline to find investable companies in humanoid robots (具身智能).
 ```
 
-Funnel discipline: 2-4 mismatch links → ≤10 candidates per link → top-6 into verification → 2-3 deep dives. Names left at `待验证` are then tracked quarterly with `chain-alpha-delivery-tracking`, whose grade changes feed back into `chain-alpha-verification`. Each step can also run standalone — start with `chain-alpha-mismatch-discovery` to confirm the mismatch links cheaply before committing to the full run.
+Funnel discipline: industry definition and growth gate → 2-4 mismatch links → ≤10 candidates per link → top-6 into verification → 2-3 deep dives. Industry/key-link revenue growth must be >20%, have a clear driver, and last at least 6 months before the workflow enters later steps; industry and company screens must still map back to sustainable profit growth: ≥30% is preferred, 20% is the minimum gate, and <20% is screened out. Names left at `待验证` are then tracked quarterly with `chain-alpha-delivery-tracking`, whose grade changes feed back into `chain-alpha-verification`. Each step can also run standalone — start with `chain-alpha-mismatch-discovery` to define the industry, screen growth, and confirm mismatch links cheaply before committing to the full run.
 
 ## Recommended Workflows
 
 | Goal | Recommended flow |
 |---|---|
 | Find AI infrastructure opportunities | Start with `ai-infrastructure-sector-discovery`, then use `ai-infrastructure-scarcity-radar` on the strongest scarcity theme. |
-| Find investable companies from an industry chain | Use `chain-alpha-pipeline` for the full mismatch -> monopoly -> verification funnel, or run `chain-alpha-mismatch-discovery` alone first to confirm the mismatch links cheaply. |
-| Track whether a 待验证 name's revenue is delivering | After the funnel leaves a name at `待验证`, use `chain-alpha-delivery-tracking` for a quarterly revenue-delivery read (5-gate ladder + growth/attribution/valuation engines) that feeds the grade back into `chain-alpha-verification`. |
+| Find investable companies from an industry chain | Use `chain-alpha-pipeline` for the full industry definition -> growth screen -> mismatch -> monopoly -> verification funnel, or run `chain-alpha-mismatch-discovery` alone first to define the industry, screen growth, and confirm the mismatch links cheaply. |
+| Track whether a 待验证 name's revenue/profit is delivering | After the funnel leaves a name at `待验证`, use `chain-alpha-delivery-tracking` for a quarterly revenue and profit-delivery read (5-gate ladder + delivery-window timeouts + growth/attribution/valuation engines + structure sentinels) that feeds the grade back into `chain-alpha-verification`. |
 | Map a sector and find non-consensus names | Start with `industry-chain-analysis`, then use `non-consensus-company-discovery` on the most interesting bottleneck or module. |
 | Run daily market review | Use `daily-us-market-scan` after the US close. |
 | Track narrative and reflexivity risk | Use `reflexivity-quick-scan` regularly; upgrade to `reflexivity-deep-analysis` when the stage changes or the position is material. |
@@ -80,11 +80,11 @@ Funnel discipline: 2-4 mismatch links → ≤10 candidates per link → top-6 in
 |---|---|---|
 | `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring. | You want to identify the best AI infrastructure themes to research next. |
 | `ai-infrastructure-scarcity-radar` | Deep scarcity and bottleneck analysis for AI infrastructure. | You already have a theme and need to judge whether scarcity is real and investable. |
-| `chain-alpha-mismatch-discovery` | Full industry-chain panorama and supply-demand mismatch link discovery. | You have a big theme and need the whole chain mapped plus the links where demand outruns supply. |
-| `chain-alpha-monopoly-screen` | Sub-link breakdown and monopoly screening with CR3, margin, and revenue-share gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
-| `chain-alpha-verification` | 100-point four-tier company verification with drawdown-based position sizing. | You have US-listed candidates and need a buy/watch/reject grade plus a position cap. |
+| `chain-alpha-mismatch-discovery` | Plain-language industry definition, growth hard gate with industry-cycle staging (four-stage timeline + current-stage marker), full industry-chain panorama, and supply-demand mismatch link discovery with a profit-growth gate. | You have a big theme and need to understand what the industry actually is, which cycle stage it is in, why growth can stay high, the whole chain, and the links where demand outruns supply and can translate into profit growth. |
+| `chain-alpha-monopoly-screen` | Sub-link breakdown and monopoly screening with CR3, margin, revenue-share, and profit-growth gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
+| `chain-alpha-verification` | 100-point four-tier company verification with profit-growth gating and drawdown-based position sizing. | You have candidates and need a buy/watch/reject grade plus a position cap. |
 | `chain-alpha-pipeline` | Orchestrates the three chain-alpha steps with in-step subagent fan-out (Claude Code parallel; Codex parallel when explicitly requested and available; otherwise serial fallback) and funnel discipline. | You want the full theme-to-company workflow in one run. |
-| `chain-alpha-delivery-tracking` | Forward-looking revenue-delivery tracking for 待验证 candidates with a 5-gate ladder, growth/attribution/dynamic-valuation engines, and symmetric grade up/down. | You hold a 待验证 name (e.g. 绿的谐波) and need a quarterly read on whether revenue is actually being delivered. |
+| `chain-alpha-delivery-tracking` | Forward-looking revenue/profit-delivery tracking for 待验证 candidates with a 5-gate ladder plus delivery-window timeouts, growth/attribution/dynamic-valuation engines, structure sentinels, and symmetric grade up/down. | You hold a 待验证 name (e.g. 绿的谐波) and need a quarterly read on whether revenue and profit growth are actually being delivered. |
 | `company-profile` | Builds a company primer before investment analysis. | Use when a user is hearing about a company for the first time and needs business, technology, value-chain, AI relevance, competitors, and industry-position context. |
 | `company-buyability-score` | Quantified buyability score for a US-listed company or ADR. | You need to judge whether a company is buyable using AI exposure, value-chain position, growth, drawdown risk, sentiment mismatch, and negative factors. |
 | `daily-us-market-scan` | Chinese US market close report and next-session review. | You want a daily read on indices, sectors, themes, breadth, earnings, and watchlists. |
