@@ -1,6 +1,6 @@
 # chain-alpha-delivery-tracking 方法论
 
-本文件是设计文档 `docs/superpowers/specs/2026-06-18-chain-alpha-delivery-tracking-design.md`（§2–§6）的可执行细则。SKILL.md 保持精简并指向本文件。
+本文件是 chain-alpha-delivery-tracking 的可执行方法论细则。SKILL.md 保持精简并指向本文件。
 
 体系 = 验证链阶段闸门（骨架，含级间兑现窗口与超时判死）+ 三个判定引擎（增速 / 归因 / 动态估值）+ 格局哨兵（标的财报之外的侵蚀信号）+ 升降档与 chain-alpha 档位映射（回灌）。阶段闸门负责诚实判断"兑现到了哪一级"并防跳级、保持双向对称；三引擎在 L4 / L5 层做硬兑现确认与防坑；哨兵补上"降档触发全是自家信号"的盲区；可选 B 评分仅作观察池排序辅助层。
 
