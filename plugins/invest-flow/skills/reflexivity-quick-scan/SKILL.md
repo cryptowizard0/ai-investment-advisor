@@ -5,6 +5,12 @@ description: "反身性快速扫描分析。基于索罗斯反身性框架，对
 
 # Reflexivity Quick Scan
 
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
+
 ## Overview
 
 本 skill 用于把“反身性分析框架 A - 5 分钟快速扫描”固化成统一工作流。执行时必须同时使用：

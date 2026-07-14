@@ -5,6 +5,12 @@ description: "chain-alpha 工作流第一步：从用户给定的大主题出发
 
 # chain-alpha 供需错位环节发现
 
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
+
 ## Overview
 
 本 skill 是 chain-alpha 工作流的第一步，从一个大主题出发回答五个问题：行业是什么（先用白话讲清它是什么、替代什么、为什么现在需要，再落到细分行业、解决的问题、商业逻辑），增长快不快（收入/行业增速是否 >20%、处于哪个产业周期阶段、为什么快且为何能维持高位、能持续多久），这条产业链长什么样（全景），哪些环节存在供需错位（需求增量大、供给跟不上），哪些错位最终能落到利润增速。

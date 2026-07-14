@@ -5,6 +5,12 @@ description: "Use when researching early AI infrastructure scarcity opportunitie
 
 # AI 基建稀缺机会雷达
 
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
+
 ## Overview
 
 本 skill 用于发现 6-24 个月窗口内的早期 AI 基建稀缺投资机会。核心目标不是追逐 AI 热点，而是判断某个 AI 系统架构变化是否正在放大单位用量、制造供需缺口，并最终让特定公司在收入、利润或订单上真实受益。

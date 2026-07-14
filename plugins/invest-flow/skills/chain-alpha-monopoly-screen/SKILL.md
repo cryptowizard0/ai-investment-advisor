@@ -1,9 +1,15 @@
 ---
 name: chain-alpha-monopoly-screen
-description: "chain-alpha 工作流第二步：把单个供需错位环节拆成上中下游子环节，列出全球公司格局（含中国大陆及日韩台欧），用 CR3>50%/寡头证据、毛利率与壁垒、环节收入占比、利润增速四道硬门槛筛选，再按 30 分候选评分排序，每环节输出 ≤10 家候选公司。适用于：(1) 已确认某环节供需错位、要找其中的垄断公司, (2) chain-alpha-pipeline 的第二步。输出保存至 ./output/chain-alpha-monopoly-screen/。"
+description: "chain-alpha 工作流第二步：把单个供需错位环节拆成上中下游子环节，列出全球公司格局（含中国大陆及日韩台欧），用 CR3 高于 50%/寡头证据、毛利率与壁垒、环节收入占比、利润增速四道硬门槛筛选，再按 30 分候选评分排序，每环节输出 ≤10 家候选公司。适用于：(1) 已确认某环节供需错位、要找其中的垄断公司, (2) chain-alpha-pipeline 的第二步。输出保存至 ./output/chain-alpha-monopoly-screen/。"
 ---
 
 # chain-alpha 垄断环节筛选
+
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
 
 ## Overview
 

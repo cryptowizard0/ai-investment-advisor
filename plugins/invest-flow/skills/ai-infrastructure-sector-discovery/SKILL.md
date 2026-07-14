@@ -5,6 +5,12 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 
 # AI 基建板块发现
 
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
+
 ## Overview
 
 本 skill 是 `/ai-infrastructure-scarcity-radar` 的前序，用于每周扫描 AI 基建候选板块，回答“这一周最值得研究哪些板块”。它不做公司深度研究，也不直接给买卖建议；它只输出可量化板块指标、`discovery_score`、触发阈值和后续 radar 深挖命令。

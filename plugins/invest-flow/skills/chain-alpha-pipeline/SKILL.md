@@ -1,9 +1,15 @@
 ---
 name: chain-alpha-pipeline
-description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串行调度三步（chain-alpha-mismatch-discovery 行业定义+增长初筛+产业链全景+供需错位环节、chain-alpha-monopoly-screen 拆环节找垄断、chain-alpha-verification 验证定仓位），步内默认 fan-out 到 subagent 并行（Claude Code 原生支持；Codex 在 subagent 派发工具可用时默认启用），不满足并行条件时降级为会话内串行，强制漏斗纪律并生成中文汇总报告。适用于：(1) 用户从一个大主题出发想走完整的'行业是什么 -> 增长快吗 -> 错位环节 -> 垄断公司 -> 可买公司'流程, (2) 用户说'用 chain-alpha 分析 「主题」'。输出保存至 ./output/chain-alpha-pipeline/。"
+description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串行调度三步（chain-alpha-mismatch-discovery 行业定义+增长初筛+产业链全景+供需错位环节、chain-alpha-monopoly-screen 拆环节找垄断、chain-alpha-verification 验证定仓位），步内默认 fan-out 到 subagent 并行（Claude Code 原生支持；Codex 在 subagent 派发工具可用时默认启用），不满足并行条件时降级为会话内串行，强制漏斗纪律并生成中文汇总报告。适用于：(1) 用户从一个大主题出发想走完整的'行业是什么 → 增长快吗 → 错位环节 → 垄断公司 → 可买公司'流程, (2) 用户说'用 chain-alpha 分析 「主题」'。输出保存至 ./output/chain-alpha-pipeline/。"
 ---
 
 # chain-alpha 产业链选股工作流
+
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
 
 ## Overview
 
