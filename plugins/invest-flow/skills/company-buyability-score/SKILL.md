@@ -5,6 +5,12 @@ description: "Use when evaluating whether a US-listed company or ADR is buyable 
 
 # Company Buyability Score
 
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
+
 ## Overview
 
 本 skill 用于判断一家公司“现在能不能买”。它不是自动交易系统，也不是深度估值报告，而是一个评分驱动的投资筛选流程：先量化 AI 受益度、产业链位置、壁垒、竞争格局、四季度增长、回撤风险和情绪错位，再用风险与负面因素做最终复核。

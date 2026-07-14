@@ -5,6 +5,12 @@ description: "多Agent协同股票分析系统 - 在当前 agent 会话（Codex 
 
 # 多Agent协同股票分析系统
 
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
+
 ## 概述
 
 本 skill 的当前真实入口是 agent 会话（Codex / Claude Code）内的 prompt 编排：解析用户给出的 ticker/company，依次调用七个 InvestFlow 子 skill，要求每个子 skill 先保存 Markdown 子报告并返回 `report_path`，再收集公司画像、结论、证据、风险、置信度、数据缺口和非共识变量，最后输出中文综合报告。

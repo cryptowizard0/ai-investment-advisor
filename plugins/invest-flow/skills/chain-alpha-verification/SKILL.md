@@ -1,9 +1,15 @@
 ---
 name: chain-alpha-verification
-description: "chain-alpha 工作流第三步：对全球主要可投市场（美股/ADR、A 股、港股、日股、台股主板）候选公司做最终验证——环节收入占比双轨硬门槛（≥40% 纯正 / 20-40% 增量贡献测试 / <20% 剔除）、利润增速硬门槛（最低 20%、优选 30%+）、100 分模型四档分级（金池子/通过/待验证/剔除）、最大回撤推断与风险预算法仓位上限。适用于：(1) 验证产业链筛出的候选公司是否可投并定仓位, (2) chain-alpha-pipeline 的第三步。输出保存至 ./output/chain-alpha-verification/。"
+description: "chain-alpha 工作流第三步：对全球主要可投市场（美股/ADR、A 股、港股、日股、台股主板）候选公司做最终验证——环节收入占比双轨硬门槛（≥40% 纯正 / 20-40% 增量贡献测试 / 低于 20% 剔除）、利润增速硬门槛（最低 20%、优选 30%+）、100 分模型四档分级（金池子/通过/待验证/剔除）、最大回撤推断与风险预算法仓位上限。适用于：(1) 验证产业链筛出的候选公司是否可投并定仓位, (2) chain-alpha-pipeline 的第三步。输出保存至 ./output/chain-alpha-verification/。"
 ---
 
 # chain-alpha 公司验证与仓位
+
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
 
 ## Overview
 

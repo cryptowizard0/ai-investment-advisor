@@ -5,6 +5,12 @@ description: "每日美股扫描与《美股收盘日报》生成 Skill。适用
 
 # 每日美股扫描
 
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
+
 ## Overview
 
 生成中文《美股收盘日报》，覆盖最近一个已完成的美股交易日。报告目标是帮助用户复盘昨夜美股发生了什么、为什么涨跌、资金流向哪里、哪些板块和个股异动，以及次日需要观察的风险和机会。

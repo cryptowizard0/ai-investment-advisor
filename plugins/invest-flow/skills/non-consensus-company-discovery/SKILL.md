@@ -5,6 +5,12 @@ description: "发现和评估高潜力非共识公司。适用于从一个大趋
 
 # 非共识公司发现
 
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
+
 ## Overview
 
 本 skill 用于从大趋势或产业链主题中发现高潜力非共识公司。目标不是寻找没人知道的公司，而是寻找市场已经看到表面事实、但低估该事实未来会演化成利润、现金流或战略地位的公司。
