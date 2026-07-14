@@ -8,3 +8,4 @@ output/
 .worktrees/
 /output
 /.gstack
+/docs/superpowers/
