@@ -183,7 +183,7 @@ Active packaged skills:
 - `reflexivity-deep-analysis` - full-cycle reflexivity research on stocks, sectors, and narratives
 - `professional-investment-analyst` - professional investment research system with evidence, valuation, reflexivity, decision, and tracking dashboard
 - `reportify-stock-analysis` - fixed-template structured stock research report generation
-- `daily-us-market-scan` - Chinese daily US market close scan covering indices, macro, sectors, themes, breadth, technicals, earnings, flows, watchlists, and next-session plans
+- `daily-us-market-scan` - Chinese daily US market close scan with a conclusion-first summary card, hard length budget (<=300 lines), dynamic sector/theme ranking from same-day moves, threshold-based watchlist reporting, and a required new-dynamics radar for emerging themes outside the fixed pool
 - `multi-agent-stock-analysis` - orchestration across multiple analysis skills
 - `output-report-index` - explicit Markdown and HTML report index generator for `output/index.md` and `output/index.html`
 - `market-data-router` - routed market data fetch and fallback logic
