@@ -93,6 +93,7 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 | `gie-investment-framework` | GIE framework for 1-3 year golden-shovel opportunities. | You want to test whether a company or industry benefits from durable bottlenecks. |
 | `gold-trend-analysis` | Gold trend, bubble-risk, and macro-driver analysis. | You are researching gold prices, macro risk, or a gold trading framework. |
 | `industry-chain-analysis` | Two-layer industry-chain and bottleneck mapping. | You need to understand upstream, midstream, downstream, and module-level constraints. |
+| `index-pe-sensitivity` | Index valuation price-sensitivity table (±price move -> TTM P/E 整体法 -> N-year percentile) with single-caliber consistency guardrails and cyclical-earnings distortion checks. | You want to know where an index's valuation percentile lands if it rises or falls X%, using one consistent caliber. |
 | `institutional-accumulation-analysis` | Institutional accumulation and distribution analysis. | You want to judge whether major players are buying, distributing, or hedging. |
 | `market-data-router` | Routed market-data fetching and fallback logic. | You need bars, quote data, options context, or cached market data for analysis. |
 | `multi-agent-stock-analysis` | In-session orchestration across multiple stock-analysis skills. | You want one stock analyzed from several independent angles. |
@@ -115,6 +116,7 @@ Use invest-flow:non-consensus-company-discovery to find non-consensus opportunit
 Use invest-flow:chain-alpha-pipeline to find investable companies in AI data center power.
 Use invest-flow:reflexivity-quick-scan to check NVIDIA's current narrative stage.
 Use invest-flow:company-buyability-score to score whether NVIDIA is buyable.
+Use invest-flow:index-pe-sensitivity to build a valuation-sensitivity table for 科创50.
 Use invest-flow:earnings-report-analysis to analyze NVIDIA's latest earnings.
 Use invest-flow:output-report-index to update the output report index.
 ```
@@ -139,6 +141,7 @@ Generated reports and cache files are written under `output/`:
 | Chain-alpha pipeline summary | `output/chain-alpha-pipeline/` |
 | Chain-alpha delivery tracking | `output/chain-alpha-delivery-tracking/` |
 | Industry-chain analysis | `output/industry-chain-analysis/` |
+| Index PE sensitivity | `output/index-pe-sensitivity/` |
 | Institutional analysis | `output/institutional-accumulation-analysis/` |
 | GIE framework | `output/gie-investment-framework/` |
 | Non-consensus company discovery | `output/non-consensus-company-discovery/` |
