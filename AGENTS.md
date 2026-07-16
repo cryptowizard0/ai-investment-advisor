@@ -40,7 +40,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── chain-alpha-verification/
 │           ├── chain-alpha-pipeline/
 │           ├── company-profile/
-│           ├── company-buyability-score/
 │           ├── fundamental-analysis/
 │           ├── earnings-report-analysis/
 │           ├── institutional-accumulation-analysis/
@@ -60,7 +59,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── chain-alpha-verification/
 │   ├── chain-alpha-pipeline/
 │   ├── company-profile/
-│   ├── company-buyability-score/
 │   ├── fundamental-analysis/
 │   ├── earnings-report-analysis/
 │   ├── ai-infrastructure-sector-discovery/
@@ -95,7 +93,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `CLAUDE.md` - Claude Code memory entry that imports this file via `@AGENTS.md`
 - `plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrator.py` - multi-agent orchestration entrypoint
 - `plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.py` - market data router entrypoint
-- `plugins/invest-flow/skills/company-buyability-score/scripts/generate_report.py` - buyability score skeleton generator
 - `plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py` - earnings report analysis skeleton generator
 - `plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py` - non-consensus discovery report skeleton generator
 - `plugins/invest-flow/skills/index-pe-sensitivity/scripts/generate_report.py` - index valuation price-sensitivity table generator
@@ -119,7 +116,6 @@ python plugins/invest-flow/skills/market-data-router/scripts/fetch_market_data.p
 # Run helper script tests
 python -m unittest \
   plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/tests/test_investflow_pipeline.py \
-  plugins/invest-flow/skills/company-buyability-score/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/non-consensus-company-discovery/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/daily-us-market-scan/scripts/tests/test_create_report.py \
   plugins/invest-flow/skills/index-pe-sensitivity/scripts/tests/test_generate_report.py \
@@ -134,9 +130,6 @@ python plugins/invest-flow/skills/non-consensus-company-discovery/scripts/genera
 
 # Generate an earnings report analysis skeleton
 python plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py --ticker NVDA --company "NVIDIA" --period "FY2026 Q1"
-
-# Generate a company buyability score skeleton
-python plugins/invest-flow/skills/company-buyability-score/scripts/generate_report.py --ticker NVDA --company "NVIDIA"
 
 # Generate an index valuation price-sensitivity report
 python plugins/invest-flow/skills/index-pe-sensitivity/scripts/generate_report.py --index 科创50 --code 000688 --base 232.5 --anchors "36.31:0,83.91:50,159.29:80,232.51:98.07,263.72:100" --current-percentile 98.07
@@ -169,7 +162,6 @@ Active packaged skills:
 - `chain-alpha-verification` - chain-alpha step 3: dual-track revenue-share gate plus profit-growth hard gate, 100-point four-tier grading (gold pool/pass/pending/reject), drawdown inference and risk-budget position sizing for global main-board candidates
 - `chain-alpha-pipeline` - chain-alpha orchestration: main agent runs the three steps serially with in-step subagent fan-out (parallel on Claude Code; parallel on Codex when explicitly requested and available; otherwise serial fallback), enforces funnel discipline (2-4 links, <=10 candidates per link, 2-3 deep dives), and writes a Chinese summary report
 - `chain-alpha-delivery-tracking` - chain-alpha follow-on: forward-looking revenue/profit-delivery tracking for 待验证 candidates via a 5-gate validation ladder (order->capacity->ramp->revenue->profit) with per-gate delivery windows and timeout downgrades, growth/attribution/dynamic-valuation (PE&PS dual-track) engines, structure sentinels (competitor capacity, second-sourcing, customer in-housing, demand-side capex), and symmetric grade up/down that feeds back into chain-alpha
-- `company-buyability-score` - quantified buyability score for US-listed equities/ADRs covering AI exposure, value-chain position, growth, drawdown risk, sentiment mismatch, and negative factors
 - `fundamental-analysis` - stock fundamental and technical analysis
 - `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
@@ -207,7 +199,6 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Chain-alpha pipeline summary: `output/chain-alpha-pipeline/chain-alpha-pipeline-{主题}-{YYYY-MM-DD}.md`
 - Chain-alpha delivery tracking: `output/chain-alpha-delivery-tracking/chain-alpha-delivery-tracking-{TICKER}-{YYYY-MM-DD}.md`
 - Company profile: `output/company-profile/company-profile-{TICKER}-{YYYY-MM-DD}.md`
-- Company buyability score: `output/company-buyability-score/company-buyability-score-{TICKER}-{YYYY-MM-DD}.md`
 - Index PE sensitivity: `output/index-pe-sensitivity/index-pe-sensitivity-{index}-{YYYY-MM-DD}.md`
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`

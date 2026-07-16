@@ -12,7 +12,7 @@
     {
       "name": "invest-flow",
       "source": "./plugins/invest-flow",
-      "description": "Investment research with Firecrawl-first web research, reflexivity analysis, and market data workflows: multi-agent stock analysis, chain-alpha industry-chain stock selection, buyability scoring, earnings review, daily US market scans, non-consensus discovery, and report indexing.",
+      "description": "Investment research with Firecrawl-first web research, reflexivity analysis, and market data workflows: multi-agent stock analysis, chain-alpha industry-chain stock selection, earnings review, daily US market scans, non-consensus discovery, and report indexing.",
       "category": "productivity"
     }
   ]

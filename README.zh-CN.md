@@ -69,7 +69,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | 跟踪叙事和反身性风险 | 定期用 `reflexivity-analysis` 快扫档判断阶段；当阶段变化或仓位较重时切到深度档。 |
 | 快速研究单只股票 | 用 `multi-agent-stock-analysis` 先生成 `company-profile` 公司画像，再交叉验证基本面、资金流、反身性、Reportify 和非共识视角。 |
 | 解读财报 | 公司发布财报后用 `earnings-report-analysis` 判断预期差，再更新个股投资判断。 |
-| 判断股票能不能买 | 用 `company-buyability-score` 量化 AI 受益、产业链位置、增长、回撤、情绪错位和风险负面因素。 |
 | 生成正式个股报告 | 用 `professional-investment-analyst` 生成买方研究风格报告，或用 `reportify-stock-analysis` 生成标准化结构报告。 |
 | 获取市场数据 | 当其他研究流程需要行情、期权或缓存数据时，使用 `market-data-router`。 |
 
@@ -84,7 +83,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | `chain-alpha-pipeline` | 编排 chain-alpha 三步，步内 fan-out 到 subagent（Claude Code 原生并行；Codex 工具可用时并行；否则串行降级）并强制漏斗纪律。 | 想一次跑完"主题 → 公司"的完整流程。 |
 | `chain-alpha-delivery-tracking` | 对待验证标的做前瞻性营收/利润兑现追踪：5 级验证链 + 兑现窗口超时判死 + 增速/归因/动态估值引擎 + 格局哨兵 + 双向升降档。 | 持有待验证标的（如绿的谐波），需要按季判断营收和利润增速是否真兑现。 |
 | `company-profile` | 生成投资分析前置公司画像。 | 用户第一次听说某家公司时，用于快速理解公司简介、核心业务、技术壁垒、产业链位置、AI 相关性、竞争对手和行业地位。 |
-| `company-buyability-score` | 对美股或 ADR 生成买入可行性量化评分。 | 需要判断一家公司能不能买，并同时检查 AI 受益、产业链位置、增长、回撤、情绪错位和负面因素。 |
 | `daily-us-market-scan` | 生成中文美股收盘复盘和次日计划。 | 想每日跟踪指数、板块、主题、市场宽度、财报和观察名单。 |
 | `earnings-report-analysis` | 从机构视角分析财报、指引、电话会和预期差。 | 公司刚发布财报，需要判断投资逻辑是否改变。 |
 | `fundamental-analysis` | 做单股基本面、估值和技术面分析。 | 需要快速形成一家公司是否值得继续研究的结构化判断。 |
@@ -107,7 +105,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 使用 invest-flow:non-consensus-company-discovery 发现 AI 数据中心电力里的非共识机会
 使用 invest-flow:chain-alpha-pipeline 分析具身智能（人形机器人）产业链
 使用 invest-flow:reflexivity-analysis 快扫 NVIDIA 当前叙事阶段
-使用 invest-flow:company-buyability-score 判断 NVIDIA 能不能买
 使用 invest-flow:earnings-report-analysis 解读 NVIDIA 最新财报
 ```
 
@@ -120,7 +117,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | 流程 | 输出路径 |
 |---|---|
 | 公司画像 | `output/company-profile/` |
-| 买入可行性评分 | `output/company-buyability-score/` |
 | 基本面分析 | `output/fundamental-analysis/` |
 | 财报分析 | `output/earnings-report-analysis/` |
 | AI 基建板块扫描 | `output/ai-infrastructure-sector-discovery/` |
