@@ -47,6 +47,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── institutional-accumulation-analysis/
 │           ├── gie-investment-framework/
 │           ├── industry-chain-analysis/
+│           ├── index-pe-sensitivity/
 │           ├── non-consensus-company-discovery/
 │           ├── gold-trend-analysis/
 │           ├── reflexivity-quick-scan/
@@ -69,6 +70,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── ai-infrastructure-sector-discovery/
 │   ├── ai-infrastructure-scarcity-radar/
 │   ├── industry-chain-analysis/
+│   ├── index-pe-sensitivity/
 │   ├── institutional-accumulation-analysis/
 │   ├── gie-investment-framework/
 │   ├── non-consensus-company-discovery/
@@ -104,6 +106,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `plugins/invest-flow/skills/company-buyability-score/scripts/generate_report.py` - buyability score skeleton generator
 - `plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py` - earnings report analysis skeleton generator
 - `plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py` - non-consensus discovery report skeleton generator
+- `plugins/invest-flow/skills/index-pe-sensitivity/scripts/generate_report.py` - index valuation price-sensitivity table generator
 - `plugins/invest-flow/skills/output-report-index/scripts/generate_index.py` - output report index generator
 - `plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py` - UTF-8 local report static server
 
@@ -127,6 +130,7 @@ python -m unittest \
   plugins/invest-flow/skills/company-buyability-score/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/non-consensus-company-discovery/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/daily-us-market-scan/scripts/tests/test_create_report.py \
+  plugins/invest-flow/skills/index-pe-sensitivity/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_serve_reports.py
 
@@ -141,6 +145,9 @@ python plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_repo
 
 # Generate a company buyability score skeleton
 python plugins/invest-flow/skills/company-buyability-score/scripts/generate_report.py --ticker NVDA --company "NVIDIA"
+
+# Generate an index valuation price-sensitivity report
+python plugins/invest-flow/skills/index-pe-sensitivity/scripts/generate_report.py --index 科创50 --code 000688 --base 232.5 --anchors "36.31:0,83.91:50,159.29:80,232.51:98.07,263.72:100" --current-percentile 98.07
 
 # Generate or update the Markdown and HTML output report indexes
 python plugins/invest-flow/skills/output-report-index/scripts/generate_index.py
@@ -177,13 +184,14 @@ Active packaged skills:
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
 - `gie-investment-framework` - 1-3 year golden-shovel style investment framework
 - `industry-chain-analysis` - two-layer industry chain and bottleneck analysis for upstream/midstream/downstream positioning
+- `index-pe-sensitivity` - index valuation price-sensitivity table: ±price move -> TTM P/E (整体法 aggregate caliber) -> N-year percentile, with single-caliber consistency guardrails and cyclical-earnings distortion checks
 - `non-consensus-company-discovery` - theme-to-company discovery for high-potential non-consensus opportunities
 - `gold-trend-analysis` - gold bubble risk and macro signal analysis
 - `reflexivity-quick-scan` - fast stage judgment with a Soros-style reflexivity lens
 - `reflexivity-deep-analysis` - full-cycle reflexivity research on stocks, sectors, and narratives
 - `professional-investment-analyst` - professional investment research system with evidence, valuation, reflexivity, decision, and tracking dashboard
 - `reportify-stock-analysis` - fixed-template structured stock research report generation
-- `daily-us-market-scan` - Chinese daily US market close scan covering indices, macro, sectors, themes, breadth, technicals, earnings, flows, watchlists, and next-session plans
+- `daily-us-market-scan` - Chinese daily US market close scan with a conclusion-first summary card, hard length budget (<=300 lines), dynamic sector/theme ranking from same-day moves, threshold-based watchlist reporting, and a required new-dynamics radar for emerging themes outside the fixed pool
 - `multi-agent-stock-analysis` - orchestration across multiple analysis skills
 - `output-report-index` - explicit Markdown and HTML report index generator for `output/index.md` and `output/index.html`
 - `market-data-router` - routed market data fetch and fallback logic
@@ -214,6 +222,7 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Company profile: `output/company-profile/company-profile-{TICKER}-{YYYY-MM-DD}.md`
 - Company buyability score: `output/company-buyability-score/company-buyability-score-{TICKER}-{YYYY-MM-DD}.md`
 - Industry chain analysis: `output/industry-chain-analysis/industry-chain-analysis-{topic}-{YYYY-MM-DD}.md`
+- Index PE sensitivity: `output/index-pe-sensitivity/index-pe-sensitivity-{index}-{YYYY-MM-DD}.md`
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - GIE framework: `output/gie-investment-framework/gie-{title}-{date}.md`
 - Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`

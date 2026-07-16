@@ -1,7 +1,7 @@
 {
   "name": "invest-flow",
-  "version": "0.3.6",
-  "description": "Bundle investment research skills with Firecrawl-first web research, buyability scoring, earnings report analysis, non-consensus company discovery, professional investment analyst reports, daily market scans, reflexivity workflows, report generation, multi-agent analysis, chain-alpha industry-chain stock selection pipeline, and market data routing.",
+  "version": "0.4.0+codex.20260715011321",
+  "description": "Bundle investment research skills with Firecrawl-first web research, buyability scoring, earnings report analysis, non-consensus company discovery, professional investment analyst reports, daily market scans, reflexivity workflows, report generation, multi-agent analysis, chain-alpha industry-chain stock selection pipeline, index valuation sensitivity, and market data routing.",
   "author": {
     "name": "Potter",
     "email": "45678072+cryptowizard0@users.noreply.github.com",
