@@ -67,7 +67,7 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 | Map a sector and find non-consensus names | Start with `industry-chain-analysis`, then use `non-consensus-company-discovery` on the most interesting bottleneck or module. |
 | Run daily market review | Use `daily-us-market-scan` after the US close. |
 | Track narrative and reflexivity risk | Use `reflexivity-quick-scan` regularly; upgrade to `reflexivity-deep-analysis` when the stage changes or the position is material. |
-| Quick single-stock research | Use `multi-agent-stock-analysis` to start with `company-profile`, then cross-check fundamentals, capital flow, GIE, reflexivity, Reportify, and non-consensus views. |
+| Quick single-stock research | Use `multi-agent-stock-analysis` to start with `company-profile`, then cross-check fundamentals, capital flow, reflexivity, Reportify, and non-consensus views. |
 | Review earnings | Use `earnings-report-analysis` after a company reports, then update the single-stock thesis if guidance or expectations changed. |
 | Score whether a stock is buyable | Use `company-buyability-score` for a quantified AI exposure, growth, drawdown, sentiment mismatch, and risk review. |
 | Produce a formal stock report | Use `professional-investment-analyst` for a buy-side style report, or `reportify-stock-analysis` for a standardized structured report. |
@@ -90,7 +90,6 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 | `daily-us-market-scan` | Conclusion-first Chinese US market close report with a hard length budget, dynamic sector/theme ranking, and a new-dynamics radar. | You want a focused daily read on what moved, why, and what changed outside the fixed watchlist. |
 | `earnings-report-analysis` | Institutional earnings, guidance, call, and expectation-gap analysis. | A company has reported and you need to know whether the thesis changed. |
 | `fundamental-analysis` | Single-stock fundamental, valuation, and technical analysis. | You need a fast but structured view of a company. |
-| `gie-investment-framework` | GIE framework for 1-3 year golden-shovel opportunities. | You want to test whether a company or industry benefits from durable bottlenecks. |
 | `gold-trend-analysis` | Gold trend, bubble-risk, and macro-driver analysis. | You are researching gold prices, macro risk, or a gold trading framework. |
 | `industry-chain-analysis` | Two-layer industry-chain and bottleneck mapping. | You need to understand upstream, midstream, downstream, and module-level constraints. |
 | `index-pe-sensitivity` | Index valuation price-sensitivity table (±price move -> TTM P/E 整体法 -> N-year percentile) with single-caliber consistency guardrails and cyclical-earnings distortion checks. | You want to know where an index's valuation percentile lands if it rises or falls X%, using one consistent caliber. |
@@ -143,7 +142,6 @@ Generated reports and cache files are written under `output/`:
 | Industry-chain analysis | `output/industry-chain-analysis/` |
 | Index PE sensitivity | `output/index-pe-sensitivity/` |
 | Institutional analysis | `output/institutional-accumulation-analysis/` |
-| GIE framework | `output/gie-investment-framework/` |
 | Non-consensus company discovery | `output/non-consensus-company-discovery/` |
 | Gold analysis | `output/gold-analysis/` |
 | Reflexivity quick scan | `output/reflexivity-quick-scan/` |

@@ -7,7 +7,7 @@
 ```text
 用户请求
   -> agent 解析 ticker/company
-  -> agent 执行七段子 skill prompt
+  -> agent 执行六段子 skill prompt
   -> 每个子 skill 保存 Markdown 子报告并返回 report_path
   -> agent 校验每个维度 report_path 和 handoff
   -> Composer 汇总已有 report_path + handoff
@@ -20,24 +20,22 @@
 
 - 输入：ticker/company
 - 输出：`stock_decision_basic` 计划
-- 默认包含七个分析维度：
+- 默认包含六个分析维度：
   - `company-profile`
   - `fundamental-analysis`
   - `institutional-accumulation-analysis`
-  - `gie-investment-framework`
   - `reflexivity-deep-analysis`
   - `reportify-stock-analysis`
   - `non-consensus-company-discovery`
 
 ### 阶段2: Planner -> Prompt Plan
 
-Registry 为七个维度生成 prompt template：
+Registry 为六个维度生成 prompt template：
 
 ```text
 使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位
 使用 invest-flow:fundamental-analysis 分析 {ticker}
 使用 invest-flow:institutional-accumulation-analysis 分析 {ticker}
-使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}
 使用 invest-flow:reflexivity-deep-analysis 分析 {ticker}
 使用 invest-flow:reportify-stock-analysis 分析 {ticker}
 使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会
@@ -93,7 +91,6 @@ Composer 根据成功或部分成功的 handoff 生成：
 使用 invest-flow:company-profile 分析 MRVL / MRVL，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位
 使用 invest-flow:fundamental-analysis 分析 MRVL
 使用 invest-flow:institutional-accumulation-analysis 分析 MRVL
-使用 invest-flow:gie-investment-framework 分析 MRVL / MRVL
 使用 invest-flow:reflexivity-deep-analysis 分析 MRVL
 使用 invest-flow:reportify-stock-analysis 分析 MRVL
 使用 invest-flow:non-consensus-company-discovery 评估 MRVL / MRVL 的非共识重估机会
@@ -105,7 +102,6 @@ Composer 根据成功或部分成功的 handoff 生成：
 
 ```text
 使用 invest-flow:company-profile 分析 MRVL / Marvell Technology，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位
-使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology
 使用 invest-flow:non-consensus-company-discovery 评估 MRVL / Marvell Technology 的非共识重估机会
 ```
 
@@ -125,14 +121,14 @@ python plugins/invest-flow/skills/multi-agent-stock-analysis/scripts/orchestrato
 
 ## 部分结果处理
 
-- 七个维度都完成：输出完整综合报告。
+- 六个维度都完成：输出完整综合报告。
 - 只有部分维度完成：先补跑缺失子报告；补跑失败或用户允许部分结果时，输出报告并标注缺失维度、缺失子报告路径和数据缺口。
-- 七个维度都缺失：只输出 orchestration JSON 或 prompt plan，不输出投资结论。
+- 六个维度都缺失：只输出 orchestration JSON 或 prompt plan，不输出投资结论。
 
 ## 综合报告原则
 
 1. 不把单一维度结论当成最终结论。
-2. 公司画像、基本面、资金流、GIE、反身性、Reportify、非共识结论一致时才提高置信度。
+2. 公司画像、基本面、资金流、反身性、Reportify、非共识结论一致时才提高置信度。
 3. 结论冲突时优先写清冲突来源，而不是强行平均。
 4. 非共识观点必须有可验证催化剂和反证条件，不能把冷门等同于机会。
 5. 所有高置信度建议必须附带触发重新评估的监控信号。

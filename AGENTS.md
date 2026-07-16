@@ -45,7 +45,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── fundamental-analysis/
 │           ├── earnings-report-analysis/
 │           ├── institutional-accumulation-analysis/
-│           ├── gie-investment-framework/
 │           ├── industry-chain-analysis/
 │           ├── index-pe-sensitivity/
 │           ├── non-consensus-company-discovery/
@@ -72,7 +71,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── industry-chain-analysis/
 │   ├── index-pe-sensitivity/
 │   ├── institutional-accumulation-analysis/
-│   ├── gie-investment-framework/
 │   ├── non-consensus-company-discovery/
 │   ├── gold-analysis/
 │   ├── reflexivity-quick-scan/
@@ -182,7 +180,6 @@ Active packaged skills:
 - `fundamental-analysis` - stock fundamental and technical analysis
 - `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
-- `gie-investment-framework` - 1-3 year golden-shovel style investment framework
 - `industry-chain-analysis` - two-layer industry chain and bottleneck analysis for upstream/midstream/downstream positioning
 - `index-pe-sensitivity` - index valuation price-sensitivity table: ±price move -> TTM P/E (整体法 aggregate caliber) -> N-year percentile, with single-caliber consistency guardrails and cyclical-earnings distortion checks
 - `non-consensus-company-discovery` - theme-to-company discovery for high-potential non-consensus opportunities
@@ -201,7 +198,7 @@ Active packaged skills:
 `multi-agent-stock-analysis` is implemented by the packaged orchestrator script, not by separate legacy agent-definition files. The current orchestrator:
 
 - resolves the repo root dynamically
-- generates seven skill prompts for the basic stock-analysis workflow: company profile, fundamental, institutional, GIE, reflexivity deep, reportify, and non-consensus
+- generates six skill prompts for the basic stock-analysis workflow: company profile, fundamental, institutional, reflexivity deep, reportify, and non-consensus
 - writes a prompt plan Markdown file and orchestration JSON
 - does not execute child skills or launch another agent process
 - supports summary composition from already completed handoff data
@@ -224,7 +221,6 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Industry chain analysis: `output/industry-chain-analysis/industry-chain-analysis-{topic}-{YYYY-MM-DD}.md`
 - Index PE sensitivity: `output/index-pe-sensitivity/index-pe-sensitivity-{index}-{YYYY-MM-DD}.md`
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
-- GIE framework: `output/gie-investment-framework/gie-{title}-{date}.md`
 - Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`
 - Gold analysis: `output/gold-analysis/gold-{analysis-type}-{date}.md`
 - Reflexivity quick scan: `output/reflexivity-quick-scan/`

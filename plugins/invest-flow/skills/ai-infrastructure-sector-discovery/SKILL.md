@@ -81,7 +81,7 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 - 必须区分“新增动态板块”和“固定种子板块”。
 - 必须输出变化方向：上升 / 持平 / 下降 / 新增。
 - 必须输出证据置信度：低 / 中 / 高。
-- 只做板块发现和排序；公司深研交给 `ai-infrastructure-scarcity-radar`、`professional-investment-analyst` 或 `gie-investment-framework`。
+- 只做板块发现和排序；公司深研交给 `ai-infrastructure-scarcity-radar` 或 `professional-investment-analyst`。
 
 ## Resources
 

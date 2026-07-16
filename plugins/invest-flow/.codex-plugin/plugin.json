@@ -1,6 +1,6 @@
 {
   "name": "invest-flow",
-  "version": "0.4.0+codex.20260715011321",
+  "version": "0.5.0+codex.20260716160647",
   "description": "Bundle investment research skills with Firecrawl-first web research, buyability scoring, earnings report analysis, non-consensus company discovery, professional investment analyst reports, daily market scans, reflexivity workflows, report generation, multi-agent analysis, chain-alpha industry-chain stock selection pipeline, index valuation sensitivity, and market data routing.",
   "author": {
     "name": "Potter",
@@ -14,7 +14,7 @@
   "interface": {
     "displayName": "InvestFlow",
     "shortDescription": "Investment research, reflexivity analysis, and market data",
-    "longDescription": "Run stock, buyability score, earnings report, institutional flow, GIE, non-consensus company discovery, gold, daily US market scans, professional investment analyst, reflexivity, report-generation, and market-data workflows in one installable investment research plugin.",
+    "longDescription": "Run stock, buyability score, earnings report, institutional flow, non-consensus company discovery, gold, daily US market scans, professional investment analyst, reflexivity, report-generation, and market-data workflows in one installable investment research plugin.",
     "developerName": "Potter",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],

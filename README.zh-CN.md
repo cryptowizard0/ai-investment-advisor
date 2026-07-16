@@ -67,7 +67,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | 从产业链找到非共识标的 | 先用 `industry-chain-analysis` 拆产业链和瓶颈，再用 `non-consensus-company-discovery` 分析最有潜力的环节或模块。 |
 | 每日市场复盘 | 美股收盘后使用 `daily-us-market-scan`。 |
 | 跟踪叙事和反身性风险 | 定期用 `reflexivity-quick-scan` 判断阶段；当阶段变化或仓位较重时升级到 `reflexivity-deep-analysis`。 |
-| 快速研究单只股票 | 用 `multi-agent-stock-analysis` 先生成 `company-profile` 公司画像，再交叉验证基本面、资金流、GIE、反身性、Reportify 和非共识视角。 |
+| 快速研究单只股票 | 用 `multi-agent-stock-analysis` 先生成 `company-profile` 公司画像，再交叉验证基本面、资金流、反身性、Reportify 和非共识视角。 |
 | 解读财报 | 公司发布财报后用 `earnings-report-analysis` 判断预期差，再更新个股投资判断。 |
 | 判断股票能不能买 | 用 `company-buyability-score` 量化 AI 受益、产业链位置、增长、回撤、情绪错位和风险负面因素。 |
 | 生成正式个股报告 | 用 `professional-investment-analyst` 生成买方研究风格报告，或用 `reportify-stock-analysis` 生成标准化结构报告。 |
@@ -89,7 +89,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | `daily-us-market-scan` | 生成中文美股收盘复盘和次日计划。 | 想每日跟踪指数、板块、主题、市场宽度、财报和观察名单。 |
 | `earnings-report-analysis` | 从机构视角分析财报、指引、电话会和预期差。 | 公司刚发布财报，需要判断投资逻辑是否改变。 |
 | `fundamental-analysis` | 做单股基本面、估值和技术面分析。 | 需要快速形成一家公司是否值得继续研究的结构化判断。 |
-| `gie-investment-framework` | 用 GIE 框架寻找 1-3 年“金铲子”机会。 | 想验证公司或行业是否受益于长期瓶颈和供需错配。 |
 | `gold-trend-analysis` | 分析黄金趋势、泡沫风险和宏观驱动。 | 研究黄金价格、宏观风险或黄金交易框架。 |
 | `industry-chain-analysis` | 做两层产业链和瓶颈拆解。 | 需要看清上游、中游、下游和模块级约束。 |
 | `institutional-accumulation-analysis` | 分析机构吸筹、派发和资金行为。 | 想判断主力资金是在买入、出货还是对冲。 |
@@ -137,7 +136,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | chain-alpha 营收兑现追踪 | `output/chain-alpha-delivery-tracking/` |
 | 产业链分析 | `output/industry-chain-analysis/` |
 | 机构资金分析 | `output/institutional-accumulation-analysis/` |
-| GIE 框架分析 | `output/gie-investment-framework/` |
 | 非共识公司发现 | `output/non-consensus-company-discovery/` |
 | 黄金分析 | `output/gold-analysis/` |
 | 反身性快速扫描 | `output/reflexivity-quick-scan/` |

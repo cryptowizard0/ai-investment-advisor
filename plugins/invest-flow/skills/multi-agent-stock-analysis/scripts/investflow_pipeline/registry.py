@@ -20,7 +20,6 @@ class SkillRegistry:
             self.get("company-profile"),
             self.get("fundamental-analysis"),
             self.get("institutional-accumulation-analysis"),
-            self.get("gie-investment-framework"),
             self.get("reflexivity-deep-analysis"),
             self.get("reportify-stock-analysis"),
             self.get("non-consensus-company-discovery"),
@@ -88,17 +87,6 @@ def build_registry() -> SkillRegistry:
             ),
             output_dir="output/institutional-accumulation-analysis",
             required=False,
-        ),
-        _spec(
-            skill_name="gie-investment-framework",
-            agent_name="gie",
-            stage="single_asset_validation",
-            prompt_template=_report_required_prompt(
-                "使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}",
-                "output/gie-investment-framework",
-            ),
-            output_dir="output/gie-investment-framework",
-            required=True,
         ),
         _spec(
             skill_name="market-data-router",

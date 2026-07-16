@@ -94,7 +94,7 @@ class ModelTests(unittest.TestCase):
             ended_at="2026-05-25T09:01:00Z",
             stage_results=[
                 StageResult("fundamental-analysis", "fundamental", AnalysisStatus.SUCCESS),
-                StageResult("gie-investment-framework", "gie", AnalysisStatus.FAILED),
+                StageResult("reportify-stock-analysis", "reportify", AnalysisStatus.FAILED),
                 StageResult(
                     "institutional-accumulation-analysis",
                     "institutional",
@@ -184,7 +184,6 @@ class RegistryTests(unittest.TestCase):
                 "company-profile",
                 "fundamental-analysis",
                 "institutional-accumulation-analysis",
-                "gie-investment-framework",
                 "reflexivity-deep-analysis",
                 "reportify-stock-analysis",
                 "non-consensus-company-discovery",
@@ -208,7 +207,6 @@ class RegistryTests(unittest.TestCase):
                 "company_profile",
                 "fundamental",
                 "institutional",
-                "gie",
                 "reflexivity_deep",
                 "reportify",
                 "non_consensus",
@@ -217,10 +215,9 @@ class RegistryTests(unittest.TestCase):
         self.assertTrue(specs[0].required)
         self.assertTrue(specs[1].required)
         self.assertFalse(specs[2].required)
-        self.assertTrue(specs[3].required)
+        self.assertFalse(specs[3].required)
         self.assertFalse(specs[4].required)
         self.assertFalse(specs[5].required)
-        self.assertFalse(specs[6].required)
 
     def test_company_profile_prompt_captures_business_context(self):
         from investflow_pipeline.registry import build_registry
@@ -234,16 +231,6 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(
             spec.prompt_template,
             "使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/company-profile/，并在回复末尾明确写出 report_path",
-        )
-
-    def test_gie_prompt_includes_company_fallback_slot(self):
-        from investflow_pipeline.registry import build_registry
-
-        spec = build_registry().get("gie-investment-framework")
-
-        self.assertEqual(
-            spec.prompt_template,
-            "使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}；必须生成并保存 Markdown 子报告到 output/gie-investment-framework/，并在回复末尾明确写出 report_path",
         )
 
     def test_non_consensus_prompt_evaluates_single_stock_revaluation_thesis(self):
@@ -285,7 +272,7 @@ class PlannerTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "invalid ticker"):
                     create_stock_request(ticker)
 
-    def test_basic_plan_uses_seven_prompt_specs_with_company_profile_first(self):
+    def test_basic_plan_uses_six_prompt_specs_with_company_profile_first(self):
         from investflow_pipeline.planner import create_stock_request, plan_basic_stock_analysis
         from investflow_pipeline.registry import build_registry
 
@@ -298,7 +285,6 @@ class PlannerTests(unittest.TestCase):
                 "company_profile",
                 "fundamental",
                 "institutional",
-                "gie",
                 "reflexivity_deep",
                 "reportify",
                 "non_consensus",
@@ -515,7 +501,7 @@ class ExecutorTests(unittest.TestCase):
         from investflow_pipeline.registry import build_registry
 
         request = create_stock_request("MRVL", "Marvell Technology")
-        spec = build_registry().get("gie-investment-framework")
+        spec = build_registry().get("non-consensus-company-discovery")
         executor = PipelineExecutor(
             config=OrchestrationConfig(),
             project_root=Path.cwd(),
@@ -526,7 +512,7 @@ class ExecutorTests(unittest.TestCase):
         self.assertEqual(result.status, AnalysisStatus.PENDING)
         self.assertEqual(
             result.prompt,
-            "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology；必须生成并保存 Markdown 子报告到 output/gie-investment-framework/，并在回复末尾明确写出 report_path",
+            "使用 invest-flow:non-consensus-company-discovery 评估 MRVL / Marvell Technology 的非共识重估机会；必须生成并保存 Markdown 子报告到 output/non-consensus-company-discovery/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(result.output, result.prompt)
         self.assertIn("等待当前 agent 会话执行", result.handoff.data_gaps[0])
@@ -539,7 +525,7 @@ class ExecutorTests(unittest.TestCase):
         from investflow_pipeline.registry import build_registry
 
         request = create_stock_request("MRVL")
-        spec = build_registry().get("gie-investment-framework")
+        spec = build_registry().get("non-consensus-company-discovery")
         executor = PipelineExecutor(
             config=OrchestrationConfig(),
             project_root=Path.cwd(),
@@ -549,7 +535,7 @@ class ExecutorTests(unittest.TestCase):
 
         self.assertEqual(
             result.prompt,
-            "使用 invest-flow:gie-investment-framework 分析 MRVL / MRVL；必须生成并保存 Markdown 子报告到 output/gie-investment-framework/，并在回复末尾明确写出 report_path",
+            "使用 invest-flow:non-consensus-company-discovery 评估 MRVL / MRVL 的非共识重估机会；必须生成并保存 Markdown 子报告到 output/non-consensus-company-discovery/，并在回复末尾明确写出 report_path",
         )
 
 
@@ -658,8 +644,8 @@ class ComposerTests(unittest.TestCase):
             ),
         )
         failed_stage = StageResult(
-            skill_name="gie-investment-framework",
-            agent_name="gie",
+            skill_name="reflexivity-deep-analysis",
+            agent_name="reflexivity_deep",
             status=AnalysisStatus.FAILED,
             errors=["timeout"],
         )
@@ -780,7 +766,7 @@ class ComposerTests(unittest.TestCase):
         self.assertIn("毛利率连续两个季度改善", summary)
         self.assertIn("订单增速跌破收入增速", summary)
 
-    def test_compose_summary_subreport_index_lists_all_seven_dimensions(self):
+    def test_compose_summary_subreport_index_lists_all_six_dimensions(self):
         from investflow_pipeline.composer import compose_summary
         from investflow_pipeline.models import AnalysisStatus, Handoff, StageResult
 
@@ -804,7 +790,6 @@ class ComposerTests(unittest.TestCase):
                 AnalysisStatus.FAILED,
                 errors=["timeout"],
             ),
-            StageResult("gie-investment-framework", "gie", AnalysisStatus.PENDING),
             StageResult("reflexivity-deep-analysis", "reflexivity_deep", AnalysisStatus.PENDING),
             StageResult("reportify-stock-analysis", "reportify", AnalysisStatus.PENDING),
             StageResult("non-consensus-company-discovery", "non_consensus", AnalysisStatus.PENDING),
@@ -826,7 +811,6 @@ class ComposerTests(unittest.TestCase):
             "- **institutional-accumulation-analysis**：未生成子报告链接（failed）",
             summary,
         )
-        self.assertIn("- **gie-investment-framework**：未生成子报告链接（pending）", summary)
         self.assertIn("- **reflexivity-deep-analysis**：未生成子报告链接（pending）", summary)
         self.assertIn("- **reportify-stock-analysis**：未生成子报告链接（pending）", summary)
         self.assertIn(
@@ -889,7 +873,7 @@ class RunnerTests(unittest.TestCase):
             self.assertTrue(json_path.exists())
 
             self.assertEqual(result.status, "prompt_plan")
-            self.assertEqual(len(result.stage_results), 7)
+            self.assertEqual(len(result.stage_results), 6)
             self.assertEqual(result.stage_results[0].skill_name, "company-profile")
             self.assertTrue(all(stage.prompt for stage in result.stage_results))
             self.assertIsNone(result.summary_report_path)
@@ -910,7 +894,7 @@ class RunnerTests(unittest.TestCase):
             )
 
         self.assertEqual(result.status, "prompt_plan")
-        self.assertEqual(len(result.stage_results), 7)
+        self.assertEqual(len(result.stage_results), 6)
         self.assertEqual(result.stage_results[0].agent_name, "company_profile")
 
     def test_analyze_stock_rejects_deprecated_execution_mode(self):
@@ -950,9 +934,9 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
             self.assertTrue(Path(result["prompt_plan_path"]).exists())
 
         self.assertEqual(result["status"], "prompt_plan")
-        self.assertEqual(result["total_count"], 7)
+        self.assertEqual(result["total_count"], 6)
         self.assertEqual(result["completed_count"], 0)
-        self.assertEqual(result["pending_count"], 7)
+        self.assertEqual(result["pending_count"], 6)
         self.assertTrue(result["prompt_plan_path"])
         prompts = [stage["prompt"] for stage in result["stage_results"]]
         self.assertEqual(
@@ -969,18 +953,14 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
         )
         self.assertEqual(
             prompts[3],
-            "使用 invest-flow:gie-investment-framework 分析 MRVL / Marvell Technology；必须生成并保存 Markdown 子报告到 output/gie-investment-framework/，并在回复末尾明确写出 report_path",
-        )
-        self.assertEqual(
-            prompts[4],
             "使用 invest-flow:reflexivity-deep-analysis 分析 MRVL；必须生成并保存 Markdown 子报告到 output/reflexivity-deep-analysis/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(
-            prompts[5],
+            prompts[4],
             "使用 invest-flow:reportify-stock-analysis 分析 MRVL；必须生成并保存 Markdown 子报告到 output/reportify-stock-analysis/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(
-            prompts[6],
+            prompts[5],
             "使用 invest-flow:non-consensus-company-discovery 评估 MRVL / Marvell Technology 的非共识重估机会；必须生成并保存 Markdown 子报告到 output/non-consensus-company-discovery/，并在回复末尾明确写出 report_path",
         )
 
