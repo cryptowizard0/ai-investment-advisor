@@ -66,7 +66,7 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 | Track whether a 待验证 name's revenue/profit is delivering | After the funnel leaves a name at `待验证`, use `chain-alpha-delivery-tracking` for a quarterly revenue and profit-delivery read (5-gate ladder + delivery-window timeouts + growth/attribution/valuation engines + structure sentinels) that feeds the grade back into `chain-alpha-verification`. |
 | Find non-consensus names in a theme | Use `non-consensus-company-discovery` to map the theme, spot the mispriced bottleneck, and surface the strongest names. |
 | Run daily market review | Use `daily-us-market-scan` after the US close. |
-| Track narrative and reflexivity risk | Use `reflexivity-quick-scan` regularly; upgrade to `reflexivity-deep-analysis` when the stage changes or the position is material. |
+| Track narrative and reflexivity risk | Use `reflexivity-analysis` in quick mode regularly; switch to deep mode when the stage changes or the position is material. |
 | Quick single-stock research | Use `multi-agent-stock-analysis` to start with `company-profile`, then cross-check fundamentals, capital flow, reflexivity, Reportify, and non-consensus views. |
 | Review earnings | Use `earnings-report-analysis` after a company reports, then update the single-stock thesis if guidance or expectations changed. |
 | Score whether a stock is buyable | Use `company-buyability-score` for a quantified AI exposure, growth, drawdown, sentiment mismatch, and risk review. |
@@ -97,8 +97,7 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 | `non-consensus-company-discovery` | Theme-to-company discovery for high-potential non-consensus opportunities. | You want names the market may still value using the wrong framework. |
 | `output-report-index` | Markdown and static HTML index pages for generated reports. | You explicitly ask to generate or update the report index under `output/`. |
 | `professional-investment-analyst` | Buy-side style company research system. | You need a formal, trackable, evidence-based stock report. |
-| `reflexivity-deep-analysis` | Full reflexivity-cycle analysis for a stock, sector, asset, or narrative. | You need to map narrative, price, reality, marginal change, and reversal risk. |
-| `reflexivity-quick-scan` | Fast reflexivity stage check. | You need a quick read on whether a narrative is starting, strengthening, exhausted, or reversing. |
+| `reflexivity-analysis` | Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes. | You need to read where a narrative sits — a fast stage check, or a full narrative/price/reality/reversal map. |
 | `reportify-stock-analysis` | Standardized structured stock report. | You need a repeatable report format for facts, interpretation, decision, and risk. |
 
 ## Use Skills In Agent
@@ -110,7 +109,7 @@ Use invest-flow:multi-agent-stock-analysis to analyze TSLA.
 Use invest-flow:daily-us-market-scan to scan today's US market close.
 Use invest-flow:non-consensus-company-discovery to find non-consensus opportunities in AI data center power.
 Use invest-flow:chain-alpha-pipeline to find investable companies in AI data center power.
-Use invest-flow:reflexivity-quick-scan to check NVIDIA's current narrative stage.
+Use invest-flow:reflexivity-analysis in quick mode to check NVIDIA's current narrative stage.
 Use invest-flow:company-buyability-score to score whether NVIDIA is buyable.
 Use invest-flow:index-pe-sensitivity to build a valuation-sensitivity table for 科创50.
 Use invest-flow:earnings-report-analysis to analyze NVIDIA's latest earnings.
@@ -139,8 +138,7 @@ Generated reports and cache files are written under `output/`:
 | Institutional analysis | `output/institutional-accumulation-analysis/` |
 | Non-consensus company discovery | `output/non-consensus-company-discovery/` |
 | Gold analysis | `output/gold-analysis/` |
-| Reflexivity quick scan | `output/reflexivity-quick-scan/` |
-| Reflexivity deep analysis | `output/reflexivity-deep-analysis/` |
+| Reflexivity analysis | `output/reflexivity-analysis/` |
 | Professional investment analyst | `output/professional-investment-analyst/` |
 | Reportify stock analysis | `output/reportify-stock-analysis/` |
 | Daily US market scan | `output/daily-us-market-scan/` |

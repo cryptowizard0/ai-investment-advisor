@@ -20,7 +20,7 @@ class SkillRegistry:
             self.get("company-profile"),
             self.get("fundamental-analysis"),
             self.get("institutional-accumulation-analysis"),
-            self.get("reflexivity-deep-analysis"),
+            self.get("reflexivity-analysis"),
             self.get("reportify-stock-analysis"),
             self.get("non-consensus-company-discovery"),
         ]
@@ -113,22 +113,14 @@ def build_registry() -> SkillRegistry:
             required=False,
         ),
         _spec(
-            skill_name="reflexivity-quick-scan",
-            agent_name="reflexivity_quick",
-            stage="single_asset_validation",
-            prompt_template="使用 invest-flow:reflexivity-quick-scan 分析 {ticker}",
-            output_dir="output/reflexivity-quick-scan",
-            required=False,
-        ),
-        _spec(
-            skill_name="reflexivity-deep-analysis",
-            agent_name="reflexivity_deep",
+            skill_name="reflexivity-analysis",
+            agent_name="reflexivity",
             stage="single_asset_validation",
             prompt_template=_report_required_prompt(
-                "使用 invest-flow:reflexivity-deep-analysis 分析 {ticker}",
-                "output/reflexivity-deep-analysis",
+                "使用 invest-flow:reflexivity-analysis 对 {ticker} 做深度反身性分析",
+                "output/reflexivity-analysis",
             ),
-            output_dir="output/reflexivity-deep-analysis",
+            output_dir="output/reflexivity-analysis",
             required=False,
         ),
         _spec(

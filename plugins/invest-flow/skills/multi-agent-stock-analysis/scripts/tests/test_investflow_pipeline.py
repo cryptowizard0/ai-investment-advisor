@@ -184,7 +184,7 @@ class RegistryTests(unittest.TestCase):
                 "company-profile",
                 "fundamental-analysis",
                 "institutional-accumulation-analysis",
-                "reflexivity-deep-analysis",
+                "reflexivity-analysis",
                 "reportify-stock-analysis",
                 "non-consensus-company-discovery",
             ],
@@ -207,7 +207,7 @@ class RegistryTests(unittest.TestCase):
                 "company_profile",
                 "fundamental",
                 "institutional",
-                "reflexivity_deep",
+                "reflexivity",
                 "reportify",
                 "non_consensus",
             ],
@@ -285,7 +285,7 @@ class PlannerTests(unittest.TestCase):
                 "company_profile",
                 "fundamental",
                 "institutional",
-                "reflexivity_deep",
+                "reflexivity",
                 "reportify",
                 "non_consensus",
             ],
@@ -644,8 +644,8 @@ class ComposerTests(unittest.TestCase):
             ),
         )
         failed_stage = StageResult(
-            skill_name="reflexivity-deep-analysis",
-            agent_name="reflexivity_deep",
+            skill_name="reflexivity-analysis",
+            agent_name="reflexivity",
             status=AnalysisStatus.FAILED,
             errors=["timeout"],
         )
@@ -790,7 +790,7 @@ class ComposerTests(unittest.TestCase):
                 AnalysisStatus.FAILED,
                 errors=["timeout"],
             ),
-            StageResult("reflexivity-deep-analysis", "reflexivity_deep", AnalysisStatus.PENDING),
+            StageResult("reflexivity-analysis", "reflexivity", AnalysisStatus.PENDING),
             StageResult("reportify-stock-analysis", "reportify", AnalysisStatus.PENDING),
             StageResult("non-consensus-company-discovery", "non_consensus", AnalysisStatus.PENDING),
         ]
@@ -811,7 +811,7 @@ class ComposerTests(unittest.TestCase):
             "- **institutional-accumulation-analysis**：未生成子报告链接（failed）",
             summary,
         )
-        self.assertIn("- **reflexivity-deep-analysis**：未生成子报告链接（pending）", summary)
+        self.assertIn("- **reflexivity-analysis**：未生成子报告链接（pending）", summary)
         self.assertIn("- **reportify-stock-analysis**：未生成子报告链接（pending）", summary)
         self.assertIn(
             "- **non-consensus-company-discovery**：未生成子报告链接（pending）",
@@ -953,7 +953,7 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
         )
         self.assertEqual(
             prompts[3],
-            "使用 invest-flow:reflexivity-deep-analysis 分析 MRVL；必须生成并保存 Markdown 子报告到 output/reflexivity-deep-analysis/，并在回复末尾明确写出 report_path",
+            "使用 invest-flow:reflexivity-analysis 对 MRVL 做深度反身性分析；必须生成并保存 Markdown 子报告到 output/reflexivity-analysis/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(
             prompts[4],

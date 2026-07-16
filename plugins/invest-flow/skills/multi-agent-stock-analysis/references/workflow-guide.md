@@ -24,7 +24,7 @@
   - `company-profile`
   - `fundamental-analysis`
   - `institutional-accumulation-analysis`
-  - `reflexivity-deep-analysis`
+  - `reflexivity-analysis`
   - `reportify-stock-analysis`
   - `non-consensus-company-discovery`
 
@@ -36,7 +36,7 @@ Registry 为六个维度生成 prompt template：
 使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位
 使用 invest-flow:fundamental-analysis 分析 {ticker}
 使用 invest-flow:institutional-accumulation-analysis 分析 {ticker}
-使用 invest-flow:reflexivity-deep-analysis 分析 {ticker}
+使用 invest-flow:reflexivity-analysis 对 {ticker} 做深度反身性分析
 使用 invest-flow:reportify-stock-analysis 分析 {ticker}
 使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会
 ```
@@ -91,7 +91,7 @@ Composer 根据成功或部分成功的 handoff 生成：
 使用 invest-flow:company-profile 分析 MRVL / MRVL，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位
 使用 invest-flow:fundamental-analysis 分析 MRVL
 使用 invest-flow:institutional-accumulation-analysis 分析 MRVL
-使用 invest-flow:reflexivity-deep-analysis 分析 MRVL
+使用 invest-flow:reflexivity-analysis 对 MRVL 做深度反身性分析
 使用 invest-flow:reportify-stock-analysis 分析 MRVL
 使用 invest-flow:non-consensus-company-discovery 评估 MRVL / MRVL 的非共识重估机会
 ```

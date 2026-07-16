@@ -47,8 +47,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── index-pe-sensitivity/
 │           ├── non-consensus-company-discovery/
 │           ├── gold-trend-analysis/
-│           ├── reflexivity-quick-scan/
-│           ├── reflexivity-deep-analysis/
+│           ├── reflexivity-analysis/
 │           ├── professional-investment-analyst/
 │           ├── reportify-stock-analysis/
 │           ├── daily-us-market-scan/
@@ -69,8 +68,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── institutional-accumulation-analysis/
 │   ├── non-consensus-company-discovery/
 │   ├── gold-analysis/
-│   ├── reflexivity-quick-scan/
-│   ├── reflexivity-deep-analysis/
+│   ├── reflexivity-analysis/
 │   ├── professional-investment-analyst/
 │   ├── reportify-stock-analysis/
 │   ├── daily-us-market-scan/
@@ -178,8 +176,7 @@ Active packaged skills:
 - `index-pe-sensitivity` - index valuation price-sensitivity table: ±price move -> TTM P/E (整体法 aggregate caliber) -> N-year percentile, with single-caliber consistency guardrails and cyclical-earnings distortion checks
 - `non-consensus-company-discovery` - theme-to-company discovery for high-potential non-consensus opportunities
 - `gold-trend-analysis` - gold bubble risk and macro signal analysis
-- `reflexivity-quick-scan` - fast stage judgment with a Soros-style reflexivity lens
-- `reflexivity-deep-analysis` - full-cycle reflexivity research on stocks, sectors, and narratives
+- `reflexivity-analysis` - Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes
 - `professional-investment-analyst` - professional investment research system with evidence, valuation, reflexivity, decision, and tracking dashboard
 - `reportify-stock-analysis` - fixed-template structured stock research report generation
 - `daily-us-market-scan` - Chinese daily US market close scan with a conclusion-first summary card, hard length budget (<=300 lines), dynamic sector/theme ranking from same-day moves, threshold-based watchlist reporting, and a required new-dynamics radar for emerging themes outside the fixed pool
@@ -192,7 +189,7 @@ Active packaged skills:
 `multi-agent-stock-analysis` is implemented by the packaged orchestrator script, not by separate legacy agent-definition files. The current orchestrator:
 
 - resolves the repo root dynamically
-- generates six skill prompts for the basic stock-analysis workflow: company profile, fundamental, institutional, reflexivity deep, reportify, and non-consensus
+- generates six skill prompts for the basic stock-analysis workflow: company profile, fundamental, institutional, reflexivity (deep mode), reportify, and non-consensus
 - writes a prompt plan Markdown file and orchestration JSON
 - does not execute child skills or launch another agent process
 - supports summary composition from already completed handoff data
@@ -215,8 +212,7 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`
 - Gold analysis: `output/gold-analysis/gold-{analysis-type}-{date}.md`
-- Reflexivity quick scan: `output/reflexivity-quick-scan/`
-- Reflexivity deep analysis: `output/reflexivity-deep-analysis/`
+- Reflexivity analysis: `output/reflexivity-analysis/`
 - Professional investment analyst: `output/professional-investment-analyst/professional-investment-analyst-{TICKER}-{YYYY-MM-DD}.md`
 - Reportify stock analysis: `output/reportify-stock-analysis/reportify-stock-analysis-{TICKER}-{YYYY-MM-DD}.md`
 - Daily US market scan: `output/daily-us-market-scan/us-market-close-daily-{YYYY-MM-DD}.md`

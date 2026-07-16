@@ -21,7 +21,7 @@ description: "多Agent协同股票分析系统 - 在当前 agent 会话（Codex 
   -> 执行 company-profile prompt
   -> 执行 fundamental-analysis prompt
   -> 执行 institutional-accumulation-analysis prompt
-  -> 执行 reflexivity-deep-analysis prompt
+  -> 执行 reflexivity-analysis prompt
   -> 执行 reportify-stock-analysis prompt
   -> 执行 non-consensus-company-discovery prompt
   -> 校验六维度子报告路径和 handoff
@@ -70,7 +70,7 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 ```
 
 ```text
-使用 invest-flow:reflexivity-deep-analysis 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/reflexivity-deep-analysis/，并在回复末尾明确写出 report_path
+使用 invest-flow:reflexivity-analysis 对 {ticker} 做深度反身性分析；必须生成并保存 Markdown 子报告到 output/reflexivity-analysis/，并在回复末尾明确写出 report_path
 ```
 
 ```text
@@ -100,7 +100,7 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 | company-profile | 公司简介、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位 |
 | fundamental-analysis | 公司基本面、财务、估值和技术面 |
 | institutional-accumulation-analysis | 资金行为、量价结构和主力意图 |
-| reflexivity-deep-analysis | 叙事、价格、现实验证和反转风险 |
+| reflexivity-analysis | 叙事、价格、现实验证和反转风险（深度档）|
 | reportify-stock-analysis | 统一八段式事实-解释-决策报告 |
 | non-consensus-company-discovery | 非共识重估假设、催化剂和反证条件 |
 
@@ -167,7 +167,7 @@ output/
 ├── company-profile/
 ├── fundamental-analysis/
 ├── institutional-accumulation-analysis/
-├── reflexivity-deep-analysis/
+├── reflexivity-analysis/
 ├── reportify-stock-analysis/
 ├── non-consensus-company-discovery/
 └── summary/

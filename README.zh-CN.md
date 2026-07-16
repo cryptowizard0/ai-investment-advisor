@@ -66,7 +66,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | 每周跟踪 AI 基建 | 每周运行 `ai-infrastructure-sector-discovery`（适合设为定时任务）；discovery_score >= 70 的板块交给 `chain-alpha-mismatch-discovery` 或完整 `chain-alpha-pipeline` 深挖。 |
 | 从主题找到非共识标的 | 用 `non-consensus-company-discovery` 拆主题产业链、定位被错误定价的瓶颈环节并筛出最有潜力的标的。 |
 | 每日市场复盘 | 美股收盘后使用 `daily-us-market-scan`。 |
-| 跟踪叙事和反身性风险 | 定期用 `reflexivity-quick-scan` 判断阶段；当阶段变化或仓位较重时升级到 `reflexivity-deep-analysis`。 |
+| 跟踪叙事和反身性风险 | 定期用 `reflexivity-analysis` 快扫档判断阶段；当阶段变化或仓位较重时切到深度档。 |
 | 快速研究单只股票 | 用 `multi-agent-stock-analysis` 先生成 `company-profile` 公司画像，再交叉验证基本面、资金流、反身性、Reportify 和非共识视角。 |
 | 解读财报 | 公司发布财报后用 `earnings-report-analysis` 判断预期差，再更新个股投资判断。 |
 | 判断股票能不能买 | 用 `company-buyability-score` 量化 AI 受益、产业链位置、增长、回撤、情绪错位和风险负面因素。 |
@@ -94,8 +94,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | `multi-agent-stock-analysis` | 在当前 agent 会话中编排多个个股分析技能。 | 想从多个独立视角交叉验证一只股票。 |
 | `non-consensus-company-discovery` | 从主题到公司，发现高潜力非共识机会。 | 想寻找市场仍用旧框架定价的公司。 |
 | `professional-investment-analyst` | 生成买方研究风格的个股报告。 | 需要可跟踪、可复盘、有证据链的正式报告。 |
-| `reflexivity-deep-analysis` | 做完整反身性周期分析。 | 需要拆解叙事、价格、现实验证、边际变化和反转风险。 |
-| `reflexivity-quick-scan` | 快速判断反身性阶段。 | 想快速判断叙事处于启动、强化、透支还是反转。 |
+| `reflexivity-analysis` | 索罗斯反身性分析，含快扫（5 分钟阶段判断）和深度（完整周期）两档。 | 想快速判断叙事处于启动/强化/透支/反转，或做完整的叙事、价格、现实、反转风险拆解。 |
 | `reportify-stock-analysis` | 生成标准化结构化个股报告。 | 需要稳定的事实、解释、决策和风险输出格式。 |
 
 ## 在智能体内使用技能
@@ -107,7 +106,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 使用 invest-flow:daily-us-market-scan 扫描今天的美股收盘
 使用 invest-flow:non-consensus-company-discovery 发现 AI 数据中心电力里的非共识机会
 使用 invest-flow:chain-alpha-pipeline 分析具身智能（人形机器人）产业链
-使用 invest-flow:reflexivity-quick-scan 判断 NVIDIA 当前叙事阶段
+使用 invest-flow:reflexivity-analysis 快扫 NVIDIA 当前叙事阶段
 使用 invest-flow:company-buyability-score 判断 NVIDIA 能不能买
 使用 invest-flow:earnings-report-analysis 解读 NVIDIA 最新财报
 ```
@@ -133,8 +132,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | 机构资金分析 | `output/institutional-accumulation-analysis/` |
 | 非共识公司发现 | `output/non-consensus-company-discovery/` |
 | 黄金分析 | `output/gold-analysis/` |
-| 反身性快速扫描 | `output/reflexivity-quick-scan/` |
-| 反身性深度分析 | `output/reflexivity-deep-analysis/` |
+| 反身性分析 | `output/reflexivity-analysis/` |
 | 专业投资分析师报告 | `output/professional-investment-analyst/` |
 | Reportify 个股报告 | `output/reportify-stock-analysis/` |
 | 美股日报 | `output/daily-us-market-scan/` |

@@ -56,7 +56,7 @@ SkillSpec(
 | company_profile | company-profile | 使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位 | true |
 | fundamental | fundamental-analysis | 使用 invest-flow:fundamental-analysis 分析 {ticker} | true |
 | institutional | institutional-accumulation-analysis | 使用 invest-flow:institutional-accumulation-analysis 分析 {ticker} | false |
-| reflexivity_deep | reflexivity-deep-analysis | 使用 invest-flow:reflexivity-deep-analysis 分析 {ticker} | false |
+| reflexivity | reflexivity-analysis | 使用 invest-flow:reflexivity-analysis 对 {ticker} 做深度反身性分析 | false |
 | reportify | reportify-stock-analysis | 使用 invest-flow:reportify-stock-analysis 分析 {ticker} | false |
 | non_consensus | non-consensus-company-discovery | 使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会 | false |
 
@@ -202,7 +202,7 @@ output/summary/
 output/company-profile/
 output/fundamental-analysis/
 output/institutional-accumulation-analysis/
-output/reflexivity-deep-analysis/
+output/reflexivity-analysis/
 output/reportify-stock-analysis/
 output/non-consensus-company-discovery/
 ```

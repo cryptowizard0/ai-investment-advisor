@@ -182,7 +182,7 @@
 - **company-profile：** [{company_profile_report_path}]({company_profile_report_link})
 - **基本面分析：** {fundamental_report_path}
 - **机构流向分析：** {institutional_report_path}
-- **反身性深度分析：** {reflexivity_deep_report_path}
+- **反身性分析：** {reflexivity_report_path}
 - **Reportify标准报告：** {reportify_report_path}
 - **非共识重估分析：** {non_consensus_report_path}
 

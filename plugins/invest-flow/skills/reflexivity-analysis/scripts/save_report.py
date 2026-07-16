@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Save a reflexivity deep analysis markdown report with stable naming."""
+"""Save a reflexivity analysis markdown report (quick or deep) with stable naming."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 
-DEFAULT_OUTPUT_DIR = "./output/reflexivity-deep-analysis"
+DEFAULT_OUTPUT_DIR = "./output/reflexivity-analysis"
 
 
 def parse_date(value: str) -> date:
@@ -44,66 +44,20 @@ def find_unique_path(base_path: Path) -> Path:
 
 
 def build_default_content(topic: str, report_date: date, template_text: str) -> str:
-    replacements = {
+    """Fill a blank template: known slots first, then every remaining {{...}} -> 待填写.
+
+    This is mode-agnostic, so the quick and deep templates share one code path.
+    """
+    special = {
         "{{主题}}": topic,
         "{{分析日期}}": report_date.isoformat(),
-        "{{核心叙事}}": "待填写",
-        "{{媒体热度}}": "待填写",
-        "{{共识程度}}": "待填写",
-        "{{散户参与}}": "待填写",
-        "{{这次不一样感}}": "待填写",
-        "{{叙事强度说明}}": "待填写",
-        "{{叙事来源}}": "待填写",
-        "{{叙事阶段}}": "待填写",
-        "{{叙事来源说明}}": "待填写",
-        "{{资金证据1}}": "待填写",
-        "{{资金证据2}}": "待填写",
-        "{{资金证据3}}": "待填写",
-        "{{行为性质}}": "待填写",
-        "{{行为驱动}}": "待填写",
-        "{{行为层说明}}": "待填写",
-        "{{价格行为特征}}": "待填写",
-        "{{价格阶段}}": "待填写",
-        "{{价格与叙事关系}}": "待填写",
-        "{{现实指标1}}": "待填写",
-        "{{现实指标2}}": "待填写",
-        "{{现实指标3}}": "待填写",
-        "{{现实强度1}}": "待填写",
-        "{{现实强度2}}": "待填写",
-        "{{现实强度3}}": "待填写",
-        "{{现实层说明}}": "待填写",
-        "{{认知边际}}": "待填写",
-        "{{价格边际}}": "待填写",
-        "{{现实边际}}": "待填写",
-        "{{认知边际总结}}": "待填写",
-        "{{价格边际总结}}": "待填写",
-        "{{现实边际总结}}": "待填写",
-        "{{认知价格错位}}": "待填写",
-        "{{价格现实错位}}": "待填写",
-        "{{认知现实错位}}": "待填写",
-        "{{错位类型}}": "待填写",
-        "{{周期阶段}}": "待填写",
-        "{{周期阶段说明}}": "待填写",
-        "{{顶部信号}}": "待填写",
-        "{{底部信号}}": "待填写",
-        "{{顶部或底部判断}}": "待填写",
-        "{{触发因素1}}": "待填写",
-        "{{触发因素2}}": "待填写",
-        "{{触发因素3}}": "待填写",
-        "{{最终核心叙事}}": "待填写",
-        "{{最终资金判断}}": "待填写",
-        "{{最终价格判断}}": "待填写",
-        "{{最终现实判断}}": "待填写",
-        "{{最终边际变化}}": "待填写",
-        "{{最终投资判断}}": "待填写",
         "{{信息缺口与待验证点}}": "- 待填写",
         "{{数据来源与观察依据}}": "- 待填写",
     }
-
     rendered = template_text
-    for placeholder, value in replacements.items():
+    for placeholder, value in special.items():
         rendered = rendered.replace(placeholder, value)
-    return rendered
+    return re.sub(r"\{\{[^}]+\}\}", "待填写", rendered)
 
 
 def read_content(args: argparse.Namespace, template_path: Path) -> str:
@@ -124,9 +78,15 @@ def read_content(args: argparse.Namespace, template_path: Path) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Save a reflexivity deep analysis report to the project output directory."
+        description="Save a reflexivity analysis report to the project output directory."
     )
     parser.add_argument("--topic", required=True, help="Analysis topic, such as NVDA or 黄金.")
+    parser.add_argument(
+        "--mode",
+        choices=("quick", "deep"),
+        default="deep",
+        help="Report mode: quick (5-minute scan) or deep (full cycle). Defaults to deep.",
+    )
     parser.add_argument(
         "--date",
         type=parse_date,
@@ -151,7 +111,8 @@ def main() -> None:
     args = parser.parse_args()
 
     script_dir = Path(__file__).resolve().parent
-    default_template = script_dir.parent / "assets" / "report-template.md"
+    template_name = "report-template-quick.md" if args.mode == "quick" else "report-template.md"
+    default_template = script_dir.parent / "assets" / template_name
     template_path = Path(args.template).expanduser().resolve() if args.template else default_template
     if not template_path.exists():
         raise FileNotFoundError(f"Template not found: {template_path}")
@@ -162,7 +123,7 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     safe_topic = sanitize_topic(args.topic)
-    filename = f"reflexivity-deep-analysis-{safe_topic}-{args.date.isoformat()}.md"
+    filename = f"reflexivity-{args.mode}-{safe_topic}-{args.date.isoformat()}.md"
     output_path = find_unique_path(output_dir / filename)
     output_path.write_text(content, encoding="utf-8")
 
