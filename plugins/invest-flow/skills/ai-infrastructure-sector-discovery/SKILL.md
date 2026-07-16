@@ -1,6 +1,6 @@
 ---
 name: ai-infrastructure-sector-discovery
-description: "Use when discovering, ranking, or weekly-scanning AI infrastructure sectors before deeper scarcity analysis. Use for AI infrastructure sector candidate pools, quantifiable sector indicators, discovery scores, threshold-based screening, and handoff queues for ai-infrastructure-scarcity-radar."
+description: "Use when discovering, ranking, or weekly-scanning AI infrastructure sectors, typically as a scheduled weekly tracking task. Use for AI infrastructure sector candidate pools, quantifiable sector indicators, discovery scores, threshold-based screening, and handoff queues that feed chain-alpha (chain-alpha-mismatch-discovery or chain-alpha-pipeline) for deeper research."
 ---
 
 # AI 基建板块发现
@@ -13,7 +13,7 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 
 ## Overview
 
-本 skill 是 `/ai-infrastructure-scarcity-radar` 的前序，用于每周扫描 AI 基建候选板块，回答“这一周最值得研究哪些板块”。它不做公司深度研究，也不直接给买卖建议；它只输出可量化板块指标、`discovery_score`、触发阈值和后续 radar 深挖命令。
+本 skill 属于**日常市场跟踪类**，适合配置为每周定时任务，用于每周扫描 AI 基建候选板块，回答“这一周最值得研究哪些板块”。它不做公司深度研究，也不直接给买卖建议；它只输出可量化板块指标、`discovery_score`、触发阈值和后续深挖命令。**达标板块交接给 chain-alpha 工作流**（轻量确认用 `chain-alpha-mismatch-discovery`，完整“拆链 -> 找垄断 -> 验证定仓”用 `chain-alpha-pipeline`）。
 
 默认输出目录：`./output/ai-infrastructure-sector-discovery/`
 
@@ -52,17 +52,17 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 | 风险扣分 | -10 |
 
 分类规则：
-- `>= 80`：优先交给 scarcity radar 深挖。
-- `70-79`：进入 radar 队列，若证据置信度中高则深挖。
+- `>= 80`：优先交给 chain-alpha 深挖。
+- `70-79`：进入 chain-alpha 队列，若证据置信度中高则深挖。
 - `55-69`：观察池，下周复核。
 - `<55`：暂不深挖，除非出现强订单、价格、交期或财报异常。
 
-### 4) 生成 radar handoff queue
+### 4) 生成 chain-alpha handoff queue
 - 所有 `discovery_score >= 70` 的板块进入 handoff queue。
-- 每个进入队列的板块必须给出后续命令，例如：
-  - `/ai-infrastructure-scarcity-radar CPO 光互联`
-  - `/ai-infrastructure-scarcity-radar AI 数据中心变压器`
-  - `/ai-infrastructure-scarcity-radar 液冷 CDU`
+- 每个进入队列的板块必须给出后续命令：轻量确认错位用 `chain-alpha-mismatch-discovery`，走完整漏斗用 `chain-alpha-pipeline`。例如：
+  - `使用 invest-flow:chain-alpha-mismatch-discovery 分析 CPO 光互联`
+  - `使用 invest-flow:chain-alpha-mismatch-discovery 分析 AI 数据中心变压器`
+  - `使用 invest-flow:chain-alpha-pipeline 分析 液冷 CDU`
 - 每个命令旁必须列出触发阈值和核心证据。
 
 ### 5) 输出并保存周报
@@ -81,7 +81,7 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 - 必须区分“新增动态板块”和“固定种子板块”。
 - 必须输出变化方向：上升 / 持平 / 下降 / 新增。
 - 必须输出证据置信度：低 / 中 / 高。
-- 只做板块发现和排序；公司深研交给 `ai-infrastructure-scarcity-radar` 或 `professional-investment-analyst`。
+- 只做板块发现和排序；环节与公司深研交给 chain-alpha 工作流（`chain-alpha-mismatch-discovery` / `chain-alpha-pipeline`）。
 
 ## Resources
 
@@ -89,7 +89,7 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 固定种子板块池，以及每个板块默认应跟踪的量化指标。
 
 ### references/methodology.md
-板块发现评分模型、动态新增规则、阈值规则和 radar handoff 规则。
+板块发现评分模型、动态新增规则、阈值规则和 chain-alpha handoff 规则。
 
 ### references/report-template.md
 每周 AI 基建板块发现中文 Markdown 周报模板。

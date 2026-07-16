@@ -61,7 +61,7 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 
 | Goal | Recommended flow |
 |---|---|
-| Find AI infrastructure opportunities | Start with `ai-infrastructure-sector-discovery`, then use `ai-infrastructure-scarcity-radar` on the strongest scarcity theme. |
+| Track AI infrastructure weekly | Run `ai-infrastructure-sector-discovery` weekly (works well as a scheduled task); hand sectors scoring >= 70 to `chain-alpha-mismatch-discovery` or the full `chain-alpha-pipeline`. |
 | Find investable companies from an industry chain | Use `chain-alpha-pipeline` for the full industry definition -> growth screen -> mismatch -> monopoly -> verification funnel, or run `chain-alpha-mismatch-discovery` alone first to define the industry, screen growth, and confirm the mismatch links cheaply. |
 | Track whether a 待验证 name's revenue/profit is delivering | After the funnel leaves a name at `待验证`, use `chain-alpha-delivery-tracking` for a quarterly revenue and profit-delivery read (5-gate ladder + delivery-window timeouts + growth/attribution/valuation engines + structure sentinels) that feeds the grade back into `chain-alpha-verification`. |
 | Map a sector and find non-consensus names | Start with `industry-chain-analysis`, then use `non-consensus-company-discovery` on the most interesting bottleneck or module. |
@@ -78,8 +78,7 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 
 | Skill | Purpose | Use when |
 |---|---|---|
-| `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring. | You want to identify the best AI infrastructure themes to research next. |
-| `ai-infrastructure-scarcity-radar` | Deep scarcity and bottleneck analysis for AI infrastructure. | You already have a theme and need to judge whether scarcity is real and investable. |
+| `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring; the handoff queue feeds chain-alpha. | You want a scheduled weekly read on which AI infrastructure sectors to research next. |
 | `chain-alpha-mismatch-discovery` | Plain-language industry definition, growth hard gate with industry-cycle staging (four-stage timeline + current-stage marker), full industry-chain panorama, and supply-demand mismatch link discovery with a profit-growth gate. | You have a big theme and need to understand what the industry actually is, which cycle stage it is in, why growth can stay high, the whole chain, and the links where demand outruns supply and can translate into profit growth. |
 | `chain-alpha-monopoly-screen` | Sub-link breakdown and monopoly screening with CR3, margin, revenue-share, and profit-growth gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
 | `chain-alpha-verification` | 100-point four-tier company verification with profit-growth gating and drawdown-based position sizing. | You have candidates and need a buy/watch/reject grade plus a position cap. |
@@ -133,7 +132,6 @@ Generated reports and cache files are written under `output/`:
 | Fundamental analysis | `output/fundamental-analysis/` |
 | Earnings report analysis | `output/earnings-report-analysis/` |
 | AI infrastructure sector discovery | `output/ai-infrastructure-sector-discovery/` |
-| AI infrastructure scarcity radar | `output/ai-infrastructure-scarcity-radar/` |
 | Chain-alpha mismatch discovery | `output/chain-alpha-mismatch-discovery/` |
 | Chain-alpha monopoly screen | `output/chain-alpha-monopoly-screen/` |
 | Chain-alpha verification | `output/chain-alpha-verification/` |

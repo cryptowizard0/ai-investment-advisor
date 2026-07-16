@@ -63,7 +63,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 |---|---|
 | 从产业链找到可投公司（首推） | 用 `chain-alpha-pipeline` 跑完整的 行业定义 → 增长初筛 → 错位发现 → 垄断筛选 → 验证定仓 漏斗；也可先单独跑 `chain-alpha-mismatch-discovery` 低成本完成行业定义、增长初筛并确认错位环节。 |
 | 跟踪待验证标的的营收/利润兑现 | 漏斗把标的留在 `待验证` 后，用 `chain-alpha-delivery-tracking` 做按季营收与利润兑现追踪（5 级验证链 + 兑现窗口超时 + 增速/归因/估值引擎 + 格局哨兵），结论回灌 `chain-alpha-verification`。 |
-| 发现 AI 基建机会 | 先用 `ai-infrastructure-sector-discovery` 扫描板块，再用 `ai-infrastructure-scarcity-radar` 深挖最强稀缺主题。 |
+| 每周跟踪 AI 基建 | 每周运行 `ai-infrastructure-sector-discovery`（适合设为定时任务）；discovery_score >= 70 的板块交给 `chain-alpha-mismatch-discovery` 或完整 `chain-alpha-pipeline` 深挖。 |
 | 从产业链找到非共识标的 | 先用 `industry-chain-analysis` 拆产业链和瓶颈，再用 `non-consensus-company-discovery` 分析最有潜力的环节或模块。 |
 | 每日市场复盘 | 美股收盘后使用 `daily-us-market-scan`。 |
 | 跟踪叙事和反身性风险 | 定期用 `reflexivity-quick-scan` 判断阶段；当阶段变化或仓位较重时升级到 `reflexivity-deep-analysis`。 |
@@ -77,8 +77,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 
 | 技能 | 用途 | 适用场景 |
 |---|---|---|
-| `ai-infrastructure-sector-discovery` | 扫描并评分 AI 基建板块。 | 想找下一步最值得研究的 AI 基建方向。 |
-| `ai-infrastructure-scarcity-radar` | 深挖 AI 基建稀缺环节和瓶颈。 | 已经锁定主题，需要判断稀缺是否真实且可投资。 |
+| `ai-infrastructure-sector-discovery` | 每周扫描并评分 AI 基建板块，交接队列直接喂给 chain-alpha。 | 想以定时任务方式每周确定最值得研究的 AI 基建方向。 |
 | `chain-alpha-mismatch-discovery` | 行业白话定义 + 增长门槛与产业周期定位（四阶段时间表 + 当前节点）+ 产业链全景 + 供需错位环节发现。 | 有一个大主题，需要用白话搞懂行业到底是什么、处于哪个产业周期阶段、增速为何能维持高位、拆出整条产业链，并找到需求超过供给且能落到利润增速的错位环节。 |
 | `chain-alpha-monopoly-screen` | 错位环节拆子环节 + 用 CR3/毛利/收入占比/利润增速硬门槛做垄断筛选。 | 已确认某个错位环节，需要找出其中最强的 ≤10 家公司。 |
 | `chain-alpha-verification` | 100 分四档公司验证 + 利润增速硬门槛 + 基于回撤的仓位上限。 | 有候选公司，需要金池子/通过/待验证/剔除分级和仓位上限。 |
@@ -128,7 +127,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | 基本面分析 | `output/fundamental-analysis/` |
 | 财报分析 | `output/earnings-report-analysis/` |
 | AI 基建板块扫描 | `output/ai-infrastructure-sector-discovery/` |
-| AI 基建稀缺分析 | `output/ai-infrastructure-scarcity-radar/` |
 | chain-alpha 错位发现 | `output/chain-alpha-mismatch-discovery/` |
 | chain-alpha 垄断筛选 | `output/chain-alpha-monopoly-screen/` |
 | chain-alpha 公司验证 | `output/chain-alpha-verification/` |

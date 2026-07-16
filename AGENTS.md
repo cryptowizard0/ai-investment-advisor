@@ -34,7 +34,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │       ├── .claude-plugin/plugin.json   # Claude Code manifest
 │       ├── assets/
 │       └── skills/
-│           ├── ai-infrastructure-scarcity-radar/
 │           ├── ai-infrastructure-sector-discovery/
 │           ├── chain-alpha-mismatch-discovery/
 │           ├── chain-alpha-monopoly-screen/
@@ -67,7 +66,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── fundamental-analysis/
 │   ├── earnings-report-analysis/
 │   ├── ai-infrastructure-sector-discovery/
-│   ├── ai-infrastructure-scarcity-radar/
 │   ├── industry-chain-analysis/
 │   ├── index-pe-sensitivity/
 │   ├── institutional-accumulation-analysis/
@@ -168,8 +166,7 @@ skill-name/
 
 Active packaged skills:
 
-- `ai-infrastructure-sector-discovery` - weekly AI infrastructure sector discovery and scoring
-- `ai-infrastructure-scarcity-radar` - AI infrastructure scarcity opportunity and bottleneck analysis
+- `ai-infrastructure-sector-discovery` - weekly AI infrastructure sector discovery and scoring, designed to run as a scheduled weekly tracking task; sectors scoring >=70 hand off to chain-alpha (`chain-alpha-mismatch-discovery` or `chain-alpha-pipeline`)
 - `company-profile` - company primer covering overview, core business, technology barriers, industry-chain position, AI relevance, competitors, and industry position
 - `chain-alpha-mismatch-discovery` - chain-alpha step 1: industry definition with a plain-language explainer (what it is, what it replaces, why now), growth hard gate (industry/key-link revenue growth >20%, clear driver, >=6 month duration) plus per-driver analysis of why growth stays high, a four-stage industry-cycle timeline (tech validation -> early commercialization -> volume ramp -> mass adoption) with a current-stage marker, full industry-chain panorama list, plus supply-demand mismatch link discovery with hard evidence gates, a profit-growth gate (preferred >=30%, minimum 20%), 30-point mismatch scoring including a reverse-scored pricing-in dimension, and a supply-response clock that reads expansion evidence both ways
 - `chain-alpha-monopoly-screen` - chain-alpha step 2: sub-link breakdown, global landscape including mainland China and JP/KR/TW/EU, CR3/margin/revenue-share/profit-growth hard gates, 30-point candidate scoring
@@ -210,7 +207,6 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Fundamental analysis: `output/fundamental-analysis/{ticker}-{company-name}-{date}.md`
 - Earnings report analysis: `output/earnings-report-analysis/earnings-report-analysis-{TICKER}-{period}-{YYYY-MM-DD}.md`
 - AI infrastructure sector discovery: `output/ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-{YYYY-MM-DD}.md`
-- AI infrastructure scarcity radar: `output/ai-infrastructure-scarcity-radar/ai-infrastructure-scarcity-radar-{topic}-{YYYY-MM-DD}.md`
 - Chain-alpha mismatch discovery: `output/chain-alpha-mismatch-discovery/chain-alpha-mismatch-discovery-{主题}-{YYYY-MM-DD}.md`
 - Chain-alpha monopoly screen: `output/chain-alpha-monopoly-screen/chain-alpha-monopoly-screen-{环节}-{YYYY-MM-DD}.md`
 - Chain-alpha verification: `output/chain-alpha-verification/chain-alpha-verification-{TICKER或环节}-{YYYY-MM-DD}.md`

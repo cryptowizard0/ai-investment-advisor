@@ -2,7 +2,7 @@
 
 ## 目标
 
-本方法论用于每周发现和排序 AI 基建板块。输出结果不是投资建议，而是决定哪些板块应该进入 `/ai-infrastructure-scarcity-radar` 深挖。
+本方法论用于每周发现和排序 AI 基建板块。输出结果不是投资建议，而是决定哪些板块应该交给 chain-alpha 工作流（`chain-alpha-mismatch-discovery` / `chain-alpha-pipeline`）深挖。
 
 ## 评分模型
 
@@ -62,9 +62,9 @@
 - 与固定种子板块的关系。
 - 是否需要下周继续保留。
 
-## Radar handoff 规则
+## Chain-alpha handoff 规则
 
-将板块交给 `/ai-infrastructure-scarcity-radar` 的条件：
+将板块交给 chain-alpha 工作流（轻量确认用 `chain-alpha-mismatch-discovery`，完整漏斗用 `chain-alpha-pipeline`）的条件：
 - `discovery_score >= 80`：必须进入 handoff queue。
 - `70 <= discovery_score < 80`：证据置信度为中或高时进入 handoff queue。
 - `<70`：不进入 handoff queue，除非出现强订单、价格、交期或财报异常。
@@ -73,13 +73,13 @@ handoff 项必须包含：
 - 后续命令。
 - 触发阈值。
 - 核心证据。
-- 需要 radar 验证的关键问题。
+- 需要 chain-alpha 验证的关键问题（错位是否真实、供给为何扩不快、利润增速能否落地）。
 
 ## 输出解释
 
 分类：
 - 优先深挖：`discovery_score >= 80`。
-- Radar 队列：`70-79` 且证据置信度中高。
+- Chain-alpha 队列：`70-79` 且证据置信度中高。
 - 观察池：`55-69`。
 - 暂不深挖：`<55`。
 
