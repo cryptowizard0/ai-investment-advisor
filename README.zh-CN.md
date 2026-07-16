@@ -64,7 +64,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | 从产业链找到可投公司（首推） | 用 `chain-alpha-pipeline` 跑完整的 行业定义 → 增长初筛 → 错位发现 → 垄断筛选 → 验证定仓 漏斗；也可先单独跑 `chain-alpha-mismatch-discovery` 低成本完成行业定义、增长初筛并确认错位环节。 |
 | 跟踪待验证标的的营收/利润兑现 | 漏斗把标的留在 `待验证` 后，用 `chain-alpha-delivery-tracking` 做按季营收与利润兑现追踪（5 级验证链 + 兑现窗口超时 + 增速/归因/估值引擎 + 格局哨兵），结论回灌 `chain-alpha-verification`。 |
 | 每周跟踪 AI 基建 | 每周运行 `ai-infrastructure-sector-discovery`（适合设为定时任务）；discovery_score >= 70 的板块交给 `chain-alpha-mismatch-discovery` 或完整 `chain-alpha-pipeline` 深挖。 |
-| 从产业链找到非共识标的 | 先用 `industry-chain-analysis` 拆产业链和瓶颈，再用 `non-consensus-company-discovery` 分析最有潜力的环节或模块。 |
+| 从主题找到非共识标的 | 用 `non-consensus-company-discovery` 拆主题产业链、定位被错误定价的瓶颈环节并筛出最有潜力的标的。 |
 | 每日市场复盘 | 美股收盘后使用 `daily-us-market-scan`。 |
 | 跟踪叙事和反身性风险 | 定期用 `reflexivity-quick-scan` 判断阶段；当阶段变化或仓位较重时升级到 `reflexivity-deep-analysis`。 |
 | 快速研究单只股票 | 用 `multi-agent-stock-analysis` 先生成 `company-profile` 公司画像，再交叉验证基本面、资金流、反身性、Reportify 和非共识视角。 |
@@ -89,7 +89,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | `earnings-report-analysis` | 从机构视角分析财报、指引、电话会和预期差。 | 公司刚发布财报，需要判断投资逻辑是否改变。 |
 | `fundamental-analysis` | 做单股基本面、估值和技术面分析。 | 需要快速形成一家公司是否值得继续研究的结构化判断。 |
 | `gold-trend-analysis` | 分析黄金趋势、泡沫风险和宏观驱动。 | 研究黄金价格、宏观风险或黄金交易框架。 |
-| `industry-chain-analysis` | 做两层产业链和瓶颈拆解。 | 需要看清上游、中游、下游和模块级约束。 |
 | `institutional-accumulation-analysis` | 分析机构吸筹、派发和资金行为。 | 想判断主力资金是在买入、出货还是对冲。 |
 | `market-data-router` | 路由行情数据并提供降级兜底。 | 研究流程需要 K 线、报价、期权背景或缓存市场数据。 |
 | `multi-agent-stock-analysis` | 在当前 agent 会话中编排多个个股分析技能。 | 想从多个独立视角交叉验证一只股票。 |
@@ -106,7 +105,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 ```text
 使用 invest-flow:multi-agent-stock-analysis 分析 TSLA
 使用 invest-flow:daily-us-market-scan 扫描今天的美股收盘
-使用 invest-flow:industry-chain-analysis 拆解 HBM 产业链
 使用 invest-flow:non-consensus-company-discovery 发现 AI 数据中心电力里的非共识机会
 使用 invest-flow:chain-alpha-pipeline 分析具身智能（人形机器人）产业链
 使用 invest-flow:reflexivity-quick-scan 判断 NVIDIA 当前叙事阶段
@@ -132,7 +130,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | chain-alpha 公司验证 | `output/chain-alpha-verification/` |
 | chain-alpha 流程汇总 | `output/chain-alpha-pipeline/` |
 | chain-alpha 营收兑现追踪 | `output/chain-alpha-delivery-tracking/` |
-| 产业链分析 | `output/industry-chain-analysis/` |
 | 机构资金分析 | `output/institutional-accumulation-analysis/` |
 | 非共识公司发现 | `output/non-consensus-company-discovery/` |
 | 黄金分析 | `output/gold-analysis/` |

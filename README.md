@@ -30,7 +30,7 @@ Examples (both platforms):
 Use InvestFlow to run a multi-agent analysis for TSLA.
 Use InvestFlow to scan the US market close today.
 Use InvestFlow to find non-consensus companies in AI data center power.
-Use InvestFlow to analyze the HBM industry chain.
+Use InvestFlow to map the HBM supply chain with chain-alpha.
 ```
 
 If the plugin does not appear, confirm these files exist:
@@ -64,7 +64,7 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 | Track AI infrastructure weekly | Run `ai-infrastructure-sector-discovery` weekly (works well as a scheduled task); hand sectors scoring >= 70 to `chain-alpha-mismatch-discovery` or the full `chain-alpha-pipeline`. |
 | Find investable companies from an industry chain | Use `chain-alpha-pipeline` for the full industry definition -> growth screen -> mismatch -> monopoly -> verification funnel, or run `chain-alpha-mismatch-discovery` alone first to define the industry, screen growth, and confirm the mismatch links cheaply. |
 | Track whether a 待验证 name's revenue/profit is delivering | After the funnel leaves a name at `待验证`, use `chain-alpha-delivery-tracking` for a quarterly revenue and profit-delivery read (5-gate ladder + delivery-window timeouts + growth/attribution/valuation engines + structure sentinels) that feeds the grade back into `chain-alpha-verification`. |
-| Map a sector and find non-consensus names | Start with `industry-chain-analysis`, then use `non-consensus-company-discovery` on the most interesting bottleneck or module. |
+| Find non-consensus names in a theme | Use `non-consensus-company-discovery` to map the theme, spot the mispriced bottleneck, and surface the strongest names. |
 | Run daily market review | Use `daily-us-market-scan` after the US close. |
 | Track narrative and reflexivity risk | Use `reflexivity-quick-scan` regularly; upgrade to `reflexivity-deep-analysis` when the stage changes or the position is material. |
 | Quick single-stock research | Use `multi-agent-stock-analysis` to start with `company-profile`, then cross-check fundamentals, capital flow, reflexivity, Reportify, and non-consensus views. |
@@ -90,7 +90,6 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 | `earnings-report-analysis` | Institutional earnings, guidance, call, and expectation-gap analysis. | A company has reported and you need to know whether the thesis changed. |
 | `fundamental-analysis` | Single-stock fundamental, valuation, and technical analysis. | You need a fast but structured view of a company. |
 | `gold-trend-analysis` | Gold trend, bubble-risk, and macro-driver analysis. | You are researching gold prices, macro risk, or a gold trading framework. |
-| `industry-chain-analysis` | Two-layer industry-chain and bottleneck mapping. | You need to understand upstream, midstream, downstream, and module-level constraints. |
 | `index-pe-sensitivity` | Index valuation price-sensitivity table (±price move -> TTM P/E 整体法 -> N-year percentile) with single-caliber consistency guardrails and cyclical-earnings distortion checks. | You want to know where an index's valuation percentile lands if it rises or falls X%, using one consistent caliber. |
 | `institutional-accumulation-analysis` | Institutional accumulation and distribution analysis. | You want to judge whether major players are buying, distributing, or hedging. |
 | `market-data-router` | Routed market-data fetching and fallback logic. | You need bars, quote data, options context, or cached market data for analysis. |
@@ -109,7 +108,6 @@ Use InvestFlow through natural-language prompts in Codex or Claude Code. Prefer 
 ```text
 Use invest-flow:multi-agent-stock-analysis to analyze TSLA.
 Use invest-flow:daily-us-market-scan to scan today's US market close.
-Use invest-flow:industry-chain-analysis to map the HBM industry chain.
 Use invest-flow:non-consensus-company-discovery to find non-consensus opportunities in AI data center power.
 Use invest-flow:chain-alpha-pipeline to find investable companies in AI data center power.
 Use invest-flow:reflexivity-quick-scan to check NVIDIA's current narrative stage.
@@ -137,7 +135,6 @@ Generated reports and cache files are written under `output/`:
 | Chain-alpha verification | `output/chain-alpha-verification/` |
 | Chain-alpha pipeline summary | `output/chain-alpha-pipeline/` |
 | Chain-alpha delivery tracking | `output/chain-alpha-delivery-tracking/` |
-| Industry-chain analysis | `output/industry-chain-analysis/` |
 | Index PE sensitivity | `output/index-pe-sensitivity/` |
 | Institutional analysis | `output/institutional-accumulation-analysis/` |
 | Non-consensus company discovery | `output/non-consensus-company-discovery/` |

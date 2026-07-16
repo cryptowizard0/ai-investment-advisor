@@ -44,7 +44,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── fundamental-analysis/
 │           ├── earnings-report-analysis/
 │           ├── institutional-accumulation-analysis/
-│           ├── industry-chain-analysis/
 │           ├── index-pe-sensitivity/
 │           ├── non-consensus-company-discovery/
 │           ├── gold-trend-analysis/
@@ -66,7 +65,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── fundamental-analysis/
 │   ├── earnings-report-analysis/
 │   ├── ai-infrastructure-sector-discovery/
-│   ├── industry-chain-analysis/
 │   ├── index-pe-sensitivity/
 │   ├── institutional-accumulation-analysis/
 │   ├── non-consensus-company-discovery/
@@ -177,7 +175,6 @@ Active packaged skills:
 - `fundamental-analysis` - stock fundamental and technical analysis
 - `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
-- `industry-chain-analysis` - two-layer industry chain and bottleneck analysis for upstream/midstream/downstream positioning
 - `index-pe-sensitivity` - index valuation price-sensitivity table: ±price move -> TTM P/E (整体法 aggregate caliber) -> N-year percentile, with single-caliber consistency guardrails and cyclical-earnings distortion checks
 - `non-consensus-company-discovery` - theme-to-company discovery for high-potential non-consensus opportunities
 - `gold-trend-analysis` - gold bubble risk and macro signal analysis
@@ -214,7 +211,6 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Chain-alpha delivery tracking: `output/chain-alpha-delivery-tracking/chain-alpha-delivery-tracking-{TICKER}-{YYYY-MM-DD}.md`
 - Company profile: `output/company-profile/company-profile-{TICKER}-{YYYY-MM-DD}.md`
 - Company buyability score: `output/company-buyability-score/company-buyability-score-{TICKER}-{YYYY-MM-DD}.md`
-- Industry chain analysis: `output/industry-chain-analysis/industry-chain-analysis-{topic}-{YYYY-MM-DD}.md`
 - Index PE sensitivity: `output/index-pe-sensitivity/index-pe-sensitivity-{index}-{YYYY-MM-DD}.md`
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`
