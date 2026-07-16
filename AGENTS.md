@@ -47,7 +47,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── non-consensus-company-discovery/
 │           ├── gold-trend-analysis/
 │           ├── reflexivity-analysis/
-│           ├── professional-investment-analyst/
 │           ├── reportify-stock-analysis/
 │           ├── daily-us-market-scan/
 │           ├── multi-agent-stock-analysis/
@@ -67,7 +66,6 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── non-consensus-company-discovery/
 │   ├── gold-analysis/
 │   ├── reflexivity-analysis/
-│   ├── professional-investment-analyst/
 │   ├── reportify-stock-analysis/
 │   ├── daily-us-market-scan/
 │   ├── summary/
@@ -169,8 +167,7 @@ Active packaged skills:
 - `non-consensus-company-discovery` - theme-to-company discovery for high-potential non-consensus opportunities
 - `gold-trend-analysis` - gold bubble risk and macro signal analysis
 - `reflexivity-analysis` - Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes
-- `professional-investment-analyst` - professional investment research system with evidence, valuation, reflexivity, decision, and tracking dashboard
-- `reportify-stock-analysis` - fixed-template structured stock research report generation
+- `reportify-stock-analysis` - fixed-template structured stock research report with a buy-side-grade decision layer (3-scenario valuation, falsifiable thesis, catalysts, tracking dashboard)
 - `daily-us-market-scan` - Chinese daily US market close scan with a conclusion-first summary card, hard length budget (<=300 lines), dynamic sector/theme ranking from same-day moves, threshold-based watchlist reporting, and a required new-dynamics radar for emerging themes outside the fixed pool
 - `multi-agent-stock-analysis` - orchestration across multiple analysis skills
 - `output-report-index` - explicit Markdown and HTML report index generator for `output/index.md` and `output/index.html`
@@ -204,7 +201,6 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`
 - Gold analysis: `output/gold-analysis/gold-{analysis-type}-{date}.md`
 - Reflexivity analysis: `output/reflexivity-analysis/`
-- Professional investment analyst: `output/professional-investment-analyst/professional-investment-analyst-{TICKER}-{YYYY-MM-DD}.md`
 - Reportify stock analysis: `output/reportify-stock-analysis/reportify-stock-analysis-{TICKER}-{YYYY-MM-DD}.md`
 - Daily US market scan: `output/daily-us-market-scan/us-market-close-daily-{YYYY-MM-DD}.md`
 - Summary report: `output/summary/综合分析-{TICKER}-{date}.md`

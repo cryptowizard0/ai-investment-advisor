@@ -1,4 +1,0 @@
-interface:
-  display_name: "Professional Investment Analyst"
-  short_description: "Builds evidence-backed institutional research"
-  default_prompt: "Use $professional-investment-analyst to build a professional investment research report for TSLA."

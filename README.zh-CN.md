@@ -69,7 +69,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | 跟踪叙事和反身性风险 | 定期用 `reflexivity-analysis` 快扫档判断阶段；当阶段变化或仓位较重时切到深度档。 |
 | 快速研究单只股票 | 用 `multi-agent-stock-analysis` 先生成 `company-profile` 公司画像，再交叉验证基本面、资金流、反身性、Reportify 和非共识视角。 |
 | 解读财报 | 公司发布财报后用 `earnings-report-analysis` 判断预期差，再更新个股投资判断。 |
-| 生成正式个股报告 | 用 `professional-investment-analyst` 生成买方研究风格报告，或用 `reportify-stock-analysis` 生成标准化结构报告。 |
+| 生成正式个股报告 | 用 `reportify-stock-analysis` 生成标准化八段式报告，决策层带买方级三情景估值、可证伪投资假设、催化剂时间表和跟踪 Dashboard。 |
 | 获取市场数据 | 当其他研究流程需要行情、期权或缓存数据时，使用 `market-data-router`。 |
 
 ## 技能列表
@@ -91,9 +91,8 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | `market-data-router` | 路由行情数据并提供降级兜底。 | 研究流程需要 K 线、报价、期权背景或缓存市场数据。 |
 | `multi-agent-stock-analysis` | 在当前 agent 会话中编排多个个股分析技能。 | 想从多个独立视角交叉验证一只股票。 |
 | `non-consensus-company-discovery` | 从主题到公司，发现高潜力非共识机会。 | 想寻找市场仍用旧框架定价的公司。 |
-| `professional-investment-analyst` | 生成买方研究风格的个股报告。 | 需要可跟踪、可复盘、有证据链的正式报告。 |
 | `reflexivity-analysis` | 索罗斯反身性分析，含快扫（5 分钟阶段判断）和深度（完整周期）两档。 | 想快速判断叙事处于启动/强化/透支/反转，或做完整的叙事、价格、现实、反转风险拆解。 |
-| `reportify-stock-analysis` | 生成标准化结构化个股报告。 | 需要稳定的事实、解释、决策和风险输出格式。 |
+| `reportify-stock-analysis` | 生成标准化八段式个股报告，决策层含买方级三情景估值、可证伪假设、催化剂和跟踪 Dashboard。 | 需要可比较、可复盘、有证据链的正式投研报告。 |
 
 ## 在智能体内使用技能
 
@@ -129,7 +128,6 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 | 非共识公司发现 | `output/non-consensus-company-discovery/` |
 | 黄金分析 | `output/gold-analysis/` |
 | 反身性分析 | `output/reflexivity-analysis/` |
-| 专业投资分析师报告 | `output/professional-investment-analyst/` |
 | Reportify 个股报告 | `output/reportify-stock-analysis/` |
 | 美股日报 | `output/daily-us-market-scan/` |
 | 多智能体汇总报告 | `output/summary/` |

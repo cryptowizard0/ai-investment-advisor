@@ -124,14 +124,6 @@ def build_registry() -> SkillRegistry:
             required=False,
         ),
         _spec(
-            skill_name="professional-investment-analyst",
-            agent_name="professional_analyst",
-            stage="decision_report",
-            prompt_template="使用 invest-flow:professional-investment-analyst 分析 {ticker}",
-            output_dir="output/professional-investment-analyst",
-            required=False,
-        ),
-        _spec(
             skill_name="reportify-stock-analysis",
             agent_name="reportify",
             stage="decision_report",

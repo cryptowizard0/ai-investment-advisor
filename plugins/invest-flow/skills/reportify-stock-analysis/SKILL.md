@@ -1,6 +1,6 @@
 ---
 name: reportify-stock-analysis
-description: "个股分析报告生成器。基于固定方法论（事实层到解释层到决策层）对股票进行结构化分析，并按八段式模板输出中文 Markdown 报告。适用于：(1) 用户要求分析单个股票, (2) 需要统一格式投研报告, (3) 需要把财务/技术/风险信息整合成可执行投资建议。支持输出到 ./output/reportify-stock-analysis/ 并自动处理重名文件。"
+description: "个股分析报告生成器（含买方研究风格深度）。基于固定方法论（事实层到解释层到决策层）对股票进行结构化分析，并按八段式模板输出中文 Markdown 报告，决策层带三情景估值、可证伪投资假设、催化剂时间表和跟踪指标 Dashboard。适用于：(1) 用户要求分析单个股票或生成正式/买方风格个股报告, (2) 需要统一格式、可比较、可复盘、有证据链的投研报告, (3) 需要把财务/技术/风险信息整合成可执行、可跟踪的投资建议。支持输出到 ./output/reportify-stock-analysis/ 并自动处理重名文件。"
 ---
 
 # Reportify Stock Analysis
@@ -13,9 +13,11 @@ description: "个股分析报告生成器。基于固定方法论（事实层到
 
 ## Overview
 
-本 skill 用于产出“可比较、可复核”的个股分析报告。执行时必须同时满足：
+本 skill 用于产出“可比较、可复核”的个股分析报告，同时承担买方研究风格的深度决策输出（正式个股报告的统一入口）。执行时必须同时满足：
 - 使用 `references/methodology.md` 的分析方法。
 - 使用 `references/report-template.md` 的章节结构与字段。
+
+决策层（第七、八段）必须给出买方级结论：当前估值多维对照、三情景估值（乐观/基准/悲观 + 反证条件）、可证伪投资假设（H1-H3 + 失效条件）、催化剂时间表和跟踪指标 Dashboard。深度基本面/竞争/护城河、叙事反身性等前置认知，交由 `company-profile`、`fundamental-analysis`、`reflexivity-analysis` 覆盖，本 skill 不重复展开。
 
 输出目录：`./output/reportify-stock-analysis/`
 
@@ -49,6 +51,10 @@ description: "个股分析报告生成器。基于固定方法论（事实层到
   - 触发条件
   - 失效条件
   - 复核时间
+  - 三情景估值（乐观/基准/悲观，各带关键假设与反证条件）
+  - 可证伪投资假设 H1-H3（当前证据 + 需验证数据 + 失效条件）
+  - 催化剂时间表（0-6 / 6-12 / 12-24 个月）
+  - 跟踪指标 Dashboard（强化信号 / 弱化反证信号）
 
 ### 4) 套用模板并生成报告
 - 按 `references/report-template.md` 填充全部章节。

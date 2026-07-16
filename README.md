@@ -69,7 +69,7 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 | Track narrative and reflexivity risk | Use `reflexivity-analysis` in quick mode regularly; switch to deep mode when the stage changes or the position is material. |
 | Quick single-stock research | Use `multi-agent-stock-analysis` to start with `company-profile`, then cross-check fundamentals, capital flow, reflexivity, Reportify, and non-consensus views. |
 | Review earnings | Use `earnings-report-analysis` after a company reports, then update the single-stock thesis if guidance or expectations changed. |
-| Produce a formal stock report | Use `professional-investment-analyst` for a buy-side style report, or `reportify-stock-analysis` for a standardized structured report. |
+| Produce a formal stock report | Use `reportify-stock-analysis` — a standardized 8-part report whose decision layer now carries buy-side-grade scenario valuation, a falsifiable thesis, catalysts, and a tracking dashboard. |
 | Pull market data | Use `market-data-router` when another workflow needs bars, quote data, options context, or cached market data. |
 | Index generated reports | Use `output-report-index` when you explicitly want to generate or update `output/index.md` and `output/index.html`. |
 
@@ -94,9 +94,8 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 | `multi-agent-stock-analysis` | In-session orchestration across multiple stock-analysis skills. | You want one stock analyzed from several independent angles. |
 | `non-consensus-company-discovery` | Theme-to-company discovery for high-potential non-consensus opportunities. | You want names the market may still value using the wrong framework. |
 | `output-report-index` | Markdown and static HTML index pages for generated reports. | You explicitly ask to generate or update the report index under `output/`. |
-| `professional-investment-analyst` | Buy-side style company research system. | You need a formal, trackable, evidence-based stock report. |
 | `reflexivity-analysis` | Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes. | You need to read where a narrative sits — a fast stage check, or a full narrative/price/reality/reversal map. |
-| `reportify-stock-analysis` | Standardized structured stock report. | You need a repeatable report format for facts, interpretation, decision, and risk. |
+| `reportify-stock-analysis` | Standardized 8-part stock report with a buy-side-grade decision layer (3-scenario valuation, falsifiable thesis, catalysts, tracking dashboard). | You need a repeatable, formal, trackable report covering facts, interpretation, decision, and risk. |
 
 ## Use Skills In Agent
 
@@ -135,7 +134,6 @@ Generated reports and cache files are written under `output/`:
 | Non-consensus company discovery | `output/non-consensus-company-discovery/` |
 | Gold analysis | `output/gold-analysis/` |
 | Reflexivity analysis | `output/reflexivity-analysis/` |
-| Professional investment analyst | `output/professional-investment-analyst/` |
 | Reportify stock analysis | `output/reportify-stock-analysis/` |
 | Daily US market scan | `output/daily-us-market-scan/` |
 | Multi-agent summaries | `output/summary/` |
