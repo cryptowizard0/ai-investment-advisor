@@ -8,7 +8,7 @@ Its flagship workflow is **chain-alpha** — a theme → industry-chain → inve
 
 At a glance, the skills fall into three user-facing categories, grouped by what you bring in (plus a supporting infrastructure layer):
 
-| Category | You bring | Start with | For |
+| Category | Input | Start with | For |
 |---|---|---|---|
 | **1. Find opportunities** | a theme | `chain-alpha-pipeline` | Turn a big theme into investable companies |
 | **2. Research a single stock** | a ticker | `multi-agent-stock-analysis` | Judge one company from several independent angles |
@@ -62,10 +62,10 @@ theme ─▶ mismatch-discovery ─▶ monopoly-screen ─▶ verification ⇄ d
 Run the whole funnel in one command:
 
 ```text
-Use invest-flow:chain-alpha-pipeline to find investable companies in humanoid robots (具身智能).
+Use invest-flow:chain-alpha-pipeline to find investable companies in humanoid robots.
 ```
 
-Funnel discipline: industry definition and growth gate → 2-4 mismatch links → ≤10 candidates per link → top-6 into verification → 2-3 deep dives. Industry/key-link revenue growth must be >20%, have a clear driver, and last at least 6 months before the workflow enters later steps; industry and company screens must still map back to sustainable profit growth: ≥30% is preferred, 20% is the minimum gate, and <20% is screened out. Names left at `待验证` are then tracked quarterly with `chain-alpha-delivery-tracking`, whose grade changes feed back into `chain-alpha-verification`. Each step can also run standalone — start with `chain-alpha-mismatch-discovery` to define the industry, screen growth, and confirm mismatch links cheaply before committing to the full run.
+Funnel discipline: industry definition and growth gate → 2-4 mismatch links → ≤10 candidates per link → top-6 into verification → 2-3 deep dives. Industry/key-link revenue growth must be >20%, have a clear driver, and last at least 6 months before the workflow enters later steps; industry and company screens must still map back to sustainable profit growth: ≥30% is preferred, 20% is the minimum gate, and <20% is screened out. Names left at `pending-verification` are then tracked quarterly with `chain-alpha-delivery-tracking`, whose grade changes feed back into `chain-alpha-verification`. Each step can also run standalone — start with `chain-alpha-mismatch-discovery` to define the industry, screen growth, and confirm mismatch links cheaply before committing to the full run.
 
 ## Skills By Category
 
@@ -81,7 +81,7 @@ Turn a big theme into investable companies. `chain-alpha-pipeline` is the flagsh
 | `chain-alpha-mismatch-discovery` | Plain-language industry definition, growth hard gate with industry-cycle staging (four-stage timeline + current-stage marker), full industry-chain panorama, and supply-demand mismatch link discovery with a profit-growth gate. | You have a big theme and need to understand what the industry actually is, which cycle stage it is in, why growth can stay high, the whole chain, and the links where demand outruns supply and can translate into profit growth. |
 | `chain-alpha-monopoly-screen` | Sub-link breakdown and monopoly screening with CR3, margin, revenue-share, and profit-growth gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
 | `chain-alpha-verification` | 100-point four-tier company verification with profit-growth gating and drawdown-based position sizing. | You have candidates and need a buy/watch/reject grade plus a position cap. |
-| `chain-alpha-delivery-tracking` | Forward-looking revenue/profit-delivery tracking for 待验证 candidates with a 5-gate ladder plus delivery-window timeouts, growth/attribution/dynamic-valuation engines, structure sentinels, and symmetric grade up/down. | You hold a 待验证 name (e.g. 绿的谐波) and need a quarterly read on whether revenue and profit growth are actually being delivered. (Also a quarterly tracking task — see category 3.) |
+| `chain-alpha-delivery-tracking` | Forward-looking revenue/profit-delivery tracking for pending-verification candidates with a 5-gate ladder plus delivery-window timeouts, growth/attribution/dynamic-valuation engines, structure sentinels, and symmetric grade up/down. | You hold a pending-verification name (e.g. a harmonic-reducer supplier) and need a quarterly read on whether revenue and profit growth are actually being delivered. (Also a quarterly tracking task — see category 3.) |
 | `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring; the handoff queue feeds chain-alpha. | You want a scheduled weekly read on which AI infrastructure sectors to research next. (Also a weekly tracking task — see category 3.) |
 | `non-consensus-company-discovery` | Theme-to-company discovery for high-potential non-consensus opportunities. | You want names the market may still value using the wrong framework. |
 
@@ -107,8 +107,8 @@ Recurring reads that work well as scheduled tasks.
 |---|---|---|
 | `daily-us-market-scan` | Daily (after US close) | Conclusion-first Chinese US market close report with a hard length budget, dynamic sector/theme ranking, and a new-dynamics radar. |
 | `ai-infrastructure-sector-discovery` | Weekly | AI infrastructure sector scan whose handoff queue feeds chain-alpha (also listed under category 1). |
-| `index-pe-sensitivity` | Weekly / ad-hoc | Index valuation price-sensitivity table (±price move -> TTM P/E 整体法 -> N-year percentile) with single-caliber guardrails and cyclical-earnings distortion checks. |
-| `chain-alpha-delivery-tracking` | Quarterly / on earnings | Revenue/profit-delivery tracking for 待验证 names (also listed under category 1). |
+| `index-pe-sensitivity` | Weekly / ad-hoc | Index valuation price-sensitivity table (±price move -> TTM P/E, aggregate caliber -> N-year percentile) with single-caliber guardrails and cyclical-earnings distortion checks. |
+| `chain-alpha-delivery-tracking` | Quarterly / on earnings | Revenue/profit-delivery tracking for pending-verification names (also listed under category 1). |
 | `gold-trend-analysis` | Monthly / ad-hoc | Gold trend, bubble-risk, and macro-driver analysis. |
 
 ### Infrastructure (supporting layer, no investment view of its own)
@@ -128,7 +128,7 @@ Use invest-flow:daily-us-market-scan to scan today's US market close.
 Use invest-flow:non-consensus-company-discovery to find non-consensus opportunities in AI data center power.
 Use invest-flow:chain-alpha-pipeline to find investable companies in AI data center power.
 Use invest-flow:reflexivity-analysis in quick mode to check NVIDIA's current narrative stage.
-Use invest-flow:index-pe-sensitivity to build a valuation-sensitivity table for 科创50.
+Use invest-flow:index-pe-sensitivity to build a valuation-sensitivity table for the STAR 50 index.
 Use invest-flow:earnings-report-analysis to analyze NVIDIA's latest earnings.
 Use invest-flow:output-report-index to update the output report index.
 ```
@@ -180,8 +180,8 @@ python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py -
 The skill is intentionally passive. It should only run when the user explicitly asks to generate or update the index, for example:
 
 ```text
-生成索引
-更新索引
+Generate the report index.
+Update the report index.
 Use invest-flow:output-report-index to update the output report index.
 ```
 
@@ -191,7 +191,7 @@ To regenerate the files manually:
 python plugins/invest-flow/skills/output-report-index/scripts/generate_index.py
 ```
 
-The generated HTML page does not convert each report into a separate HTML file. Report links use hash routes inside `output/index.html`; when a report is selected, the page calls `fetch()` for the original `.md` file and renders it in the reader pane. The "原文" links still point directly to the source Markdown files.
+The generated HTML page does not convert each report into a separate HTML file. Report links use hash routes inside `output/index.html`; when a report is selected, the page calls `fetch()` for the original `.md` file and renders it in the reader pane. The direct-source links still point to the original Markdown files.
 
 For local preview, use the bundled UTF-8 server:
 
