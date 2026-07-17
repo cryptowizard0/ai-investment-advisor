@@ -1,7 +1,7 @@
 {
   "name": "invest-flow",
-  "version": "0.4.0+codex.20260715011321",
-  "description": "Bundle investment research skills with Firecrawl-first web research, buyability scoring, earnings report analysis, non-consensus company discovery, professional investment analyst reports, daily market scans, reflexivity workflows, report generation, multi-agent analysis, chain-alpha industry-chain stock selection pipeline, index valuation sensitivity, and market data routing.",
+  "version": "0.4.3+codex.20260717125550",
+  "description": "Bundle investment research skills with Firecrawl-first web research, earnings report analysis, non-consensus company discovery, daily market scans, reflexivity workflows, report generation, multi-agent analysis, chain-alpha industry-chain stock selection pipeline, index valuation sensitivity, and market data routing.",
   "author": {
     "name": "Potter",
     "email": "45678072+cryptowizard0@users.noreply.github.com",
@@ -9,12 +9,12 @@
   },
   "homepage": "https://github.com/cryptowizard0/ai-investment-advisor",
   "repository": "https://github.com/cryptowizard0/ai-investment-advisor",
-  "keywords": ["investment", "finance", "stocks", "buyability", "scoring", "earnings", "financial-results", "gold", "analysis", "reflexivity", "research", "market-scan", "non-consensus", "company-discovery", "industry-chain", "supply-demand", "chain-alpha"],
+  "keywords": ["investment", "finance", "stocks", "scoring", "earnings", "financial-results", "gold", "analysis", "reflexivity", "research", "market-scan", "non-consensus", "company-discovery", "industry-chain", "supply-demand", "chain-alpha"],
   "skills": "./skills/",
   "interface": {
     "displayName": "InvestFlow",
     "shortDescription": "Investment research, reflexivity analysis, and market data",
-    "longDescription": "Run stock, buyability score, earnings report, institutional flow, GIE, non-consensus company discovery, gold, daily US market scans, professional investment analyst, reflexivity, report-generation, and market-data workflows in one installable investment research plugin.",
+    "longDescription": "Run stock, earnings report, institutional flow, non-consensus company discovery, gold, daily US market scans, reflexivity, report-generation, and market-data workflows in one installable investment research plugin.",
     "developerName": "Potter",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
@@ -22,8 +22,6 @@
     "defaultPrompt": [
       "Use InvestFlow to run a multi-agent analysis for TSLA.",
       "Use InvestFlow to analyze NVIDIA's latest earnings report.",
-      "Use InvestFlow to score whether NVIDIA is buyable.",
-      "Use InvestFlow to build a professional investment analyst report for TSLA.",
       "Use InvestFlow to generate a daily US market close report.",
       "Use InvestFlow to perform a reflexivity quick scan on NVIDIA.",
       "Use InvestFlow to generate a structured stock report for AAPL.",

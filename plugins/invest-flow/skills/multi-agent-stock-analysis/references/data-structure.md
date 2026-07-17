@@ -39,25 +39,24 @@ requested_outputs=["summary", "handoff_json"],
 
 ```python
 SkillSpec(
-    skill_name="gie-investment-framework",
-    agent_name="gie",
+    skill_name="fundamental-analysis",
+    agent_name="fundamental",
     stage="single_asset_validation",
-    prompt_template="使用 invest-flow:gie-investment-framework 分析 {ticker} / {company}",
-    output_dir="output/gie-investment-framework",
+    prompt_template="使用 invest-flow:fundamental-analysis 分析 {ticker}",
+    output_dir="output/fundamental-analysis",
     required=True,
     extractor_type="markdown",
 )
 ```
 
-`stock_decision_basic` 默认七维度：
+`stock_decision_basic` 默认六维度：
 
 | agent_name | skill_name | prompt_template | required |
 | --- | --- | --- | --- |
 | company_profile | company-profile | 使用 invest-flow:company-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位 | true |
 | fundamental | fundamental-analysis | 使用 invest-flow:fundamental-analysis 分析 {ticker} | true |
 | institutional | institutional-accumulation-analysis | 使用 invest-flow:institutional-accumulation-analysis 分析 {ticker} | false |
-| gie | gie-investment-framework | 使用 invest-flow:gie-investment-framework 分析 {ticker} / {company} | true |
-| reflexivity_deep | reflexivity-deep-analysis | 使用 invest-flow:reflexivity-deep-analysis 分析 {ticker} | false |
+| reflexivity | reflexivity-analysis | 使用 invest-flow:reflexivity-analysis 对 {ticker} 做深度反身性分析 | false |
 | reportify | reportify-stock-analysis | 使用 invest-flow:reportify-stock-analysis 分析 {ticker} | false |
 | non_consensus | non-consensus-company-discovery | 使用 invest-flow:non-consensus-company-discovery 评估 {ticker} / {company} 的非共识重估机会 | false |
 
@@ -197,14 +196,13 @@ output/summary/
 
 只有 prompt plan 时不生成综合投资结论；只有至少一个成功 handoff 时才生成综合 Markdown 报告。
 
-正式 multi-agent 分析还应生成七个子报告目录中的 Markdown 文件：
+正式 multi-agent 分析还应生成六个子报告目录中的 Markdown 文件：
 
 ```text
 output/company-profile/
 output/fundamental-analysis/
 output/institutional-accumulation-analysis/
-output/gie-investment-framework/
-output/reflexivity-deep-analysis/
+output/reflexivity-analysis/
 output/reportify-stock-analysis/
 output/non-consensus-company-discovery/
 ```

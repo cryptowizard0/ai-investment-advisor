@@ -101,48 +101,6 @@
 
 ---
 
-### 三、GIE投资框架分析
-
-**分析师：** GIE Investment Framework Agent  
-**报告路径：** {gie_report_path}
-
-#### 金铲子识别
-- **等级：** {shovel_tier}
-- **判定理由：** {tier_reasoning}
-
-#### 三维筛选结果
-
-**1. 宏观天候**
-{macro_assessment}
-
-**2. 供需趋势**
-{supply_demand_analysis}
-
-**3. 护城河评估**
-{moat_assessment}
-
-#### 财务穿透指标
-| 指标 | 门槛值 | 特斯拉数据 | 达标情况 |
-|------|--------|-----------|---------|
-| 在手订单/营收 | >1.2x | {orders_to_revenue} | {orders_status} |
-| FCF转化率 | >80% | {fcf_conversion}% | {fcf_status} |
-| 净负债/EBITDA | <2.5x | {net_debt_ebitda} | {debt_status} |
-| 研发占比 | 行业前20% | {rd_percentage}% | {rd_status} |
-
-#### 投资评级
-- **评级：** {gie_rating}
-- **建议仓位：** {gie_position_size}
-- **入场区间：** {gie_entry_range}
-- **止损位：** {gie_stop_loss}
-
-#### 反FOMO检查清单
-1. 该趋势是否已在社交媒体霸榜超过2周？{fomo_check_1}
-2. 买入是因为"便宜且有刚需"还是因为"大家都说会涨"？{fomo_check_2}
-3. 如果六个月不看盘，是否依然有信心？{fomo_check_3}
-4. 地缘政治对供应链的影响是否已在估值中体现？{fomo_check_4}
-
----
-
 ## 一致性分析
 
 ### 整体一致性评级：{consistency_rating}
@@ -224,8 +182,7 @@
 - **company-profile：** [{company_profile_report_path}]({company_profile_report_link})
 - **基本面分析：** {fundamental_report_path}
 - **机构流向分析：** {institutional_report_path}
-- **GIE框架分析：** {gie_report_path}
-- **反身性深度分析：** {reflexivity_deep_report_path}
+- **反身性分析：** {reflexivity_report_path}
 - **Reportify标准报告：** {reportify_report_path}
 - **非共识重估分析：** {non_consensus_report_path}
 
@@ -304,11 +261,6 @@ template_variables = {
     "vwap_signal": "股价低于机构成本",
     "cost_zone": "$415-$430",
     "current_position": "低于成本区约3%",
-    
-    # GIE框架
-    "gie_report_path": "./output/gie-investment-framework/...",
-    "shovel_tier": "Tier 1",
-    "tier_reasoning": "直接基建，行业标准制定者",
     
     # 一致性分析
     "consistency_rating": "中等",
