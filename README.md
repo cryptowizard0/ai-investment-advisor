@@ -57,45 +57,56 @@ Use invest-flow:chain-alpha-pipeline to find investable companies in humanoid ro
 
 Funnel discipline: industry definition and growth gate → 2-4 mismatch links → ≤10 candidates per link → top-6 into verification → 2-3 deep dives. Industry/key-link revenue growth must be >20%, have a clear driver, and last at least 6 months before the workflow enters later steps; industry and company screens must still map back to sustainable profit growth: ≥30% is preferred, 20% is the minimum gate, and <20% is screened out. Names left at `待验证` are then tracked quarterly with `chain-alpha-delivery-tracking`, whose grade changes feed back into `chain-alpha-verification`. Each step can also run standalone — start with `chain-alpha-mismatch-discovery` to define the industry, screen growth, and confirm mismatch links cheaply before committing to the full run.
 
-## Recommended Workflows
+## Skills By Category
 
-| Goal | Recommended flow |
-|---|---|
-| Track AI infrastructure weekly | Run `ai-infrastructure-sector-discovery` weekly (works well as a scheduled task); hand sectors scoring >= 70 to `chain-alpha-mismatch-discovery` or the full `chain-alpha-pipeline`. |
-| Find investable companies from an industry chain | Use `chain-alpha-pipeline` for the full industry definition -> growth screen -> mismatch -> monopoly -> verification funnel, or run `chain-alpha-mismatch-discovery` alone first to define the industry, screen growth, and confirm the mismatch links cheaply. |
-| Track whether a 待验证 name's revenue/profit is delivering | After the funnel leaves a name at `待验证`, use `chain-alpha-delivery-tracking` for a quarterly revenue and profit-delivery read (5-gate ladder + delivery-window timeouts + growth/attribution/valuation engines + structure sentinels) that feeds the grade back into `chain-alpha-verification`. |
-| Find non-consensus names in a theme | Use `non-consensus-company-discovery` to map the theme, spot the mispriced bottleneck, and surface the strongest names. |
-| Run daily market review | Use `daily-us-market-scan` after the US close. |
-| Track narrative and reflexivity risk | Use `reflexivity-analysis` in quick mode regularly; switch to deep mode when the stage changes or the position is material. |
-| Quick single-stock research | Use `multi-agent-stock-analysis` to start with `company-profile`, then cross-check fundamentals, capital flow, reflexivity, Reportify, and non-consensus views. |
-| Review earnings | Use `earnings-report-analysis` after a company reports, then update the single-stock thesis if guidance or expectations changed. |
-| Produce a formal stock report | Use `reportify-stock-analysis` — a standardized 8-part report whose decision layer now carries buy-side-grade scenario valuation, a falsifiable thesis, catalysts, and a tracking dashboard. |
-| Pull market data | Use `market-data-router` when another workflow needs bars, quote data, options context, or cached market data. |
-| Index generated reports | Use `output-report-index` when you explicitly want to generate or update `output/index.md` and `output/index.html`. |
+InvestFlow's skills group into three user-facing categories by what you bring in — a theme, a ticker, or a calendar — plus a supporting infrastructure layer.
 
-## Skill List
+### 1. Find opportunities (you bring a theme)
+
+Turn a big theme into investable companies. `chain-alpha-pipeline` is the flagship — see [Featured Workflow: chain-alpha](#featured-workflow-chain-alpha).
 
 | Skill | Purpose | Use when |
 |---|---|---|
-| `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring; the handoff queue feeds chain-alpha. | You want a scheduled weekly read on which AI infrastructure sectors to research next. |
+| `chain-alpha-pipeline` | Orchestrates the three chain-alpha steps with in-step subagent fan-out (Claude Code parallel; Codex parallel when explicitly requested and available; otherwise serial fallback) and funnel discipline. | You want the full theme-to-company workflow in one run. |
 | `chain-alpha-mismatch-discovery` | Plain-language industry definition, growth hard gate with industry-cycle staging (four-stage timeline + current-stage marker), full industry-chain panorama, and supply-demand mismatch link discovery with a profit-growth gate. | You have a big theme and need to understand what the industry actually is, which cycle stage it is in, why growth can stay high, the whole chain, and the links where demand outruns supply and can translate into profit growth. |
 | `chain-alpha-monopoly-screen` | Sub-link breakdown and monopoly screening with CR3, margin, revenue-share, and profit-growth gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
 | `chain-alpha-verification` | 100-point four-tier company verification with profit-growth gating and drawdown-based position sizing. | You have candidates and need a buy/watch/reject grade plus a position cap. |
-| `chain-alpha-pipeline` | Orchestrates the three chain-alpha steps with in-step subagent fan-out (Claude Code parallel; Codex parallel when explicitly requested and available; otherwise serial fallback) and funnel discipline. | You want the full theme-to-company workflow in one run. |
-| `chain-alpha-delivery-tracking` | Forward-looking revenue/profit-delivery tracking for 待验证 candidates with a 5-gate ladder plus delivery-window timeouts, growth/attribution/dynamic-valuation engines, structure sentinels, and symmetric grade up/down. | You hold a 待验证 name (e.g. 绿的谐波) and need a quarterly read on whether revenue and profit growth are actually being delivered. |
-| `company-profile` | Builds a company primer before investment analysis. | Use when a user is hearing about a company for the first time and needs business, technology, value-chain, AI relevance, competitors, and industry-position context. |
-| `daily-us-market-scan` | Conclusion-first Chinese US market close report with a hard length budget, dynamic sector/theme ranking, and a new-dynamics radar. | You want a focused daily read on what moved, why, and what changed outside the fixed watchlist. |
-| `earnings-report-analysis` | Institutional earnings, guidance, call, and expectation-gap analysis. | A company has reported and you need to know whether the thesis changed. |
-| `fundamental-analysis` | Single-stock fundamental, valuation, and technical analysis. | You need a fast but structured view of a company. |
-| `gold-trend-analysis` | Gold trend, bubble-risk, and macro-driver analysis. | You are researching gold prices, macro risk, or a gold trading framework. |
-| `index-pe-sensitivity` | Index valuation price-sensitivity table (±price move -> TTM P/E 整体法 -> N-year percentile) with single-caliber consistency guardrails and cyclical-earnings distortion checks. | You want to know where an index's valuation percentile lands if it rises or falls X%, using one consistent caliber. |
-| `institutional-accumulation-analysis` | Institutional accumulation and distribution analysis. | You want to judge whether major players are buying, distributing, or hedging. |
-| `market-data-router` | Routed market-data fetching and fallback logic. | You need bars, quote data, options context, or cached market data for analysis. |
-| `multi-agent-stock-analysis` | In-session orchestration across multiple stock-analysis skills. | You want one stock analyzed from several independent angles. |
+| `chain-alpha-delivery-tracking` | Forward-looking revenue/profit-delivery tracking for 待验证 candidates with a 5-gate ladder plus delivery-window timeouts, growth/attribution/dynamic-valuation engines, structure sentinels, and symmetric grade up/down. | You hold a 待验证 name (e.g. 绿的谐波) and need a quarterly read on whether revenue and profit growth are actually being delivered. (Also a quarterly tracking task — see category 3.) |
+| `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring; the handoff queue feeds chain-alpha. | You want a scheduled weekly read on which AI infrastructure sectors to research next. (Also a weekly tracking task — see category 3.) |
 | `non-consensus-company-discovery` | Theme-to-company discovery for high-potential non-consensus opportunities. | You want names the market may still value using the wrong framework. |
-| `output-report-index` | Markdown and static HTML index pages for generated reports. | You explicitly ask to generate or update the report index under `output/`. |
+
+### 2. Research a single stock (you bring a ticker)
+
+Judge one company from several independent angles. `multi-agent-stock-analysis` orchestrates the rest in one session.
+
+| Skill | Purpose | Use when |
+|---|---|---|
+| `multi-agent-stock-analysis` | In-session orchestration across the single-stock skills below (company profile → fundamentals → capital flow → reflexivity → Reportify → non-consensus). | You want one stock analyzed from several independent angles. |
+| `company-profile` | Builds a company primer before investment analysis. | A user is hearing about a company for the first time and needs business, technology, value-chain, AI relevance, competitors, and industry-position context. |
+| `fundamental-analysis` | Single-stock fundamental, valuation, and technical analysis. | You need a fast but structured view of a company. |
+| `institutional-accumulation-analysis` | Institutional accumulation and distribution analysis. | You want to judge whether major players are buying, distributing, or hedging. |
 | `reflexivity-analysis` | Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes. | You need to read where a narrative sits — a fast stage check, or a full narrative/price/reality/reversal map. |
 | `reportify-stock-analysis` | Standardized 8-part stock report with a buy-side-grade decision layer (3-scenario valuation, falsifiable thesis, catalysts, tracking dashboard). | You need a repeatable, formal, trackable report covering facts, interpretation, decision, and risk. |
+| `earnings-report-analysis` | Institutional earnings, guidance, call, and expectation-gap analysis. | A company has reported and you need to know whether the thesis changed. |
+
+### 3. Daily & periodic tracking (you bring a calendar)
+
+Recurring reads that work well as scheduled tasks.
+
+| Skill | Cadence | Purpose |
+|---|---|---|
+| `daily-us-market-scan` | Daily (after US close) | Conclusion-first Chinese US market close report with a hard length budget, dynamic sector/theme ranking, and a new-dynamics radar. |
+| `ai-infrastructure-sector-discovery` | Weekly | AI infrastructure sector scan whose handoff queue feeds chain-alpha (also listed under category 1). |
+| `index-pe-sensitivity` | Weekly / ad-hoc | Index valuation price-sensitivity table (±price move -> TTM P/E 整体法 -> N-year percentile) with single-caliber guardrails and cyclical-earnings distortion checks. |
+| `chain-alpha-delivery-tracking` | Quarterly / on earnings | Revenue/profit-delivery tracking for 待验证 names (also listed under category 1). |
+| `gold-trend-analysis` | Monthly / ad-hoc | Gold trend, bubble-risk, and macro-driver analysis. |
+
+### Infrastructure (supporting layer, no investment view of its own)
+
+| Skill | Purpose | Use when |
+|---|---|---|
+| `market-data-router` | Routed market-data fetching and fallback logic. | Another workflow needs bars, quote data, options context, or cached market data. |
+| `output-report-index` | Markdown and static HTML index pages for generated reports. | You explicitly ask to generate or update the report index under `output/`. |
 
 ## Use Skills In Agent
 
