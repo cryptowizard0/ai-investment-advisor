@@ -6,6 +6,16 @@ InvestFlow is a repo-local agent plugin for investment research, compatible with
 
 Its flagship workflow is **chain-alpha** — a theme → industry-chain → investable-company funnel with ongoing revenue/profit-delivery tracking. See [Featured Workflow: chain-alpha](#featured-workflow-chain-alpha).
 
+At a glance, the skills fall into three user-facing categories, grouped by what you bring in (plus a supporting infrastructure layer):
+
+| Category | You bring | Start with | For |
+|---|---|---|---|
+| **1. Find opportunities** | a theme | `chain-alpha-pipeline` | Turn a big theme into investable companies |
+| **2. Research a single stock** | a ticker | `multi-agent-stock-analysis` | Judge one company from several independent angles |
+| **3. Daily & periodic tracking** | a calendar | `daily-us-market-scan` | Recurring reads that run well as scheduled tasks |
+
+See [Skills By Category](#skills-by-category) for the full list, including the infrastructure layer.
+
 The canonical plugin package lives in `plugins/invest-flow/`. Packaged skills live in `plugins/invest-flow/skills/` and are shared by both platforms.
 
 ## Quick Start
