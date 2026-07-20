@@ -22,9 +22,12 @@ Method (matches the skill's methodology):
   5. Position plan (chain-alpha step 4): position cap = drawdown budget /
      potential risk, tabulated across a budget ladder (2/5/10/20/30/50/70%),
      where the drawdown budget is the max account-level drawdown (% of total
-     assets) one name may inflict. Discounts stack: grade (金池子 x1 / 通过
-     x0.5; 待验证/剔除 no position), elastic x0.5, short-history x0.5; a
-     triggered alert line zeroes new-entry positions.
+     assets) one name may inflict. Structural discounts stack: grade (金池子
+     x1 / 通过 x0.5; 待验证/剔除 no position), elastic x0.5, short-history
+     x0.5. Two signal-layer factors then apply on top (always <=1, only
+     tighten or unlock, never amplify): a triggered alert line zeroes new
+     entries unless released to x0.5 (tier-1 forward evidence + forward PE
+     back inside the line), and a 透支 digestion verdict adds x0.5.
 
 Percentiles come either from a historical value series (empirical, midrank)
 or from vendor quantile anchors (piecewise-linear interpolation).
@@ -53,6 +56,9 @@ DEFAULT_DRAWDOWN_BUDGET = 2.0
 DRAWDOWN_BUDGET_LADDER = [2.0, 5.0, 10.0, 20.0, 30.0, 50.0, 70.0]
 GRADE_FACTORS = {"金池子": 1.0, "通过": 0.5}
 BLOCKED_GRADES = ("待验证", "剔除")
+ALERT_RELEASE_FACTOR = 0.5  # released alert -> half试仓 instead of zero
+DIGESTION_OVERPRICED_FACTOR = 0.5  # digestion verdict 透支 -> extra x0.5
+DIGESTION_VERDICTS = ("合理低估", "可消化", "部分消化", "透支")
 PLACEHOLDER = "待填写"
 NA_TEXT = "类型闸门未通过，本节不适用。"
 
@@ -404,9 +410,22 @@ class PositionPlan:
     grade: str | None
     elastic: bool
     span_halved: bool
-    alert_zeroed: bool
+    alert_triggered: bool
+    alert_released: bool
+    digestion: str | None
+    alert_factor: float
+    digestion_factor: float
+    signal_factor: float
     rows: list[PositionRow]
     blocked_reason: str
+
+    @property
+    def alert_zeroed(self) -> bool:
+        return self.alert_triggered and not self.alert_released
+
+    @property
+    def digestion_overpriced(self) -> bool:
+        return self.digestion == "透支"
 
     @property
     def primary_row(self) -> PositionRow | None:
@@ -417,10 +436,11 @@ class PositionPlan:
 
     @property
     def primary_final_cap(self) -> float | None:
+        """Deployable primary cap after structural discounts AND signal factors."""
         row = self.primary_row
         if row is None:
             return None
-        return 0.0 if self.alert_zeroed else row.final_cap
+        return row.final_cap * self.signal_factor
 
 
 def compute_position_plan(
@@ -432,6 +452,8 @@ def compute_position_plan(
     elastic: bool,
     alert_triggered: bool,
     span_insufficient: bool,
+    alert_released: bool = False,
+    digestion: str | None = None,
 ) -> PositionPlan:
     if drawdown_budget <= 0:
         raise ValueError("Drawdown budget must be positive.")
@@ -442,6 +464,10 @@ def compute_position_plan(
         )
     if fallback_drawdown is not None and fallback_drawdown <= 0:
         raise ValueError("Fallback drawdown must be a positive percent, e.g. 45 for -45%.")
+    if digestion is not None and digestion not in DIGESTION_VERDICTS:
+        raise ValueError(
+            f"Unknown digestion verdict '{digestion}'. Use one of: {', '.join(DIGESTION_VERDICTS)}."
+        )
 
     if potential_risk is not None and potential_risk < 0:
         risk_pct, risk_source = abs(potential_risk), "潜在风险（两腿取大）"
@@ -458,6 +484,14 @@ def compute_position_plan(
     if span_insufficient:
         discount *= 0.5
 
+    # Signal-layer factors: always <= 1, only tighten or unlock, never amplify.
+    if alert_triggered:
+        alert_factor = ALERT_RELEASE_FACTOR if alert_released else 0.0
+    else:
+        alert_factor = 1.0
+    digestion_factor = DIGESTION_OVERPRICED_FACTOR if digestion == "透支" else 1.0
+    signal_factor = alert_factor * digestion_factor
+
     plan = PositionPlan(
         primary_budget=drawdown_budget,
         risk_pct=risk_pct,
@@ -466,7 +500,12 @@ def compute_position_plan(
         grade=grade,
         elastic=elastic,
         span_halved=span_insufficient,
-        alert_zeroed=False,
+        alert_triggered=alert_triggered,
+        alert_released=alert_released,
+        digestion=digestion,
+        alert_factor=alert_factor,
+        digestion_factor=digestion_factor,
+        signal_factor=signal_factor,
         rows=[],
         blocked_reason="",
     )
@@ -484,9 +523,8 @@ def compute_position_plan(
     for budget in budgets:
         base = budget / risk_pct * 100
         plan.rows.append(PositionRow(budget=budget, base_cap=base, final_cap=base * discount))
-    plan.alert_zeroed = alert_triggered
-    if alert_triggered:
-        plan.blocked_reason = "警戒线触发——不建新仓，档位表折后值仅作回线内复评参考"
+    if plan.alert_zeroed:
+        plan.blocked_reason = "警戒线触发且未放宽——不建新仓，档位表折后值仅作回线内复评参考"
     return plan
 
 
@@ -503,6 +541,19 @@ def _discount_caption(plan: PositionPlan) -> str:
     return "；".join(bits) + f"（合计 ×{plan.discount:g}）"
 
 
+def _signal_bits(plan: PositionPlan) -> list[str]:
+    """Human-readable signal-layer factor bits (alert + digestion)."""
+    bits = []
+    if plan.alert_triggered:
+        if plan.alert_released:
+            bits.append("警戒线放宽 ×0.5（已举证一档硬证据 + forward PE 回线内，半仓试仓）")
+        else:
+            bits.append("警戒线触发 ×0（未放宽，不建新仓）")
+    if plan.digestion_overpriced:
+        bits.append("增速消化透支 ×0.5")
+    return bits
+
+
 def build_position_section(plan: PositionPlan) -> str:
     if not plan.rows:
         risk_cell = "—" if plan.risk_pct is None else f"{plan.risk_pct:.1f}%"
@@ -514,11 +565,16 @@ def build_position_section(plan: PositionPlan) -> str:
         )
 
     two_col = abs(plan.discount - 1.0) > 1e-9
+    signal_bits = _signal_bits(plan)
     lines = [
         f"- 潜在风险：{plan.risk_pct:.1f}%（{plan.risk_source}）",
-        f"- 折扣：{_discount_caption(plan)}",
-        "",
+        f"- 结构折扣：{_discount_caption(plan)}",
     ]
+    if signal_bits:
+        lines.append(
+            f"- 信号层系数：{'；'.join(signal_bits)}（信号层合计 ×{plan.signal_factor:g}）"
+        )
+    lines.append("")
     if two_col:
         lines.append("| 回撤预算 | 基础仓位上限 | 折后仓位上限 |")
         lines.append("|---:|---:|---:|")
@@ -531,12 +587,15 @@ def build_position_section(plan: PositionPlan) -> str:
         is_primary = abs(row.budget - plan.primary_budget) < 1e-9
         if max(row.base_cap, row.final_cap) > 100:
             has_over_100 = True
+        deployable = row.final_cap * plan.signal_factor
         budget_cell = f"{row.budget:g}%"
         base_cell = f"{row.base_cap:.1f}%"
-        if plan.alert_zeroed:
+        if abs(plan.signal_factor - 1.0) < 1e-9:
+            final_cell = f"{row.final_cap:.1f}%"
+        elif plan.signal_factor == 0.0:
             final_cell = f"0%（公式 {row.final_cap:.1f}%）"
         else:
-            final_cell = f"{row.final_cap:.1f}%"
+            final_cell = f"{deployable:.1f}%（公式 {row.final_cap:.1f}%）"
         if is_primary:
             budget_cell = f"**{budget_cell}**"
             base_cell = f"**{base_cell}**"
@@ -548,9 +607,15 @@ def build_position_section(plan: PositionPlan) -> str:
 
     lines.append("")
     lines.append(f"- 回撤预算 = 单只标的最多允许给整个账户带来的回撤（占总资产 %）；主档 **{plan.primary_budget:g}%**（加粗行）。")
-    lines.append("- 仓位为组合占比上限，不是建议买入量；与计价币种无关。")
+    if signal_bits:
+        lines.append("- 折后仓位上限 = 结构折扣后；括号内为信号层调整前的公式值，最终新建仓以信号层调整后为准。")
+    lines.append("- 仓位为组合占比上限，不是建议买入量；与计价币种无关；信号层系数只向保守/解锁，永不放大（≤1）。")
     if plan.alert_zeroed:
-        lines.append("- ⚠️ 警戒线触发：新建仓一律归零，上表折后值仅作回到警戒线内的复评参考。")
+        lines.append("- ⚠️ 警戒线触发且未放宽：新建仓一律归零，上表折后值仅作回到警戒线内的复评参考。")
+    elif plan.alert_triggered and plan.alert_released:
+        lines.append("- ⚠️ 警戒线触发但已放宽：仅限半仓试仓（×0.5），须已举证一档硬证据（公司指引 + 在手订单/产能锁定，或 delivery-tracking 已点亮 L4 入表）且 forward PE 已回到警戒线内。")
+    if plan.digestion is None:
+        lines.append("- 提示：未提供增速消化判定（--digestion）；若第六节判定为透支，新建仓需再 ×0.5，请据此复核。")
     if has_over_100:
         lines.append("- 注：仓位 >100% 表示该回撤预算已超过标的单杀空间（需杠杆才能达到），仅作参照。")
     lines.append(
@@ -564,16 +629,20 @@ def position_conclusion_line(plan: PositionPlan) -> str:
     if not plan.rows:
         return f"- 仓位上限：不适用（{plan.blocked_reason}）"
     if plan.alert_zeroed:
-        return "- 仓位上限：**0%（警戒线触发，不建新仓）**；各回撤预算档位公式值见第七节表"
+        return "- 仓位上限：**0%（警戒线触发且未放宽，不建新仓）**；各回撤预算档位公式值见第七节表"
     cap = plan.primary_final_cap
-    discounts = []
+    factors = []
     if plan.grade:
-        discounts.append(f"{plan.grade} ×{GRADE_FACTORS[plan.grade]:g}")
+        factors.append(f"{plan.grade} ×{GRADE_FACTORS[plan.grade]:g}")
     if plan.elastic:
-        discounts.append("弹性 ×0.5")
+        factors.append("弹性 ×0.5")
     if plan.span_halved:
-        discounts.append("数据不足 ×0.5")
-    suffix = f"，{'、'.join(discounts)}" if discounts else ""
+        factors.append("数据不足 ×0.5")
+    if plan.alert_triggered and plan.alert_released:
+        factors.append("警戒线放宽 ×0.5")
+    if plan.digestion_overpriced:
+        factors.append("透支 ×0.5")
+    suffix = f"，{'、'.join(factors)}" if factors else ""
     return (
         f"- 仓位上限（回撤预算 {plan.primary_budget:g}%）：**{cap:.1f}%**"
         f"（回撤预算 {plan.primary_budget:g}% ÷ 潜在风险 {plan.risk_pct:.1f}%{suffix}）；"
@@ -806,6 +875,8 @@ def create_report(
     elastic: bool = False,
     drawdown_budget: float = DEFAULT_DRAWDOWN_BUDGET,
     fallback_drawdown: float | None = None,
+    alert_release: bool = False,
+    digestion: str | None = None,
 ) -> Path:
     ticker = ticker.strip()
     if not ticker:
@@ -853,6 +924,8 @@ def create_report(
             elastic=elastic,
             alert_triggered=False,
             span_insufficient=span_insufficient,
+            alert_released=alert_release,
+            digestion=digestion,
         )
         if fallback_drawdown is not None and plan.rows:
             position_block = (
@@ -1003,6 +1076,8 @@ def create_report(
             elastic=elastic,
             alert_triggered=alert_triggered,
             span_insufficient=span_insufficient,
+            alert_released=alert_release,
+            digestion=digestion,
         )
 
         replacements = {
@@ -1099,6 +1174,8 @@ def main() -> None:
     parser.add_argument("--elastic", action="store_true", help="Elastic name (link revenue share 20-40%%): position cap x0.5.")
     parser.add_argument("--drawdown-budget", default=DEFAULT_DRAWDOWN_BUDGET, type=float, help=f"Primary/highlighted drawdown budget (%% of total assets one name may inflict). The report tabulates the full ladder {DRAWDOWN_BUDGET_LADDER}; this value is bolded and used in the conclusion. Default: {DEFAULT_DRAWDOWN_BUDGET:g}.")
     parser.add_argument("--fallback-drawdown", default=None, type=float, help="Manual drawdown %% (e.g. 45 for -45%%) used when the percentile-based potential risk is unavailable.")
+    parser.add_argument("--alert-release", action="store_true", help="Release the alert line from zero to a half试仓 (x0.5). Only assert with tier-1 evidence: company guidance + orders/capacity lock (or delivery-tracking L4 lit) AND forward PE back inside the line. No effect unless the alert line is triggered.")
+    parser.add_argument("--digestion", default=None, choices=list(DIGESTION_VERDICTS), help="Growth-digestion verdict from section 6. 透支 applies an extra x0.5 to new positions; other verdicts do not change the cap.")
     parser.add_argument("--date", type=parse_date, default=date.today(), help="Analysis date YYYY-MM-DD. Defaults to today.")
     parser.add_argument("--output-dir", default="./output/company-valuation-risk", help="Output directory for the report.")
     parser.add_argument("--template", default="", help="Optional custom template path.")
@@ -1148,6 +1225,8 @@ def main() -> None:
         elastic=args.elastic,
         drawdown_budget=args.drawdown_budget,
         fallback_drawdown=args.fallback_drawdown,
+        alert_release=args.alert_release,
+        digestion=args.digestion,
     )
     print(output_path)
 

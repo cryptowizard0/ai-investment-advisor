@@ -199,6 +199,49 @@ class PositionPlanTests(unittest.TestCase):
         # ladder formula values are retained for reference.
         self.assertAlmostEqual(self._row(plan, 2).final_cap, 5.0)
 
+    def test_alert_release_halves_instead_of_zeroing(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(generator, grade="金池子", alert_triggered=True, alert_released=True)
+        self.assertFalse(plan.alert_zeroed)
+        self.assertAlmostEqual(plan.alert_factor, 0.5)
+        self.assertAlmostEqual(plan.signal_factor, 0.5)
+        # base 5.0 (金池子 x1) x alert-release 0.5 = 2.5 deployable.
+        self.assertAlmostEqual(plan.primary_final_cap, 2.5)
+
+    def test_alert_release_without_trigger_is_noop(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(generator, alert_triggered=False, alert_released=True)
+        self.assertAlmostEqual(plan.alert_factor, 1.0)
+        self.assertAlmostEqual(plan.primary_final_cap, 5.0)
+
+    def test_digestion_overpriced_halves(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(generator, digestion="透支")
+        self.assertTrue(plan.digestion_overpriced)
+        self.assertAlmostEqual(plan.digestion_factor, 0.5)
+        self.assertAlmostEqual(plan.primary_final_cap, 2.5)
+
+    def test_non_overpriced_digestion_no_change(self) -> None:
+        generator = load_generator_module()
+        for verdict in ("合理低估", "可消化", "部分消化"):
+            plan = self._plan(generator, digestion=verdict)
+            self.assertAlmostEqual(plan.digestion_factor, 1.0, msg=verdict)
+            self.assertAlmostEqual(plan.primary_final_cap, 5.0, msg=verdict)
+
+    def test_signal_factors_compound(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(
+            generator, grade="通过", alert_triggered=True, alert_released=True, digestion="透支"
+        )
+        # discount 0.5 (通过) -> base 2.5; signal 0.5 (alert) x 0.5 (透支) = 0.25.
+        self.assertAlmostEqual(plan.signal_factor, 0.25)
+        self.assertAlmostEqual(plan.primary_final_cap, 2.5 * 0.25)
+
+    def test_invalid_digestion_raises(self) -> None:
+        generator = load_generator_module()
+        with self.assertRaises(ValueError):
+            self._plan(generator, digestion="未知判定")
+
     def test_fallback_used_when_risk_unavailable(self) -> None:
         generator = load_generator_module()
         plan = self._plan(generator, potential_risk=None, fallback_drawdown=50.0)
@@ -567,8 +610,54 @@ class CreateReportTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
             # ref leg 35.4/120-1 = -70.5% -> budget-2 formula 2/70.5 = 2.8%, zeroed by alert.
             self.assertIn("0%（公式 2.8%）", text)
-            self.assertIn("0%（警戒线触发，不建新仓", text)
-            self.assertIn("警戒线触发：新建仓一律归零", text)
+            self.assertIn("0%（警戒线触发且未放宽，不建新仓", text)
+            self.assertIn("警戒线触发且未放宽：新建仓一律归零", text)
+
+    def test_alert_release_half试仓_in_report(self) -> None:
+        generator = load_generator_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            path = generator.create_report(
+                ticker="NVDA23",
+                company_type="成长",
+                report_date=date(2026, 7, 20),
+                output_dir=output_dir,
+                template_path=self._template(output_dir),
+                pe_series=[float(v) for v in range(10, 110)],
+                current_pe=120.0,
+                pe_median=60.0,
+                max_loss_streak=0,
+                ref_pe=35.4,
+                grade="金池子",
+                alert_release=True,
+            )
+            text = path.read_text(encoding="utf-8")
+            # ref leg 35.4/120-1 = -70.5% -> budget-2 formula 2.8%, x0.5 released = 1.4%.
+            self.assertIn("警戒线放宽 ×0.5", text)
+            self.assertIn("1.4%（公式 2.8%）", text)
+            self.assertNotIn("警戒线触发且未放宽", text)
+
+    def test_digestion_overpriced_in_report(self) -> None:
+        generator = load_generator_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            path = generator.create_report(
+                ticker="RICH",
+                company_type="成长",
+                report_date=date(2026, 7, 20),
+                output_dir=output_dir,
+                template_path=self._template(output_dir),
+                pe_series=[float(v) for v in range(10, 110)],
+                current_pe=95.0,
+                max_loss_streak=0,
+                ref_pe=35.4,
+                grade="通过",
+                digestion="透支",
+            )
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("增速消化透支 ×0.5", text)
+            # primary deployable: base 2/62.7*100=3.19 x0.5(通过) x0.5(透支)=0.8%.
+            self.assertIn("透支 ×0.5", text)
 
     def test_gate_fail_position_uses_fallback_drawdown(self) -> None:
         generator = load_generator_module()
