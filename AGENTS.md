@@ -39,7 +39,9 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── chain-alpha-monopoly-screen/
 │           ├── chain-alpha-verification/
 │           ├── chain-alpha-pipeline/
+│           ├── chain-alpha-delivery-tracking/
 │           ├── company-profile/
+│           ├── company-valuation-risk/
 │           ├── fundamental-analysis/
 │           ├── earnings-report-analysis/
 │           ├── institutional-accumulation-analysis/
@@ -57,7 +59,9 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── chain-alpha-monopoly-screen/
 │   ├── chain-alpha-verification/
 │   ├── chain-alpha-pipeline/
+│   ├── chain-alpha-delivery-tracking/
 │   ├── company-profile/
+│   ├── company-valuation-risk/
 │   ├── fundamental-analysis/
 │   ├── earnings-report-analysis/
 │   ├── ai-infrastructure-sector-discovery/
@@ -94,6 +98,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py` - earnings report analysis skeleton generator
 - `plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py` - non-consensus discovery report skeleton generator
 - `plugins/invest-flow/skills/index-pe-sensitivity/scripts/generate_report.py` - index valuation price-sensitivity table generator
+- `plugins/invest-flow/skills/company-valuation-risk/scripts/generate_report.py` - company valuation percentile-band and risk report generator
 - `plugins/invest-flow/skills/output-report-index/scripts/generate_index.py` - output report index generator
 - `plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py` - UTF-8 local report static server
 
@@ -117,6 +122,7 @@ python -m unittest \
   plugins/invest-flow/skills/non-consensus-company-discovery/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/daily-us-market-scan/scripts/tests/test_create_report.py \
   plugins/invest-flow/skills/index-pe-sensitivity/scripts/tests/test_generate_report.py \
+  plugins/invest-flow/skills/company-valuation-risk/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_serve_reports.py
 
@@ -131,6 +137,9 @@ python plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_repo
 
 # Generate an index valuation price-sensitivity report
 python plugins/invest-flow/skills/index-pe-sensitivity/scripts/generate_report.py --index 科创50 --code 000688 --base 232.5 --anchors "36.31:0,83.91:50,159.29:80,232.51:98.07,263.72:100" --current-percentile 98.07
+
+# Generate a company valuation percentile-band risk report
+python plugins/invest-flow/skills/company-valuation-risk/scripts/generate_report.py NVDA --company "NVIDIA" --company-type 成长 --pe-file pe_5y.csv --current-price 181.40 --max-loss-streak 0 --ref-pe 35.4 --grade 通过 --drawdown-budget 2
 
 # Generate or update the Markdown and HTML output report indexes
 python plugins/invest-flow/skills/output-report-index/scripts/generate_index.py
@@ -155,11 +164,12 @@ Active packaged skills:
 
 - `ai-infrastructure-sector-discovery` - weekly AI infrastructure sector discovery and scoring, designed to run as a scheduled weekly tracking task; sectors scoring >=70 hand off to chain-alpha (`chain-alpha-mismatch-discovery` or `chain-alpha-pipeline`)
 - `company-profile` - company primer covering overview, core business, technology barriers, industry-chain position, AI relevance, competitors, and industry position
+- `company-valuation-risk` - chain-alpha step 4 (after verification) and standalone valuation tool: company-type gate (growth/cash-cow/toll-station analyzable; cyclical/pulse/distressed excluded), PE-vs-PS ruler selection via four PE-distortion conditions plus an alert-line prominent warning (current TTM PE >100x or TTM PS >40x -> prominent warning, flow continues with all readouts at reduced confidence) and an insufficient-history prominent warning (<5y span), 5-year TTM PE/PS percentile band vs the company's own history (current percentile + 10/20/25/50/60/75/80/90/95 key percentiles), potential risk taken as the worse of two drawdowns (reversion to the 50th percentile vs reversion to the bear-low reference-point multiple, default 2026-03-31; current below reference is prominently flagged) under a static TTM denominator, a growth-digestion signal check against a growth-model fair TTM PE (exit multiple x (1+g)^(N+1) / (1+r)^N, default r=10% and 15x exit; digestion time = ln(current/fair)/ln(1+r) capped by the growth duration; verdicts fair-or-cheap / digestible <=1y / partial 1-2y / overpriced, fed by verification's numeric growth handoff of g with evidence tier, duration N, and revenue growth), a mandatory industry-and-company context note in the conclusion (high percentile in a booming industry/company is not a sell signal, low percentile under industry-level fear is not a buy signal; qualitative only, never alters computed results), and the position plan that is chain-alpha's single position outlet: position cap = drawdown budget (max account-level drawdown one name may inflict) / potential risk, tabulated across a fixed budget ladder (2/5/10/20/30/50/70%; --drawdown-budget picks the highlighted primary rung, default 2%), with stacking structural discounts (gold-pool full / pass x0.5 / pending & reject no position, elastic x0.5, short-history x0.5) plus two signal-layer factors (always <=1, only tighten or unlock, never amplify): a triggered alert line zeroes new entries unless released to x0.5 (--alert-release, validated and rejected unless --alert-release-evidence names tier-1 forward evidence — guidance + orders/capacity lock or delivery-tracking L4 lit — and a forward multiple --forward-pe/--forward-ps is proven back inside the line), and a 透支 digestion verdict (--digestion) adds x0.5; delivery-tracking's engine C reuses its percentile band
 - `chain-alpha-mismatch-discovery` - chain-alpha step 1: industry definition with a plain-language explainer (what it is, what it replaces, why now), growth hard gate (industry/key-link revenue growth >20%, clear driver, >=6 month duration) plus per-driver analysis of why growth stays high, a four-stage industry-cycle timeline (tech validation -> early commercialization -> volume ramp -> mass adoption) with a current-stage marker, full industry-chain panorama list, plus supply-demand mismatch link discovery with hard evidence gates, a profit-growth gate (preferred >=30%, minimum 20%), 30-point mismatch scoring including a reverse-scored pricing-in dimension, and a supply-response clock that reads expansion evidence both ways
 - `chain-alpha-monopoly-screen` - chain-alpha step 2: sub-link breakdown, global landscape including mainland China and JP/KR/TW/EU, CR3/margin/revenue-share/profit-growth hard gates, 30-point candidate scoring
-- `chain-alpha-verification` - chain-alpha step 3: dual-track revenue-share gate plus profit-growth hard gate, 100-point four-tier grading (gold pool/pass/pending/reject), drawdown inference and risk-budget position sizing for global main-board candidates
-- `chain-alpha-pipeline` - chain-alpha orchestration: main agent runs the three steps serially with in-step subagent fan-out (parallel on Claude Code; parallel on Codex when explicitly requested and available; otherwise serial fallback), enforces funnel discipline (2-4 links, <=10 candidates per link, 2-3 deep dives), and writes a Chinese summary report
-- `chain-alpha-delivery-tracking` - chain-alpha follow-on: forward-looking revenue/profit-delivery tracking for 待验证 candidates via a 5-gate validation ladder (order->capacity->ramp->revenue->profit) with per-gate delivery windows and timeout downgrades, growth/attribution/dynamic-valuation (PE&PS dual-track) engines, structure sentinels (competitor capacity, second-sourcing, customer in-housing, demand-side capex), and symmetric grade up/down that feeds back into chain-alpha
+- `chain-alpha-verification` - chain-alpha step 3: dual-track revenue-share gate plus profit-growth hard gate and 100-point four-tier grading (gold pool/pass/pending/reject) for global main-board candidates; grading only — no position sizing, pass-and-above names hand off (grade + elastic flag) to `company-valuation-risk` step 4
+- `chain-alpha-pipeline` - chain-alpha orchestration: main agent runs the four steps serially (mismatch-discovery -> monopoly-screen -> verification grading -> company-valuation-risk pricing and position sizing) with in-step subagent fan-out (parallel on Claude Code; parallel on Codex when explicitly requested and available; otherwise serial fallback), enforces funnel discipline (2-4 links, <=10 candidates per link, pass-and-above into step 4, 2-3 deep dives), and writes a Chinese summary report
+- `chain-alpha-delivery-tracking` - chain-alpha follow-on: forward-looking revenue/profit-delivery tracking for 待验证 candidates via a 5-gate validation ladder (order->capacity->ramp->revenue->profit) with per-gate delivery windows and timeout downgrades, growth/attribution/dynamic-valuation (PE&PS dual-track) engines, structure sentinels (competitor capacity, second-sourcing, customer in-housing, demand-side capex), and symmetric grade up/down that feeds grades back into chain-alpha and re-triggers step-4 (company-valuation-risk) position sizing on upgrades
 - `fundamental-analysis` - stock fundamental and technical analysis
 - `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
@@ -196,6 +206,7 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Chain-alpha pipeline summary: `output/chain-alpha-pipeline/chain-alpha-pipeline-{主题}-{YYYY-MM-DD}.md`
 - Chain-alpha delivery tracking: `output/chain-alpha-delivery-tracking/chain-alpha-delivery-tracking-{TICKER}-{YYYY-MM-DD}.md`
 - Company profile: `output/company-profile/company-profile-{TICKER}-{YYYY-MM-DD}.md`
+- Company valuation risk: `output/company-valuation-risk/company-valuation-risk-{TICKER}-{YYYY-MM-DD}.md`
 - Index PE sensitivity: `output/index-pe-sensitivity/index-pe-sensitivity-{index}-{YYYY-MM-DD}.md`
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`

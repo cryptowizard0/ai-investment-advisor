@@ -50,13 +50,13 @@ If the plugin does not appear, confirm these files exist:
 
 ## Featured Workflow: chain-alpha
 
-chain-alpha is InvestFlow's flagship workflow: it turns a big theme into investable companies and then keeps tracking whether their revenue and profit growth actually deliver. Five skills form a closed loop, orchestrated end-to-end by `chain-alpha-pipeline`:
+chain-alpha is InvestFlow's flagship workflow: it turns a big theme into investable companies, prices the entry and sizes the position, then keeps tracking whether revenue and profit growth actually deliver. Six skills form a closed loop, orchestrated end-to-end by `chain-alpha-pipeline`:
 
 ```text
-theme ─▶ mismatch-discovery ─▶ monopoly-screen ─▶ verification ⇄ delivery-tracking
-        industry + growth      sub-links +         4-tier grade +    quarterly revenue/
-        screen + mismatch      ≤10 candidates      position size     profit tracking
-        └──────────────── orchestrated by chain-alpha-pipeline ──────────────┘
+theme ─▶ mismatch-discovery ─▶ monopoly-screen ─▶ verification ─▶ valuation-risk ⇄ delivery-tracking
+        industry + growth      sub-links +         4-tier grade     percentile band +   quarterly revenue/
+        screen + mismatch      ≤10 candidates      (grading only)   position plan       profit tracking
+        └──────────────────── orchestrated by chain-alpha-pipeline ────────────────────┘
 ```
 
 Run the whole funnel in one command:
@@ -65,7 +65,7 @@ Run the whole funnel in one command:
 Use invest-flow:chain-alpha-pipeline to find investable companies in humanoid robots.
 ```
 
-Funnel discipline: industry definition and growth gate → 2-4 mismatch links → ≤10 candidates per link → top-6 into verification → 2-3 deep dives. Industry/key-link revenue growth must be >20%, have a clear driver, and last at least 6 months before the workflow enters later steps; industry and company screens must still map back to sustainable profit growth: ≥30% is preferred, 20% is the minimum gate, and <20% is screened out. Names left at `pending-verification` are then tracked quarterly with `chain-alpha-delivery-tracking`, whose grade changes feed back into `chain-alpha-verification`. Each step can also run standalone — start with `chain-alpha-mismatch-discovery` to define the industry, screen growth, and confirm mismatch links cheaply before committing to the full run.
+Funnel discipline: industry definition and growth gate → 2-4 mismatch links → ≤10 candidates per link → top-6 into verification → pass-and-above into step-4 position sizing → 2-3 deep dives. Industry/key-link revenue growth must be >20%, have a clear driver, and last at least 6 months before the workflow enters later steps; industry and company screens must still map back to sustainable profit growth: ≥30% is preferred, 20% is the minimum gate, and <20% is screened out. Step 3 `chain-alpha-verification` only grades; positions come exclusively from step 4 `company-valuation-risk` (position cap = drawdown budget / potential risk, with grade/elastic discounts). Names left at `pending-verification` are then tracked quarterly with `chain-alpha-delivery-tracking`, whose grade changes feed back into `chain-alpha-verification` and re-trigger step-4 sizing on upgrades. Each step can also run standalone — start with `chain-alpha-mismatch-discovery` to define the industry, screen growth, and confirm mismatch links cheaply before committing to the full run.
 
 ## Skills By Category
 
@@ -77,10 +77,11 @@ Turn a big theme into investable companies. `chain-alpha-pipeline` is the flagsh
 
 | Skill | Purpose | Use when |
 |---|---|---|
-| `chain-alpha-pipeline` | Orchestrates the three chain-alpha steps with in-step subagent fan-out (Claude Code parallel; Codex parallel when explicitly requested and available; otherwise serial fallback) and funnel discipline. | You want the full theme-to-company workflow in one run. |
+| `chain-alpha-pipeline` | Orchestrates the four chain-alpha steps (mismatch discovery → monopoly screen → verification grading → valuation & position sizing) with in-step subagent fan-out (Claude Code parallel; Codex parallel when explicitly requested and available; otherwise serial fallback) and funnel discipline. | You want the full theme-to-company-to-position workflow in one run. |
 | `chain-alpha-mismatch-discovery` | Plain-language industry definition, growth hard gate with industry-cycle staging (four-stage timeline + current-stage marker), full industry-chain panorama, and supply-demand mismatch link discovery with a profit-growth gate. | You have a big theme and need to understand what the industry actually is, which cycle stage it is in, why growth can stay high, the whole chain, and the links where demand outruns supply and can translate into profit growth. |
 | `chain-alpha-monopoly-screen` | Sub-link breakdown and monopoly screening with CR3, margin, revenue-share, and profit-growth gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
-| `chain-alpha-verification` | 100-point four-tier company verification with profit-growth gating and drawdown-based position sizing. | You have candidates and need a buy/watch/reject grade plus a position cap. |
+| `chain-alpha-verification` | 100-point four-tier company verification with profit-growth gating (grading only, no position sizing). | You have candidates and need a gold-pool/pass/pending/reject grade; pass-and-above names hand off to step 4 for sizing. |
+| `company-valuation-risk` | chain-alpha step 4: type gate → PE/PS ruler (with alert lines) → 5-year TTM percentile band → potential risk (worse of two drawdowns) → growth-digestion check (growth-model fair PE, so percentiles are never read mechanically) → position plan (cap = drawdown budget / potential risk, grade/elastic discounts, plus signal-layer factors that never amplify: alert-line zeroing unless released to a half-position on tier-1 forward evidence, and an extra x0.5 when digestion says overpriced). | Verification produced a grade and you need the entry read plus the position cap. (Also listed under category 2.) |
 | `chain-alpha-delivery-tracking` | Forward-looking revenue/profit-delivery tracking for pending-verification candidates with a 5-gate ladder plus delivery-window timeouts, growth/attribution/dynamic-valuation engines, structure sentinels, and symmetric grade up/down. | You hold a pending-verification name (e.g. a harmonic-reducer supplier) and need a quarterly read on whether revenue and profit growth are actually being delivered. (Also a quarterly tracking task — see category 3.) |
 | `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring; the handoff queue feeds chain-alpha. | You want a scheduled weekly read on which AI infrastructure sectors to research next. (Also a weekly tracking task — see category 3.) |
 | `non-consensus-company-discovery` | Theme-to-company discovery for high-potential non-consensus opportunities. | You want names the market may still value using the wrong framework. |
@@ -94,6 +95,7 @@ Judge one company from several independent angles. `multi-agent-stock-analysis` 
 | `multi-agent-stock-analysis` | In-session orchestration across the single-stock skills below (company profile → fundamentals → capital flow → reflexivity → Reportify → non-consensus). | You want one stock analyzed from several independent angles. |
 | `company-profile` | Builds a company primer before investment analysis. | A user is hearing about a company for the first time and needs business, technology, value-chain, AI relevance, competitors, and industry-position context. |
 | `fundamental-analysis` | Single-stock fundamental, valuation, and technical analysis. | You need a fast but structured view of a company. |
+| `company-valuation-risk` | Type-gated valuation percentile band, risk, and position plan: growth/cash-cow/toll-station gate → PE-vs-PS ruler selection with 100x-PE/40x-PS alert-line prominent warnings (no stop; readouts downgraded to low confidence) → 5-year TTM percentile band → potential risk = the worse of median-reversion and bear-low reference-point drawdowns → growth-digestion check against a growth-model fair PE (exit x (1+g)^(N+1) / (1+r)^N; digestion time = ln(premium)/ln(1+r)) → position cap = drawdown budget / potential risk, tabulated across a 2/5/10/20/30/50/70% budget ladder. | You need to know how expensive a stock is vs its own 5-year history, how much downside valuation reversion implies, and how large the position may be. (Also chain-alpha step 4 — see category 1.) |
 | `institutional-accumulation-analysis` | Institutional accumulation and distribution analysis. | You want to judge whether major players are buying, distributing, or hedging. |
 | `reflexivity-analysis` | Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes. | You need to read where a narrative sits — a fast stage check, or a full narrative/price/reality/reversal map. |
 | `reportify-stock-analysis` | Standardized 8-part stock report with a buy-side-grade decision layer (3-scenario valuation, falsifiable thesis, catalysts, tracking dashboard). | You need a repeatable, formal, trackable report covering facts, interpretation, decision, and risk. |
@@ -129,6 +131,7 @@ Use invest-flow:non-consensus-company-discovery to find non-consensus opportunit
 Use invest-flow:chain-alpha-pipeline to find investable companies in AI data center power.
 Use invest-flow:reflexivity-analysis in quick mode to check NVIDIA's current narrative stage.
 Use invest-flow:index-pe-sensitivity to build a valuation-sensitivity table for the STAR 50 index.
+Use invest-flow:company-valuation-risk to judge NVDA's valuation percentile and downside risk.
 Use invest-flow:earnings-report-analysis to analyze NVIDIA's latest earnings.
 Use invest-flow:output-report-index to update the output report index.
 ```
@@ -142,6 +145,7 @@ Generated reports and cache files are written under `output/`:
 | Workflow | Output path |
 |---|---|
 | Company profile | `output/company-profile/` |
+| Company valuation risk | `output/company-valuation-risk/` |
 | Fundamental analysis | `output/fundamental-analysis/` |
 | Earnings report analysis | `output/earnings-report-analysis/` |
 | AI infrastructure sector discovery | `output/ai-infrastructure-sector-discovery/` |
