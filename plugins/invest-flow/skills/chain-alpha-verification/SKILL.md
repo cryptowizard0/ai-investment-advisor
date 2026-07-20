@@ -31,6 +31,7 @@ description: "chain-alpha 工作流第三步：对全球主要可投市场（美
 ### 1) 收集证据
 - 季度收入、segment 拆分、毛利率、净利润、operating profit、EPS：10-K/10-Q、earnings release、IR 材料。
 - 估值与股价数据：yfinance / market-data-router。
+- 估值分位带与估值压缩情景可用 `invest-flow:company-valuation-risk` 生成（类型闸门 + PE/PS 选尺 + 5 年 TTM 分位带 + 潜在风险两腿取大），其「跌回 50% 分位跌幅」可直接作为第 5 步最大回撤的估值压缩情景输入。
 - 关键数字标注来源和日期；区分 事实 / 推断 / 假设。
 
 ### 2) 硬门槛（一票否决，不进入评分）
