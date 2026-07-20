@@ -201,7 +201,10 @@ class PositionPlanTests(unittest.TestCase):
 
     def test_alert_release_halves_instead_of_zeroing(self) -> None:
         generator = load_generator_module()
-        plan = self._plan(generator, grade="金池子", alert_triggered=True, alert_released=True)
+        plan = self._plan(
+            generator, grade="金池子", alert_triggered=True, alert_released=True,
+            alert_line=100.0, forward_value=90.0, alert_evidence="公司指引 + 在手订单/产能锁定",
+        )
         self.assertFalse(plan.alert_zeroed)
         self.assertAlmostEqual(plan.alert_factor, 0.5)
         self.assertAlmostEqual(plan.signal_factor, 0.5)
@@ -210,9 +213,34 @@ class PositionPlanTests(unittest.TestCase):
 
     def test_alert_release_without_trigger_is_noop(self) -> None:
         generator = load_generator_module()
+        # No evidence/forward needed when the alert line is not triggered.
         plan = self._plan(generator, alert_triggered=False, alert_released=True)
         self.assertAlmostEqual(plan.alert_factor, 1.0)
         self.assertAlmostEqual(plan.primary_final_cap, 5.0)
+
+    def test_alert_release_requires_evidence(self) -> None:
+        generator = load_generator_module()
+        with self.assertRaises(ValueError):
+            self._plan(
+                generator, alert_triggered=True, alert_released=True,
+                alert_line=100.0, forward_value=90.0,  # evidence missing
+            )
+
+    def test_alert_release_requires_forward_multiple(self) -> None:
+        generator = load_generator_module()
+        with self.assertRaises(ValueError):
+            self._plan(
+                generator, alert_triggered=True, alert_released=True,
+                alert_line=100.0, alert_evidence="公司指引",  # forward missing
+            )
+
+    def test_alert_release_rejected_when_forward_still_above_line(self) -> None:
+        generator = load_generator_module()
+        with self.assertRaises(ValueError):
+            self._plan(
+                generator, alert_triggered=True, alert_released=True,
+                alert_line=100.0, forward_value=120.0, alert_evidence="公司指引",  # not inside
+            )
 
     def test_digestion_overpriced_halves(self) -> None:
         generator = load_generator_module()
@@ -231,7 +259,8 @@ class PositionPlanTests(unittest.TestCase):
     def test_signal_factors_compound(self) -> None:
         generator = load_generator_module()
         plan = self._plan(
-            generator, grade="通过", alert_triggered=True, alert_released=True, digestion="透支"
+            generator, grade="通过", alert_triggered=True, alert_released=True, digestion="透支",
+            alert_line=100.0, forward_value=90.0, alert_evidence="delivery-tracking L4 已点亮",
         )
         # discount 0.5 (通过) -> base 2.5; signal 0.5 (alert) x 0.5 (透支) = 0.25.
         self.assertAlmostEqual(plan.signal_factor, 0.25)
@@ -630,12 +659,37 @@ class CreateReportTests(unittest.TestCase):
                 ref_pe=35.4,
                 grade="金池子",
                 alert_release=True,
+                alert_release_evidence="公司指引 + 在手订单/产能锁定",
+                forward_pe=90.0,
             )
             text = path.read_text(encoding="utf-8")
             # ref leg 35.4/120-1 = -70.5% -> budget-2 formula 2.8%, x0.5 released = 1.4%.
             self.assertIn("警戒线放宽 ×0.5", text)
             self.assertIn("1.4%（公式 2.8%）", text)
             self.assertNotIn("警戒线触发且未放宽", text)
+            # Release evidence + forward reading are rendered as auditable fields.
+            self.assertIn("公司指引 + 在手订单/产能锁定", text)
+            self.assertIn("forward TTM PE 90.00", text)
+
+    def test_alert_release_rejected_without_evidence_in_report(self) -> None:
+        generator = load_generator_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            with self.assertRaises(ValueError):
+                generator.create_report(
+                    ticker="NOEV",
+                    company_type="成长",
+                    report_date=date(2026, 7, 20),
+                    output_dir=output_dir,
+                    template_path=self._template(output_dir),
+                    pe_series=[float(v) for v in range(10, 110)],
+                    current_pe=120.0,
+                    pe_median=60.0,
+                    max_loss_streak=0,
+                    ref_pe=35.4,
+                    grade="金池子",
+                    alert_release=True,  # triggered alert + no evidence/forward -> rejected
+                )
 
     def test_digestion_overpriced_in_report(self) -> None:
         generator = load_generator_module()

@@ -72,7 +72,7 @@ description: "chain-alpha 营收兑现追踪：对 chain-alpha 待验证/观察�
 - **回灌 chain-alpha**：更新对应 verification 验证卡的档位（verification 不含仓位），产出"本期 vs 上期"变更 delta 与触发项；涉及仓位变化时触发第四步 company-valuation-risk 重跑，本 skill 不自行折算仓位。
 
 ### 5) 输出兑现追踪卡
-- 使用 `references/report-template.md`，单标的一张兑现追踪卡（验证链灯带 + 灯位变化与兑现窗口读数、三引擎读数、格局哨兵读数、预期差对账、本期结论与触发项、回灌档位 / 仓位 / delta、反证条件更新与下次复盘时间、数据来源）。
+- 使用 `references/report-template.md`，单标的一张兑现追踪卡（验证链灯带 + 灯位变化与兑现窗口读数、三引擎读数、格局哨兵读数、预期差对账、本期结论与触发项、回灌档位 / Step 4 重跑触发 / delta、反证条件更新与下次复盘时间、数据来源）。仓位不在本卡计算，由第四步 company-valuation-risk 唯一给出。
 - 保存至 `./output/chain-alpha-delivery-tracking/chain-alpha-delivery-tracking-{TICKER}-{YYYY-MM-DD}.md`；文件已存在时追加 `(1)`, `(2)`，不覆盖。
 - 报告必须包含固定作者字段：`InvestmentFlow`。
 
@@ -97,4 +97,4 @@ description: "chain-alpha 营收兑现追踪：对 chain-alpha 待验证/观察�
 验证链 5 级点灯标准与防跳级规则、级间兑现窗口与超时判死、三引擎（增速 / 归因 / 动态估值 PE&PS 双轨）口径、格局哨兵、升降档与回灌 chain-alpha 规则、可选 B 评分细则。
 
 ### references/report-template.md
-兑现追踪卡模板：验证链灯带与灯位变化、兑现窗口读数、三引擎读数、格局哨兵读数、预期差对账、升降档结论与触发项、回灌档位 / 仓位 / delta、反证条件与数据来源。
+兑现追踪卡模板：验证链灯带与灯位变化、兑现窗口读数、三引擎读数、格局哨兵读数、预期差对账、升降档结论与触发项、回灌档位 / Step 4 重跑触发 / delta（仓位由第四步给出，本卡不另算）、反证条件与数据来源。

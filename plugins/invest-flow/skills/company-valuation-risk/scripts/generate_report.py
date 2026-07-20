@@ -418,6 +418,10 @@ class PositionPlan:
     signal_factor: float
     rows: list[PositionRow]
     blocked_reason: str
+    alert_evidence: str = ""
+    forward_value: float | None = None
+    alert_line: float | None = None
+    metric_label: str = ""
 
     @property
     def alert_zeroed(self) -> bool:
@@ -454,6 +458,10 @@ def compute_position_plan(
     span_insufficient: bool,
     alert_released: bool = False,
     digestion: str | None = None,
+    alert_line: float | None = None,
+    forward_value: float | None = None,
+    alert_evidence: str = "",
+    metric_label: str = "",
 ) -> PositionPlan:
     if drawdown_budget <= 0:
         raise ValueError("Drawdown budget must be positive.")
@@ -468,6 +476,29 @@ def compute_position_plan(
         raise ValueError(
             f"Unknown digestion verdict '{digestion}'. Use one of: {', '.join(DIGESTION_VERDICTS)}."
         )
+
+    # Releasing the alert line from zero to a half试仓 is only valid with
+    # auditable, machine-checkable evidence. When the caller asserts a release
+    # on a triggered alert line, require (a) a non-empty tier-1 evidence note
+    # and (b) a forward multiple that is actually back inside the alert line.
+    # Otherwise the release is rejected outright rather than silently trusted.
+    alert_evidence = (alert_evidence or "").strip()
+    if alert_triggered and alert_released:
+        if not alert_evidence:
+            raise ValueError(
+                "警戒线放宽（--alert-release）必须提供一档硬证据说明（--alert-release-evidence）："
+                "公司指引 + 在手订单/产能锁定，或 delivery-tracking 已点亮 L4 入表；证据缺失则放宽被拒绝。"
+            )
+        if forward_value is None:
+            raise ValueError(
+                "警戒线放宽必须提供 forward 倍数（--forward-pe / --forward-ps），"
+                "用以证明前瞻估值已回到警戒线内；未提供则放宽被拒绝。"
+            )
+        if alert_line is not None and forward_value > alert_line:
+            raise ValueError(
+                f"警戒线放宽被拒绝：forward 倍数 {forward_value:.2f} 仍高于警戒线 {alert_line:g} 倍，"
+                "未回到线内，不满足放宽条件。"
+            )
 
     if potential_risk is not None and potential_risk < 0:
         risk_pct, risk_source = abs(potential_risk), "潜在风险（两腿取大）"
@@ -508,6 +539,10 @@ def compute_position_plan(
         signal_factor=signal_factor,
         rows=[],
         blocked_reason="",
+        alert_evidence=alert_evidence,
+        forward_value=forward_value,
+        alert_line=alert_line,
+        metric_label=metric_label,
     )
     if grade in BLOCKED_GRADES:
         plan.blocked_reason = f"chain-alpha 档位为「{grade}」，不给仓位（升档后再定仓）"
@@ -541,12 +576,24 @@ def _discount_caption(plan: PositionPlan) -> str:
     return "；".join(bits) + f"（合计 ×{plan.discount:g}）"
 
 
+def _forward_reading(plan: PositionPlan) -> str:
+    """Render the forward-multiple reading that justified an alert release."""
+    if plan.forward_value is None:
+        return ""
+    unit = plan.metric_label or "forward 倍数"
+    inside = f" ≤ {plan.alert_line:g} 警戒线" if plan.alert_line is not None else ""
+    return f"forward {unit} {plan.forward_value:.2f}{inside} 已回线内"
+
+
 def _signal_bits(plan: PositionPlan) -> list[str]:
     """Human-readable signal-layer factor bits (alert + digestion)."""
     bits = []
     if plan.alert_triggered:
         if plan.alert_released:
-            bits.append("警戒线放宽 ×0.5（已举证一档硬证据 + forward PE 回线内，半仓试仓）")
+            reading = _forward_reading(plan)
+            evidence = plan.alert_evidence or "（未填写）"
+            detail = f"{reading}；一档硬证据：{evidence}" if reading else f"一档硬证据：{evidence}"
+            bits.append(f"警戒线放宽 ×0.5（半仓试仓；{detail}）")
         else:
             bits.append("警戒线触发 ×0（未放宽，不建新仓）")
     if plan.digestion_overpriced:
@@ -613,7 +660,13 @@ def build_position_section(plan: PositionPlan) -> str:
     if plan.alert_zeroed:
         lines.append("- ⚠️ 警戒线触发且未放宽：新建仓一律归零，上表折后值仅作回到警戒线内的复评参考。")
     elif plan.alert_triggered and plan.alert_released:
-        lines.append("- ⚠️ 警戒线触发但已放宽：仅限半仓试仓（×0.5），须已举证一档硬证据（公司指引 + 在手订单/产能锁定，或 delivery-tracking 已点亮 L4 入表）且 forward PE 已回到警戒线内。")
+        reading = _forward_reading(plan)
+        reading_clause = f"{reading}；" if reading else ""
+        lines.append(
+            "- ⚠️ 警戒线触发但已放宽：仅限半仓试仓（×0.5）。"
+            f"{reading_clause}举证一档硬证据（公司指引 + 在手订单/产能锁定，或 delivery-tracking 已点亮 L4 入表）："
+            f"{plan.alert_evidence or '（未填写）'}。"
+        )
     if plan.digestion is None:
         lines.append("- 提示：未提供增速消化判定（--digestion）；若第六节判定为透支，新建仓需再 ×0.5，请据此复核。")
     if has_over_100:
@@ -876,6 +929,9 @@ def create_report(
     drawdown_budget: float = DEFAULT_DRAWDOWN_BUDGET,
     fallback_drawdown: float | None = None,
     alert_release: bool = False,
+    alert_release_evidence: str = "",
+    forward_pe: float | None = None,
+    forward_ps: float | None = None,
     digestion: str | None = None,
 ) -> Path:
     ticker = ticker.strip()
@@ -926,6 +982,7 @@ def create_report(
             span_insufficient=span_insufficient,
             alert_released=alert_release,
             digestion=digestion,
+            alert_evidence=alert_release_evidence,
         )
         if fallback_drawdown is not None and plan.rows:
             position_block = (
@@ -1068,6 +1125,7 @@ def create_report(
         if current_price is None:
             notes.append("- 未提供当前价格，隐含价格列留待填写（--current-price）。")
 
+        forward_value = forward_pe if chosen == "pe" else forward_ps
         plan = compute_position_plan(
             potential_risk=risk.potential_risk,
             fallback_drawdown=fallback_drawdown,
@@ -1078,6 +1136,10 @@ def create_report(
             span_insufficient=span_insufficient,
             alert_released=alert_release,
             digestion=digestion,
+            alert_line=alert_line,
+            forward_value=forward_value,
+            alert_evidence=alert_release_evidence,
+            metric_label=metric_label,
         )
 
         replacements = {
@@ -1174,8 +1236,11 @@ def main() -> None:
     parser.add_argument("--elastic", action="store_true", help="Elastic name (link revenue share 20-40%%): position cap x0.5.")
     parser.add_argument("--drawdown-budget", default=DEFAULT_DRAWDOWN_BUDGET, type=float, help=f"Primary/highlighted drawdown budget (%% of total assets one name may inflict). The report tabulates the full ladder {DRAWDOWN_BUDGET_LADDER}; this value is bolded and used in the conclusion. Default: {DEFAULT_DRAWDOWN_BUDGET:g}.")
     parser.add_argument("--fallback-drawdown", default=None, type=float, help="Manual drawdown %% (e.g. 45 for -45%%) used when the percentile-based potential risk is unavailable.")
-    parser.add_argument("--alert-release", action="store_true", help="Release the alert line from zero to a half试仓 (x0.5). Only assert with tier-1 evidence: company guidance + orders/capacity lock (or delivery-tracking L4 lit) AND forward PE back inside the line. No effect unless the alert line is triggered.")
-    parser.add_argument("--digestion", default=None, choices=list(DIGESTION_VERDICTS), help="Growth-digestion verdict from section 6. 透支 applies an extra x0.5 to new positions; other verdicts do not change the cap.")
+    parser.add_argument("--alert-release", action="store_true", help="Release the alert line from zero to a half试仓 (x0.5). When the alert line is triggered this REQUIRES --alert-release-evidence AND a forward multiple (--forward-pe/--forward-ps) proven back inside the line, or the release is rejected. No effect unless the alert line is triggered.")
+    parser.add_argument("--alert-release-evidence", default="", help="Tier-1 evidence text backing --alert-release (company guidance + orders/capacity lock, or delivery-tracking L4 lit). Required and rendered as an auditable field when releasing a triggered alert line.")
+    parser.add_argument("--forward-pe", default=None, type=float, help="Forward TTM PE from validation-chain-backed forward earnings, proving the PE ruler is back inside the alert line. Required with --alert-release under the PE ruler; rejected if still above --pe-alert.")
+    parser.add_argument("--forward-ps", default=None, type=float, help="Forward TTM PS proving the PS ruler is back inside the alert line. Required with --alert-release under the PS ruler; rejected if still above --ps-alert.")
+    parser.add_argument("--digestion", default=None, choices=list(DIGESTION_VERDICTS), help="Growth-digestion verdict from section 6 (PE ruler: earnings growth + exit PE; PS ruler: revenue growth + exit PS). 透支 applies an extra x0.5 to new positions; other verdicts do not change the cap.")
     parser.add_argument("--date", type=parse_date, default=date.today(), help="Analysis date YYYY-MM-DD. Defaults to today.")
     parser.add_argument("--output-dir", default="./output/company-valuation-risk", help="Output directory for the report.")
     parser.add_argument("--template", default="", help="Optional custom template path.")
@@ -1226,6 +1291,9 @@ def main() -> None:
         drawdown_budget=args.drawdown_budget,
         fallback_drawdown=args.fallback_drawdown,
         alert_release=args.alert_release,
+        alert_release_evidence=args.alert_release_evidence,
+        forward_pe=args.forward_pe,
+        forward_ps=args.forward_ps,
         digestion=args.digestion,
     )
     print(output_path)
