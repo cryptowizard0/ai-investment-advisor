@@ -272,7 +272,7 @@ class CreateReportTests(unittest.TestCase):
                     metric="pe",
                 )
 
-    def test_pe_alert_line_stops_before_percentiles(self) -> None:
+    def test_pe_alert_line_warns_but_continues(self) -> None:
         generator = load_generator_module()
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
@@ -289,13 +289,19 @@ class CreateReportTests(unittest.TestCase):
                 ref_pe=35.4,
             )
             text = path.read_text(encoding="utf-8")
+            # Prominent warning in both the conclusion and the alert check.
             self.assertIn("警戒线触发：当前 TTM PE 120.00 > 100 倍", text)
-            self.assertIn("流程停止于第 2 步", text)
-            self.assertIn("本节不适用", text)
-            # No percentile band was computed.
-            self.assertNotIn("50% 分位 |", text)
+            self.assertIn("触发重点提示（不停止）", text)
+            self.assertIn("降置信度", text)
+            self.assertNotIn("流程停止", text)
+            # Flow continues: percentile band and risk legs are still computed.
+            self.assertIn("**当前 (100.0%)**", text)
+            self.assertIn("50% 分位", text)
+            # Potential risk takes the worse leg: ref 35.4 vs current 120 -> -70.5%.
+            self.assertIn("-70.5%", text)
+            self.assertIn("参考点腿", text)
 
-    def test_ps_alert_line_stops(self) -> None:
+    def test_ps_alert_line_warns_and_downgrades(self) -> None:
         generator = load_generator_module()
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
@@ -312,6 +318,9 @@ class CreateReportTests(unittest.TestCase):
             )
             text = path.read_text(encoding="utf-8")
             self.assertIn("警戒线触发：当前 TTM PS 45.00 > 40 倍", text)
+            self.assertIn("分位与风险读数降置信度", text)
+            # Band still computed: midrank of 45 in [10,20,30,45] -> 87.5%.
+            self.assertIn("**当前 (87.5%)**", text)
 
     def test_below_reference_point_highlighted(self) -> None:
         generator = load_generator_module()

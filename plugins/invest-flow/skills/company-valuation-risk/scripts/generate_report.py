@@ -8,9 +8,10 @@ Method (matches the skill's methodology):
      triggers (5y median TTM PE > 100, current TTM PE negative, >=4
      consecutive loss-making quarters within 5y, negative TTM PE at the
      bear-market reference date). Then an alert-line check: current TTM PE
-     above 100x (or TTM PS above 40x) raises a prominent warning and stops
-     the flow before any percentile work. Insufficient history (late listing)
-     raises a prominent low-confidence warning.
+     above 100x (or TTM PS above 40x) raises a prominent warning; the flow
+     continues, with every percentile and risk readout downgraded to low
+     confidence. Insufficient history (late listing) raises a prominent
+     low-confidence warning.
   3. Percentile band: current TTM PE/PS percentile within the company's own
      N-year distribution plus key percentile values (10/20/25/50/60/75/80/90/95).
   4. Potential risk: the worse of two drawdowns — reversion to the 50th
@@ -44,7 +45,6 @@ DEFAULT_PS_ALERT = 40.0
 MIN_DATA_SPAN_YEARS = 5.0
 PLACEHOLDER = "待填写"
 NA_TEXT = "类型闸门未通过，本节不适用。"
-ALERT_STOP_TEXT = "⚠️ 警戒线触发，流程停止于第 2 步，本节不适用。"
 
 GATE_FAIL_NOTE = (
     "类型闸门未通过：`{ctype}` 属排除类型，估值分位法在此类公司上会系统性误导——\n"
@@ -279,14 +279,15 @@ def build_alert_check(
     triggered: bool,
 ) -> str:
     caption = (
-        f"**警戒线检查**（PE > {pe_alert:g} 倍 或 PS > {ps_alert:g} 倍 → 重点提示并停止）："
+        f"**警戒线检查**（PE > {pe_alert:g} 倍 或 PS > {ps_alert:g} 倍 → 重点提示，不停止）："
     )
     if current_value is None:
         detail = f"- 当前 {metric_label} 未提供，无法检查警戒线（补数后必须复核）。"
     elif triggered:
         detail = (
-            f"- ⚠️ **当前 {metric_label} {current_value:.2f} > {alert_line:g} 倍警戒线 → 触发，"
-            "流程停止于第 2 步**"
+            f"- ⚠️ **当前 {metric_label} {current_value:.2f} > {alert_line:g} 倍警戒线 → 触发重点提示"
+            "（不停止）：估值已进入极端区，历史分位的下行参照意义大幅减弱；"
+            "建议先降风险敞口，后续分位与风险读数全部降置信度使用**"
         )
     else:
         detail = f"- 当前 {metric_label} {current_value:.2f} ≤ {alert_line:g} 倍警戒线，未触发。"
@@ -510,27 +511,6 @@ def build_conclusion_pass(
     return "\n".join(lines)
 
 
-def build_conclusion_alert_stop(
-    *,
-    company_type: str,
-    decision: RulerDecision,
-    metric_label: str,
-    current_value: float,
-    alert_line: float,
-    prominent: list[str],
-) -> str:
-    lines = [
-        f"- 公司类型：{company_type}（类型闸门：通过）",
-        f"- 估值尺子：{metric_label}（{decision.reason}）",
-        f"- ⚠️ **警戒线触发：当前 {metric_label} {current_value:.2f} > {alert_line:g} 倍**",
-        "- 结论：估值已越过警戒线，流程停止于第 2 步，不做分位与风险测算；"
-        "先降风险敞口，待回到警戒线内再复评",
-    ]
-    lines.extend(f"- {item}" for item in prominent)
-    lines.append(f"- 一句话判断：{PLACEHOLDER}")
-    return "\n".join(lines)
-
-
 def build_conclusion_fail(company_type: str) -> str:
     return "\n".join(
         [
@@ -676,134 +656,127 @@ def create_report(
         )
 
         if alert_triggered:
-            replacements = {
-                "{{结论块}}": build_conclusion_alert_stop(
-                    company_type=company_type,
-                    decision=decision,
-                    metric_label=metric_label,
-                    current_value=current_value,
-                    alert_line=alert_line,
-                    prominent=prominent,
-                ),
-                "{{类型闸门表}}": build_type_gate_table(company_type, type_basis, True),
-                "{{尺子选择表}}": ruler_block,
-                "{{分位风险表}}": ALERT_STOP_TEXT,
-                "{{分位备注}}": "\n".join(notes) if notes else "- 无",
-                "{{风险读数}}": ALERT_STOP_TEXT,
-                "{{尺子标签}}": metric_label,
-                "{{分位方法}}": "—（警戒线触发，未做分位分析）",
-            }
-        else:
-            if series:
-                filtered = [v for v in series if v > 0]
-                dropped = len(series) - len(filtered)
-                if not filtered:
-                    raise ValueError(f"{metric_label} 序列没有正值观测，无法计算分位。")
-                if current_value is None:
-                    raise ValueError(f"缺少当前 {metric_label} 值。")
-                if current_value <= 0:
-                    raise ValueError(
-                        f"当前 {metric_label} 为非正值，不能用 {chosen.upper()} 尺子；"
-                        "请改用 PS（--metric ps 并提供 PS 数据）。"
-                    )
-                current_pct = (
-                    current_percentile
-                    if current_percentile is not None
-                    else percentile_rank(filtered, current_value)
-                )
-                values_by_pct = {p: percentile_value(filtered, p) for p in TABLE_PERCENTILES}
-                method_label = f"{len(filtered)} 点历史序列经验分位（midrank）"
-                notes.append(
-                    f"- 分位样本：{len(filtered)} 点历史序列"
-                    + (f"；已剔除非正观测 {dropped} 点" if dropped else "")
-                    + "。"
-                )
-                if dropped > 0.2 * len(series):
-                    notes.append(
-                        "- ⚠️ 非正观测占比超过 20%，PE 分位参考性差——请复核第 2 步换 PS 条件是否应触发。"
-                    )
-            elif anchors:
-                if current_value is None:
-                    raise ValueError(
-                        f"锚点模式必须显式提供当前 {metric_label} 值（--current-{chosen}）。"
-                    )
-                if current_value <= 0:
-                    raise ValueError(
-                        f"当前 {metric_label} 为非正值，不能用 {chosen.upper()} 尺子；"
-                        "请改用 PS（--metric ps 并提供 PS 数据）。"
-                    )
-                current_pct = (
-                    current_percentile
-                    if current_percentile is not None
-                    else interp_pct_from_value(current_value, anchors)
-                )
-                values_by_pct = {p: interp_value_from_pct(p, anchors) for p in TABLE_PERCENTILES}
-                method_label = "分位锚点分段线性插值（顶/底部区间较粗略）"
-                notes.append("- 分位值由锚点分段线性插值，锚点覆盖不到的分位按端点截断，较粗略。")
-            else:
-                raise ValueError(
-                    f"尺子判定为 {chosen.upper()}，但未提供 {metric_label} 数据："
-                    f"请提供 --{chosen}-file / --{chosen}-values 或 --{chosen}-anchors。"
-                )
-
-            risk = compute_risk_summary(
-                current_value=current_value,
-                v50=values_by_pct[50.0],
-                ref_value=ref_value,
-                ref_date=ref_date,
-                ref_label=ref_label,
+            prominent.insert(
+                0,
+                f"⚠️ **警戒线触发：当前 {metric_label} {current_value:.2f} > {alert_line:g} 倍——"
+                "估值已进入极端区，历史分位的下行参照意义大幅减弱；"
+                "先降风险敞口，全部分位与风险读数降置信度使用**",
             )
-            if risk.below_ref:
-                prominent.append(
-                    f"⚠️ **重点提示：当前 {metric_label} {current_value:.2f} 已低于重要参考点"
-                    f" {ref_date}（{ref_label}）的 {risk.ref_value:.2f}——"
-                    "极端低估或参考点失效，需人工复核**"
-                )
-            if risk.leg_ref is None:
-                notes.append(
-                    f"- 参考点 {metric_label} 未提供（--ref-pe / --ref-ps），"
-                    "潜在风险仅按 50% 分位腿计算。"
-                )
+            notes.append(
+                f"- ⚠️ 警戒线触发：当前 {metric_label} {current_value:.2f} > {alert_line:g} 倍，"
+                "分位与风险读数降置信度。"
+            )
 
-            if current_percentile is not None:
-                notes.append(
-                    f"- 当前分位使用外部数据源报告值 {current_percentile:.1f}%（覆盖计算值）。"
+        if series:
+            filtered = [v for v in series if v > 0]
+            dropped = len(series) - len(filtered)
+            if not filtered:
+                raise ValueError(f"{metric_label} 序列没有正值观测，无法计算分位。")
+            if current_value is None:
+                raise ValueError(f"缺少当前 {metric_label} 值。")
+            if current_value <= 0:
+                raise ValueError(
+                    f"当前 {metric_label} 为非正值，不能用 {chosen.upper()} 尺子；"
+                    "请改用 PS（--metric ps 并提供 PS 数据）。"
                 )
-            if current_price is None:
-                notes.append("- 未提供当前价格，隐含价格列留待填写（--current-price）。")
+            current_pct = (
+                current_percentile
+                if current_percentile is not None
+                else percentile_rank(filtered, current_value)
+            )
+            values_by_pct = {p: percentile_value(filtered, p) for p in TABLE_PERCENTILES}
+            method_label = f"{len(filtered)} 点历史序列经验分位（midrank）"
+            notes.append(
+                f"- 分位样本：{len(filtered)} 点历史序列"
+                + (f"；已剔除非正观测 {dropped} 点" if dropped else "")
+                + "。"
+            )
+            if dropped > 0.2 * len(series):
+                notes.append(
+                    "- ⚠️ 非正观测占比超过 20%，PE 分位参考性差——请复核第 2 步换 PS 条件是否应触发。"
+                )
+        elif anchors:
+            if current_value is None:
+                raise ValueError(
+                    f"锚点模式必须显式提供当前 {metric_label} 值（--current-{chosen}）。"
+                )
+            if current_value <= 0:
+                raise ValueError(
+                    f"当前 {metric_label} 为非正值，不能用 {chosen.upper()} 尺子；"
+                    "请改用 PS（--metric ps 并提供 PS 数据）。"
+                )
+            current_pct = (
+                current_percentile
+                if current_percentile is not None
+                else interp_pct_from_value(current_value, anchors)
+            )
+            values_by_pct = {p: interp_value_from_pct(p, anchors) for p in TABLE_PERCENTILES}
+            method_label = "分位锚点分段线性插值（顶/底部区间较粗略）"
+            notes.append("- 分位值由锚点分段线性插值，锚点覆盖不到的分位按端点截断，较粗略。")
+        else:
+            raise ValueError(
+                f"尺子判定为 {chosen.upper()}，但未提供 {metric_label} 数据："
+                f"请提供 --{chosen}-file / --{chosen}-values 或 --{chosen}-anchors。"
+            )
 
-            replacements = {
-                "{{结论块}}": build_conclusion_pass(
-                    company_type=company_type,
-                    decision=decision,
-                    metric_label=metric_label,
-                    window=window,
-                    current_value=current_value,
-                    current_pct=current_pct,
-                    values_by_pct=values_by_pct,
-                    risk=risk,
-                    prominent=prominent,
-                ),
-                "{{类型闸门表}}": build_type_gate_table(company_type, type_basis, True),
-                "{{尺子选择表}}": ruler_block,
-                "{{分位风险表}}": build_band_table(
-                    metric_label=metric_label,
-                    current_value=current_value,
-                    current_pct=current_pct,
-                    values_by_pct=values_by_pct,
-                    current_price=current_price,
-                ),
-                "{{分位备注}}": "\n".join(notes) if notes else "- 无",
-                "{{风险读数}}": build_risk_readouts(
-                    current_value=current_value,
-                    values_by_pct=values_by_pct,
-                    denom_label=denom_label,
-                    metric_label=metric_label,
-                    risk=risk,
-                ),
-                "{{尺子标签}}": metric_label,
-                "{{分位方法}}": method_label,
-            }
+        risk = compute_risk_summary(
+            current_value=current_value,
+            v50=values_by_pct[50.0],
+            ref_value=ref_value,
+            ref_date=ref_date,
+            ref_label=ref_label,
+        )
+        if risk.below_ref:
+            prominent.append(
+                f"⚠️ **重点提示：当前 {metric_label} {current_value:.2f} 已低于重要参考点"
+                f" {ref_date}（{ref_label}）的 {risk.ref_value:.2f}——"
+                "极端低估或参考点失效，需人工复核**"
+            )
+        if risk.leg_ref is None:
+            notes.append(
+                f"- 参考点 {metric_label} 未提供（--ref-pe / --ref-ps），"
+                "潜在风险仅按 50% 分位腿计算。"
+            )
+
+        if current_percentile is not None:
+            notes.append(
+                f"- 当前分位使用外部数据源报告值 {current_percentile:.1f}%（覆盖计算值）。"
+            )
+        if current_price is None:
+            notes.append("- 未提供当前价格，隐含价格列留待填写（--current-price）。")
+
+        replacements = {
+            "{{结论块}}": build_conclusion_pass(
+                company_type=company_type,
+                decision=decision,
+                metric_label=metric_label,
+                window=window,
+                current_value=current_value,
+                current_pct=current_pct,
+                values_by_pct=values_by_pct,
+                risk=risk,
+                prominent=prominent,
+            ),
+            "{{类型闸门表}}": build_type_gate_table(company_type, type_basis, True),
+            "{{尺子选择表}}": ruler_block,
+            "{{分位风险表}}": build_band_table(
+                metric_label=metric_label,
+                current_value=current_value,
+                current_pct=current_pct,
+                values_by_pct=values_by_pct,
+                current_price=current_price,
+            ),
+            "{{分位备注}}": "\n".join(notes) if notes else "- 无",
+            "{{风险读数}}": build_risk_readouts(
+                current_value=current_value,
+                values_by_pct=values_by_pct,
+                denom_label=denom_label,
+                metric_label=metric_label,
+                risk=risk,
+            ),
+            "{{尺子标签}}": metric_label,
+            "{{分位方法}}": method_label,
+        }
 
     replacements.update(
         {
