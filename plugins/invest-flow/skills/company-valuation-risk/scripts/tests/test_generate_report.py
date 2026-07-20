@@ -50,6 +50,8 @@ TEMPLATE = "\n".join(
         "{{分位备注}}",
         "## 读数",
         "{{风险读数}}",
+        "## 建仓计划",
+        "{{建仓计划}}",
     ]
 )
 
@@ -130,6 +132,94 @@ class DecideMetricTests(unittest.TestCase):
         self.assertEqual(decision.metric, "ps")
         self.assertTrue(decision.forced)
         self.assertIn("人工指定", decision.reason)
+
+
+class PositionPlanTests(unittest.TestCase):
+    def _plan(self, generator, **overrides):
+        kwargs = dict(
+            potential_risk=-40.0,
+            fallback_drawdown=None,
+            drawdown_budget=2.0,
+            grade=None,
+            elastic=False,
+            alert_triggered=False,
+            span_insufficient=False,
+        )
+        kwargs.update(overrides)
+        return generator.compute_position_plan(**kwargs)
+
+    @staticmethod
+    def _row(plan, budget):
+        for row in plan.rows:
+            if abs(row.budget - budget) < 1e-9:
+                return row
+        raise AssertionError(f"No ladder row for budget {budget}")
+
+    def test_ladder_covers_all_budgets(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(generator)
+        self.assertEqual([r.budget for r in plan.rows], [2, 5, 10, 20, 30, 50, 70])
+
+    def test_basic_formula_per_rung(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(generator)  # risk 40%
+        self.assertAlmostEqual(self._row(plan, 2).final_cap, 5.0)
+        self.assertAlmostEqual(self._row(plan, 10).final_cap, 25.0)
+        self.assertAlmostEqual(self._row(plan, 50).final_cap, 125.0)
+        self.assertAlmostEqual(plan.primary_final_cap, 5.0)
+
+    def test_custom_primary_budget_merged_and_flagged(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(generator, drawdown_budget=3.0)
+        self.assertIn(3.0, [r.budget for r in plan.rows])
+        self.assertAlmostEqual(self._row(plan, 3.0).final_cap, 7.5)
+        self.assertAlmostEqual(plan.primary_final_cap, 7.5)
+
+    def test_grade_elastic_and_span_discounts_stack(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(generator, grade="通过", elastic=True, span_insufficient=True)
+        self.assertAlmostEqual(plan.discount, 0.125)
+        self.assertAlmostEqual(self._row(plan, 2).base_cap, 5.0)
+        self.assertAlmostEqual(self._row(plan, 2).final_cap, 5.0 * 0.125)
+        self.assertAlmostEqual(plan.primary_final_cap, 0.625)
+
+    def test_blocked_grades_give_no_position(self) -> None:
+        generator = load_generator_module()
+        for grade in ("待验证", "剔除"):
+            plan = self._plan(generator, grade=grade)
+            self.assertEqual(plan.rows, [], msg=grade)
+            self.assertIsNone(plan.primary_final_cap, msg=grade)
+            self.assertIn("不给仓位", plan.blocked_reason)
+
+    def test_alert_zeroes_but_keeps_ladder(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(generator, grade="金池子", alert_triggered=True)
+        self.assertTrue(plan.alert_zeroed)
+        self.assertEqual(plan.primary_final_cap, 0.0)
+        # ladder formula values are retained for reference.
+        self.assertAlmostEqual(self._row(plan, 2).final_cap, 5.0)
+
+    def test_fallback_used_when_risk_unavailable(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(generator, potential_risk=None, fallback_drawdown=50.0)
+        self.assertAlmostEqual(self._row(plan, 2).base_cap, 4.0)
+        self.assertIn("兜底", plan.risk_source)
+
+    def test_no_risk_and_no_fallback_blocks(self) -> None:
+        generator = load_generator_module()
+        plan = self._plan(generator, potential_risk=None)
+        self.assertEqual(plan.rows, [])
+        self.assertIsNone(plan.primary_final_cap)
+        self.assertIn("--fallback-drawdown", plan.blocked_reason)
+
+    def test_invalid_inputs_raise(self) -> None:
+        generator = load_generator_module()
+        with self.assertRaises(ValueError):
+            self._plan(generator, drawdown_budget=0.0)
+        with self.assertRaises(ValueError):
+            self._plan(generator, grade="未知档")
+        with self.assertRaises(ValueError):
+            self._plan(generator, fallback_drawdown=-5.0)
 
 
 class CreateReportTests(unittest.TestCase):
@@ -404,6 +494,113 @@ class CreateReportTests(unittest.TestCase):
             self.assertIn("历史数据不足", text)
             self.assertIn("2.0 年", text)
             self.assertIn("降置信度", text)
+
+    def test_position_plan_with_grade_in_report(self) -> None:
+        generator = load_generator_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            path = generator.create_report(
+                ticker="NVDA",
+                company_type="成长",
+                report_date=date(2026, 7, 20),
+                output_dir=output_dir,
+                template_path=self._template(output_dir),
+                pe_series=[float(v) for v in range(10, 110)],
+                current_pe=100.0,
+                max_loss_streak=0,
+                ref_pe=35.4,
+                grade="通过",
+            )
+            text = path.read_text(encoding="utf-8")
+            # risk 64.6% -> budget-2 base 2/64.6 = 3.1%, 通过 x0.5 -> 1.5% (primary, bolded).
+            self.assertIn("3.1%", text)
+            self.assertIn("**1.5%**", text)
+            self.assertIn("通过 ×0.5", text)
+            self.assertIn("回撤预算", text)
+            # Full ladder rendered: budget-10 base 10/64.6 = 15.5%, final 7.7%; budget-70 present.
+            self.assertIn("15.5%", text)
+            self.assertIn("| 70% |", text)
+            self.assertIn("其它回撤预算档位（2/5/10/20/30/50/70%）见第六节表", text)
+
+    def test_position_blocked_for_pending_grade(self) -> None:
+        generator = load_generator_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            path = generator.create_report(
+                ticker="WAIT",
+                company_type="成长",
+                report_date=date(2026, 7, 20),
+                output_dir=output_dir,
+                template_path=self._template(output_dir),
+                pe_series=[float(v) for v in range(10, 110)],
+                current_pe=100.0,
+                max_loss_streak=0,
+                ref_pe=35.4,
+                grade="待验证",
+            )
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("不给仓位", text)
+            self.assertIn("仓位上限：不适用", text)
+
+    def test_alert_zeroes_new_position(self) -> None:
+        generator = load_generator_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            path = generator.create_report(
+                ticker="HYPE",
+                company_type="成长",
+                report_date=date(2026, 7, 20),
+                output_dir=output_dir,
+                template_path=self._template(output_dir),
+                pe_series=[float(v) for v in range(10, 110)],
+                current_pe=120.0,
+                pe_median=60.0,
+                max_loss_streak=0,
+                ref_pe=35.4,
+                grade="金池子",
+            )
+            text = path.read_text(encoding="utf-8")
+            # ref leg 35.4/120-1 = -70.5% -> budget-2 formula 2/70.5 = 2.8%, zeroed by alert.
+            self.assertIn("0%（公式 2.8%）", text)
+            self.assertIn("0%（警戒线触发，不建新仓", text)
+            self.assertIn("警戒线触发：新建仓一律归零", text)
+
+    def test_gate_fail_position_uses_fallback_drawdown(self) -> None:
+        generator = load_generator_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            path = generator.create_report(
+                ticker="MU",
+                company_type="周期",
+                report_date=date(2026, 7, 20),
+                output_dir=output_dir,
+                template_path=self._template(output_dir),
+                grade="通过",
+                fallback_drawdown=50.0,
+            )
+            text = path.read_text(encoding="utf-8")
+            # base 2/50 = 4.0%, 通过 x0.5 -> 2.0%.
+            self.assertIn("人工回撤兜底", text)
+            self.assertIn("4.0%", text)
+            self.assertIn("**2.0%**", text)
+
+    def test_standalone_mode_notes_missing_grade(self) -> None:
+        generator = load_generator_module()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            path = generator.create_report(
+                ticker="SOLO",
+                company_type="成长",
+                report_date=date(2026, 7, 20),
+                output_dir=output_dir,
+                template_path=self._template(output_dir),
+                pe_series=[float(v) for v in range(10, 110)],
+                current_pe=100.0,
+                max_loss_streak=0,
+                ref_pe=35.4,
+            )
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("未接入 chain-alpha 档位", text)
 
     def test_invalid_company_type_raises(self) -> None:
         generator = load_generator_module()

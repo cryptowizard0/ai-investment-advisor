@@ -19,6 +19,12 @@ Method (matches the skill's methodology):
      multiple already sits below the reference point, highlight prominently.
      Implied prices assume a static TTM denominator (price move == multiple
      move, valuation-only).
+  5. Position plan (chain-alpha step 4): position cap = drawdown budget /
+     potential risk, tabulated across a budget ladder (2/5/10/20/30/50/70%),
+     where the drawdown budget is the max account-level drawdown (% of total
+     assets) one name may inflict. Discounts stack: grade (金池子 x1 / 通过
+     x0.5; 待验证/剔除 no position), elastic x0.5, short-history x0.5; a
+     triggered alert line zeroes new-entry positions.
 
 Percentiles come either from a historical value series (empirical, midrank)
 or from vendor quantile anchors (piecewise-linear interpolation).
@@ -43,6 +49,10 @@ DEFAULT_WINDOW = "5年"
 DEFAULT_PE_ALERT = 100.0
 DEFAULT_PS_ALERT = 40.0
 MIN_DATA_SPAN_YEARS = 5.0
+DEFAULT_DRAWDOWN_BUDGET = 2.0
+DRAWDOWN_BUDGET_LADDER = [2.0, 5.0, 10.0, 20.0, 30.0, 50.0, 70.0]
+GRADE_FACTORS = {"金池子": 1.0, "通过": 0.5}
+BLOCKED_GRADES = ("待验证", "剔除")
 PLACEHOLDER = "待填写"
 NA_TEXT = "类型闸门未通过，本节不适用。"
 
@@ -361,6 +371,209 @@ def compute_risk_summary(
     )
 
 
+@dataclass
+class PositionRow:
+    """One drawdown-budget rung: base cap before discounts, final after."""
+
+    budget: float
+    base_cap: float
+    final_cap: float  # post-discount deployable cap (before any alert-line zeroing)
+
+
+@dataclass
+class PositionPlan:
+    """Position cap = drawdown budget / potential risk, across a budget ladder.
+
+    Drawdown budget = the maximum account-level drawdown (% of total assets)
+    a single name is allowed to inflict. Each ladder rung yields its own cap;
+    the primary budget (default 2%) is highlighted and used in the conclusion.
+    All caps are percent-of-portfolio.
+    """
+
+    primary_budget: float
+    risk_pct: float | None
+    risk_source: str
+    discount: float
+    grade: str | None
+    elastic: bool
+    span_halved: bool
+    alert_zeroed: bool
+    rows: list[PositionRow]
+    blocked_reason: str
+
+    @property
+    def primary_row(self) -> PositionRow | None:
+        for row in self.rows:
+            if abs(row.budget - self.primary_budget) < 1e-9:
+                return row
+        return None
+
+    @property
+    def primary_final_cap(self) -> float | None:
+        row = self.primary_row
+        if row is None:
+            return None
+        return 0.0 if self.alert_zeroed else row.final_cap
+
+
+def compute_position_plan(
+    *,
+    potential_risk: float | None,
+    fallback_drawdown: float | None,
+    drawdown_budget: float,
+    grade: str | None,
+    elastic: bool,
+    alert_triggered: bool,
+    span_insufficient: bool,
+) -> PositionPlan:
+    if drawdown_budget <= 0:
+        raise ValueError("Drawdown budget must be positive.")
+    if grade is not None and grade not in GRADE_FACTORS and grade not in BLOCKED_GRADES:
+        raise ValueError(
+            f"Unknown grade '{grade}'. Use one of: "
+            f"{', '.join(tuple(GRADE_FACTORS) + BLOCKED_GRADES)}."
+        )
+    if fallback_drawdown is not None and fallback_drawdown <= 0:
+        raise ValueError("Fallback drawdown must be a positive percent, e.g. 45 for -45%.")
+
+    if potential_risk is not None and potential_risk < 0:
+        risk_pct, risk_source = abs(potential_risk), "潜在风险（两腿取大）"
+    elif fallback_drawdown is not None:
+        risk_pct, risk_source = fallback_drawdown, "人工回撤兜底（--fallback-drawdown）"
+    else:
+        risk_pct, risk_source = None, ""
+
+    discount = 1.0
+    if grade in GRADE_FACTORS:
+        discount *= GRADE_FACTORS[grade]
+    if elastic:
+        discount *= 0.5
+    if span_insufficient:
+        discount *= 0.5
+
+    plan = PositionPlan(
+        primary_budget=drawdown_budget,
+        risk_pct=risk_pct,
+        risk_source=risk_source,
+        discount=discount,
+        grade=grade,
+        elastic=elastic,
+        span_halved=span_insufficient,
+        alert_zeroed=False,
+        rows=[],
+        blocked_reason="",
+    )
+    if grade in BLOCKED_GRADES:
+        plan.blocked_reason = f"chain-alpha 档位为「{grade}」，不给仓位（升档后再定仓）"
+        return plan
+    if risk_pct is None:
+        plan.blocked_reason = (
+            "潜在风险不可用（两腿均无下行或分位分析未完成），"
+            "需人工复核后用 --fallback-drawdown 提供回撤再定仓"
+        )
+        return plan
+
+    budgets = sorted(set(DRAWDOWN_BUDGET_LADDER) | {drawdown_budget})
+    for budget in budgets:
+        base = budget / risk_pct * 100
+        plan.rows.append(PositionRow(budget=budget, base_cap=base, final_cap=base * discount))
+    plan.alert_zeroed = alert_triggered
+    if alert_triggered:
+        plan.blocked_reason = "警戒线触发——不建新仓，档位表折后值仅作回线内复评参考"
+    return plan
+
+
+def _discount_caption(plan: PositionPlan) -> str:
+    bits = []
+    if plan.grade:
+        bits.append(f"档位 {plan.grade} ×{GRADE_FACTORS[plan.grade]:g}")
+    else:
+        bits.append("未接入 chain-alpha 档位 ×1（独立使用，未经第三步验证）")
+    if plan.elastic:
+        bits.append("弹性标的 ×0.5")
+    if plan.span_halved:
+        bits.append("数据不足 ×0.5")
+    return "；".join(bits) + f"（合计 ×{plan.discount:g}）"
+
+
+def build_position_section(plan: PositionPlan) -> str:
+    if not plan.rows:
+        risk_cell = "—" if plan.risk_pct is None else f"{plan.risk_pct:.1f}%"
+        return "\n".join(
+            [
+                f"- 潜在风险：{risk_cell}（{plan.risk_source or '不可用'}）",
+                f"- 仓位上限：**不适用**（{plan.blocked_reason}）",
+            ]
+        )
+
+    two_col = abs(plan.discount - 1.0) > 1e-9
+    lines = [
+        f"- 潜在风险：{plan.risk_pct:.1f}%（{plan.risk_source}）",
+        f"- 折扣：{_discount_caption(plan)}",
+        "",
+    ]
+    if two_col:
+        lines.append("| 回撤预算 | 基础仓位上限 | 折后仓位上限 |")
+        lines.append("|---:|---:|---:|")
+    else:
+        lines.append("| 回撤预算 | 仓位上限 |")
+        lines.append("|---:|---:|")
+
+    has_over_100 = False
+    for row in plan.rows:
+        is_primary = abs(row.budget - plan.primary_budget) < 1e-9
+        if max(row.base_cap, row.final_cap) > 100:
+            has_over_100 = True
+        budget_cell = f"{row.budget:g}%"
+        base_cell = f"{row.base_cap:.1f}%"
+        if plan.alert_zeroed:
+            final_cell = f"0%（公式 {row.final_cap:.1f}%）"
+        else:
+            final_cell = f"{row.final_cap:.1f}%"
+        if is_primary:
+            budget_cell = f"**{budget_cell}**"
+            base_cell = f"**{base_cell}**"
+            final_cell = f"**{final_cell}**"
+        if two_col:
+            lines.append(f"| {budget_cell} | {base_cell} | {final_cell} |")
+        else:
+            lines.append(f"| {budget_cell} | {final_cell} |")
+
+    lines.append("")
+    lines.append(f"- 回撤预算 = 单只标的最多允许给整个账户带来的回撤（占总资产 %）；主档 **{plan.primary_budget:g}%**（加粗行）。")
+    lines.append("- 仓位为组合占比上限，不是建议买入量；与计价币种无关。")
+    if plan.alert_zeroed:
+        lines.append("- ⚠️ 警戒线触发：新建仓一律归零，上表折后值仅作回到警戒线内的复评参考。")
+    if has_over_100:
+        lines.append("- 注：仓位 >100% 表示该回撤预算已超过标的单杀空间（需杠杆才能达到），仅作参照。")
+    lines.append(
+        "- 潜在风险为估值单杀口径；若分母（E/S）同步下修为双杀，实际回撤可能超过回撤预算——"
+        "建仓后交给 chain-alpha-delivery-tracking 按季跟踪。"
+    )
+    return "\n".join(lines)
+
+
+def position_conclusion_line(plan: PositionPlan) -> str:
+    if not plan.rows:
+        return f"- 仓位上限：不适用（{plan.blocked_reason}）"
+    if plan.alert_zeroed:
+        return "- 仓位上限：**0%（警戒线触发，不建新仓）**；各回撤预算档位公式值见第六节表"
+    cap = plan.primary_final_cap
+    discounts = []
+    if plan.grade:
+        discounts.append(f"{plan.grade} ×{GRADE_FACTORS[plan.grade]:g}")
+    if plan.elastic:
+        discounts.append("弹性 ×0.5")
+    if plan.span_halved:
+        discounts.append("数据不足 ×0.5")
+    suffix = f"，{'、'.join(discounts)}" if discounts else ""
+    return (
+        f"- 仓位上限（回撤预算 {plan.primary_budget:g}%）：**{cap:.1f}%**"
+        f"（回撤预算 {plan.primary_budget:g}% ÷ 潜在风险 {plan.risk_pct:.1f}%{suffix}）；"
+        "其它回撤预算档位（2/5/10/20/30/50/70%）见第六节表"
+    )
+
+
 def _pct_row_label(pct: float) -> str:
     if pct <= 0:
         return "历史最低 (0%)"
@@ -485,6 +698,7 @@ def build_conclusion_pass(
     current_pct: float,
     values_by_pct: dict[float, float],
     risk: RiskSummary,
+    position_line: str,
     prominent: list[str],
 ) -> str:
     def change(pct: float) -> float:
@@ -504,6 +718,7 @@ def build_conclusion_pass(
         f"- 估值尺子：{metric_label}（{decision.reason}）",
         f"- 当前 {metric_label}：{current_value:.2f}，位于{window}第 **{current_pct:.1f}%** 分位 —— **{band_label(current_pct)}**",
         risk_line,
+        position_line,
         f"- 估值扩张空间：至 90% 分位 {change(90.0):+.1f}%",
     ]
     lines.extend(f"- {item}" for item in prominent)
@@ -511,11 +726,12 @@ def build_conclusion_pass(
     return "\n".join(lines)
 
 
-def build_conclusion_fail(company_type: str) -> str:
+def build_conclusion_fail(company_type: str, position_line: str) -> str:
     return "\n".join(
         [
             f"- 公司类型：{company_type}（类型闸门：未通过 → 排除）",
             "- 结论：本方法不适用，流程停止于第 1 步，不输出估值分位与风险测算",
+            position_line,
             f"- 一句话判断：{PLACEHOLDER}",
         ]
     )
@@ -577,6 +793,10 @@ def create_report(
     pe_alert: float = DEFAULT_PE_ALERT,
     ps_alert: float = DEFAULT_PS_ALERT,
     data_span_years: float | None = None,
+    grade: str | None = None,
+    elastic: bool = False,
+    drawdown_budget: float = DEFAULT_DRAWDOWN_BUDGET,
+    fallback_drawdown: float | None = None,
 ) -> Path:
     ticker = ticker.strip()
     if not ticker:
@@ -604,7 +824,8 @@ def create_report(
     gate_passed = company_type in ALLOWED_TYPES
     notes: list[str] = []
     prominent: list[str] = []
-    if data_span_years is not None and data_span_years < MIN_DATA_SPAN_YEARS:
+    span_insufficient = data_span_years is not None and data_span_years < MIN_DATA_SPAN_YEARS
+    if span_insufficient:
         prominent.append(
             f"⚠️ **历史数据不足：分位样本仅覆盖约 {data_span_years:.1f} 年"
             f"（不足 {MIN_DATA_SPAN_YEARS:g} 年窗口，如上市较晚）——分位带参照性差，"
@@ -615,13 +836,33 @@ def create_report(
         )
 
     if not gate_passed:
+        plan = compute_position_plan(
+            potential_risk=None,
+            fallback_drawdown=fallback_drawdown,
+            drawdown_budget=drawdown_budget,
+            grade=grade,
+            elastic=elastic,
+            alert_triggered=False,
+            span_insufficient=span_insufficient,
+        )
+        if fallback_drawdown is not None and plan.rows:
+            position_block = (
+                "类型闸门未通过——分位法潜在风险不可用，以下仓位基于人工回撤兜底（--fallback-drawdown）：\n\n"
+                + build_position_section(plan)
+            )
+        else:
+            position_block = (
+                "类型闸门未通过，分位法仓位框架不适用；"
+                "如需仓位，请人工评估最大回撤后用 --fallback-drawdown 重跑。"
+            )
         replacements = {
-            "{{结论块}}": build_conclusion_fail(company_type),
+            "{{结论块}}": build_conclusion_fail(company_type, position_conclusion_line(plan)),
             "{{类型闸门表}}": build_type_gate_table(company_type, type_basis, False),
             "{{尺子选择表}}": NA_TEXT,
             "{{分位风险表}}": NA_TEXT,
             "{{分位备注}}": GATE_FAIL_NOTE.format(ctype=company_type),
             "{{风险读数}}": NA_TEXT,
+            "{{建仓计划}}": position_block,
             "{{尺子标签}}": "—",
             "{{分位方法}}": "—",
         }
@@ -745,6 +986,16 @@ def create_report(
         if current_price is None:
             notes.append("- 未提供当前价格，隐含价格列留待填写（--current-price）。")
 
+        plan = compute_position_plan(
+            potential_risk=risk.potential_risk,
+            fallback_drawdown=fallback_drawdown,
+            drawdown_budget=drawdown_budget,
+            grade=grade,
+            elastic=elastic,
+            alert_triggered=alert_triggered,
+            span_insufficient=span_insufficient,
+        )
+
         replacements = {
             "{{结论块}}": build_conclusion_pass(
                 company_type=company_type,
@@ -755,6 +1006,7 @@ def create_report(
                 current_pct=current_pct,
                 values_by_pct=values_by_pct,
                 risk=risk,
+                position_line=position_conclusion_line(plan),
                 prominent=prominent,
             ),
             "{{类型闸门表}}": build_type_gate_table(company_type, type_basis, True),
@@ -774,6 +1026,7 @@ def create_report(
                 metric_label=metric_label,
                 risk=risk,
             ),
+            "{{建仓计划}}": build_position_section(plan),
             "{{尺子标签}}": metric_label,
             "{{分位方法}}": method_label,
         }
@@ -832,7 +1085,11 @@ def main() -> None:
     parser.add_argument("--current-percentile", default=None, type=float, help="Override current percentile (e.g. vendor-reported).")
     parser.add_argument("--pe-alert", default=DEFAULT_PE_ALERT, type=float, help=f"PE alert line (prominent warning + stop). Default: {DEFAULT_PE_ALERT:g}.")
     parser.add_argument("--ps-alert", default=DEFAULT_PS_ALERT, type=float, help=f"PS alert line (prominent warning + stop). Default: {DEFAULT_PS_ALERT:g}.")
-    parser.add_argument("--data-span-years", default=None, type=float, help="Actual years covered by the percentile data; <5 triggers a prominent low-confidence warning.")
+    parser.add_argument("--data-span-years", default=None, type=float, help="Actual years covered by the percentile data; <5 triggers a prominent low-confidence warning and halves the position cap.")
+    parser.add_argument("--grade", default=None, choices=tuple(GRADE_FACTORS) + BLOCKED_GRADES, help="chain-alpha verification grade; 金池子 full, 通过 x0.5, 待验证/剔除 no position.")
+    parser.add_argument("--elastic", action="store_true", help="Elastic name (link revenue share 20-40%%): position cap x0.5.")
+    parser.add_argument("--drawdown-budget", default=DEFAULT_DRAWDOWN_BUDGET, type=float, help=f"Primary/highlighted drawdown budget (%% of total assets one name may inflict). The report tabulates the full ladder {DRAWDOWN_BUDGET_LADDER}; this value is bolded and used in the conclusion. Default: {DEFAULT_DRAWDOWN_BUDGET:g}.")
+    parser.add_argument("--fallback-drawdown", default=None, type=float, help="Manual drawdown %% (e.g. 45 for -45%%) used when the percentile-based potential risk is unavailable.")
     parser.add_argument("--date", type=parse_date, default=date.today(), help="Analysis date YYYY-MM-DD. Defaults to today.")
     parser.add_argument("--output-dir", default="./output/company-valuation-risk", help="Output directory for the report.")
     parser.add_argument("--template", default="", help="Optional custom template path.")
@@ -878,6 +1135,10 @@ def main() -> None:
         pe_alert=args.pe_alert,
         ps_alert=args.ps_alert,
         data_span_years=args.data_span_years,
+        grade=args.grade,
+        elastic=args.elastic,
+        drawdown_budget=args.drawdown_budget,
+        fallback_drawdown=args.fallback_drawdown,
     )
     print(output_path)
 
