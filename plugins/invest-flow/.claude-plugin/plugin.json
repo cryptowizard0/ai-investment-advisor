@@ -1,7 +1,7 @@
 {
   "name": "invest-flow",
-  "version": "0.4.3",
-  "description": "Bundle investment research skills with Firecrawl-first web research, earnings report analysis, non-consensus company discovery, daily market scans, reflexivity workflows, report generation, multi-agent analysis, chain-alpha industry-chain stock selection pipeline, index valuation sensitivity, and market data routing.",
+  "version": "0.4.4",
+  "description": "Bundle investment research skills with Firecrawl-first web research, earnings report analysis, non-consensus company discovery, daily market scans, reflexivity workflows, report generation, multi-agent analysis, chain-alpha industry-chain stock selection pipeline, index valuation sensitivity, company valuation percentile-risk analysis, and market data routing.",
   "author": {
     "name": "Potter",
     "email": "45678072+cryptowizard0@users.noreply.github.com",
@@ -9,5 +9,5 @@
   },
   "homepage": "https://github.com/cryptowizard0/ai-investment-advisor",
   "repository": "https://github.com/cryptowizard0/ai-investment-advisor",
-  "keywords": ["investment", "finance", "stocks", "scoring", "earnings", "financial-results", "gold", "analysis", "reflexivity", "research", "market-scan", "non-consensus", "company-discovery", "industry-chain", "supply-demand", "chain-alpha"]
+  "keywords": ["investment", "finance", "stocks", "scoring", "earnings", "financial-results", "gold", "analysis", "reflexivity", "research", "market-scan", "non-consensus", "company-discovery", "industry-chain", "supply-demand", "chain-alpha", "valuation", "percentile-risk"]
 }
