@@ -56,6 +56,13 @@ BLOCKED_GRADES = ("待验证", "剔除")
 PLACEHOLDER = "待填写"
 NA_TEXT = "类型闸门未通过，本节不适用。"
 
+INDUSTRY_CONTEXT_NOTE = (
+    "- ⚠️ 特别提示（不影响公式计算与结论）：PE 分位必须结合行业与公司基本面解读——"
+    "高分位若逢行业与公司双强（如 NVDA TTM PE 248 期），不构成卖出依据；"
+    "低分位若逢行业担忧发酵（如存储板块杀估值），不构成买入依据。"
+    "本标的行业×公司定性判断：待填写"
+)
+
 GATE_FAIL_NOTE = (
     "类型闸门未通过：`{ctype}` 属排除类型，估值分位法在此类公司上会系统性误导——\n"
     "周期型低 PE 常出现在盈利顶部、高 PE 常出现在底部；脉冲型 TTM 含一次性损益，分母不可外推；\n"
@@ -557,7 +564,7 @@ def position_conclusion_line(plan: PositionPlan) -> str:
     if not plan.rows:
         return f"- 仓位上限：不适用（{plan.blocked_reason}）"
     if plan.alert_zeroed:
-        return "- 仓位上限：**0%（警戒线触发，不建新仓）**；各回撤预算档位公式值见第六节表"
+        return "- 仓位上限：**0%（警戒线触发，不建新仓）**；各回撤预算档位公式值见第七节表"
     cap = plan.primary_final_cap
     discounts = []
     if plan.grade:
@@ -570,7 +577,7 @@ def position_conclusion_line(plan: PositionPlan) -> str:
     return (
         f"- 仓位上限（回撤预算 {plan.primary_budget:g}%）：**{cap:.1f}%**"
         f"（回撤预算 {plan.primary_budget:g}% ÷ 潜在风险 {plan.risk_pct:.1f}%{suffix}）；"
-        "其它回撤预算档位（2/5/10/20/30/50/70%）见第六节表"
+        "其它回撤预算档位（2/5/10/20/30/50/70%）见第七节表"
     )
 
 
@@ -722,6 +729,7 @@ def build_conclusion_pass(
         f"- 估值扩张空间：至 90% 分位 {change(90.0):+.1f}%",
     ]
     lines.extend(f"- {item}" for item in prominent)
+    lines.append(INDUSTRY_CONTEXT_NOTE)
     lines.append(f"- 一句话判断：{PLACEHOLDER}")
     return "\n".join(lines)
 
@@ -732,6 +740,7 @@ def build_conclusion_fail(company_type: str, position_line: str) -> str:
             f"- 公司类型：{company_type}（类型闸门：未通过 → 排除）",
             "- 结论：本方法不适用，流程停止于第 1 步，不输出估值分位与风险测算",
             position_line,
+            INDUSTRY_CONTEXT_NOTE,
             f"- 一句话判断：{PLACEHOLDER}",
         ]
     )

@@ -267,6 +267,9 @@ class CreateReportTests(unittest.TestCase):
             # Potential risk takes the worse leg: ref 35.4 vs current 100 -> -64.6%.
             self.assertIn("-64.6%", text)
             self.assertIn("参考点腿", text)
+            # Industry-and-company context note is mandatory and informational only.
+            self.assertIn("特别提示（不影响公式计算与结论）", text)
+            self.assertIn("行业×公司定性判断：待填写", text)
             # Alert line checked but not triggered (100.0 <= 100).
             self.assertIn("未触发。", text)
             self.assertIn("警戒线检查", text)
@@ -331,6 +334,8 @@ class CreateReportTests(unittest.TestCase):
             self.assertIn("类型闸门未通过", text)
             self.assertIn("本节不适用", text)
             self.assertIn("替代框架", text)
+            # Context note also present on the gate-fail path (e.g. storage under industry fear).
+            self.assertIn("特别提示（不影响公式计算与结论）", text)
 
     def test_ps_chosen_without_ps_data_raises(self) -> None:
         generator = load_generator_module()
@@ -520,7 +525,7 @@ class CreateReportTests(unittest.TestCase):
             # Full ladder rendered: budget-10 base 10/64.6 = 15.5%, final 7.7%; budget-70 present.
             self.assertIn("15.5%", text)
             self.assertIn("| 70% |", text)
-            self.assertIn("其它回撤预算档位（2/5/10/20/30/50/70%）见第六节表", text)
+            self.assertIn("其它回撤预算档位（2/5/10/20/30/50/70%）见第七节表", text)
 
     def test_position_blocked_for_pending_grade(self) -> None:
         generator = load_generator_module()
