@@ -46,6 +46,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── earnings-report-analysis/
 │           ├── institutional-accumulation-analysis/
 │           ├── index-pe-sensitivity/
+│           ├── index-bull-bear-cycle-tracking/
 │           ├── non-consensus-company-discovery/
 │           ├── gold-trend-analysis/
 │           ├── reflexivity-analysis/
@@ -66,6 +67,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │   ├── earnings-report-analysis/
 │   ├── ai-infrastructure-sector-discovery/
 │   ├── index-pe-sensitivity/
+│   ├── index-market-cycles/
 │   ├── institutional-accumulation-analysis/
 │   ├── non-consensus-company-discovery/
 │   ├── gold-analysis/
@@ -98,6 +100,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_report.py` - earnings report analysis skeleton generator
 - `plugins/invest-flow/skills/non-consensus-company-discovery/scripts/generate_report.py` - non-consensus discovery report skeleton generator
 - `plugins/invest-flow/skills/index-pe-sensitivity/scripts/generate_report.py` - index valuation price-sensitivity table generator
+- `plugins/invest-flow/skills/index-bull-bear-cycle-tracking/scripts/calculate_cycles.py` - close-to-close threshold cycle detector for index bull/bear tables
 - `plugins/invest-flow/skills/company-valuation-risk/scripts/generate_report.py` - company valuation percentile-band and risk report generator
 - `plugins/invest-flow/skills/output-report-index/scripts/generate_index.py` - output report index generator
 - `plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py` - UTF-8 local report static server
@@ -122,6 +125,7 @@ python -m unittest \
   plugins/invest-flow/skills/non-consensus-company-discovery/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/daily-us-market-scan/scripts/tests/test_create_report.py \
   plugins/invest-flow/skills/index-pe-sensitivity/scripts/tests/test_generate_report.py \
+  plugins/invest-flow/skills/index-bull-bear-cycle-tracking/scripts/tests/test_calculate_cycles.py \
   plugins/invest-flow/skills/company-valuation-risk/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_serve_reports.py
@@ -137,6 +141,9 @@ python plugins/invest-flow/skills/earnings-report-analysis/scripts/generate_repo
 
 # Generate an index valuation price-sensitivity report
 python plugins/invest-flow/skills/index-pe-sensitivity/scripts/generate_report.py --index 科创50 --code 000688 --base 232.5 --anchors "36.31:0,83.91:50,159.29:80,232.51:98.07,263.72:100" --current-percentile 98.07
+
+# Detect bull/bear cycles from an index EOD close CSV
+python plugins/invest-flow/skills/index-bull-bear-cycle-tracking/scripts/calculate_cycles.py --prices-file prices.csv --seed-kind auto --format markdown
 
 # Generate a company valuation percentile-band risk report
 python plugins/invest-flow/skills/company-valuation-risk/scripts/generate_report.py NVDA --company "NVIDIA" --company-type 成长 --pe-file pe_5y.csv --current-price 181.40 --max-loss-streak 0 --ref-pe 35.4 --grade 通过 --drawdown-budget 2
@@ -174,6 +181,7 @@ Active packaged skills:
 - `earnings-report-analysis` - institutional earnings report, guidance, call, and expectation-gap analysis
 - `institutional-accumulation-analysis` - whale accumulation/distribution analysis
 - `index-pe-sensitivity` - index valuation price-sensitivity table: ±price move -> TTM P/E (整体法 aggregate caliber) -> N-year percentile, with single-caliber consistency guardrails and cyclical-earnings distortion checks
+- `index-bull-bear-cycle-tracking` - create and update stable per-index bull/bear cycle tables from EOD closes using close-to-close reversal thresholds, with turning-point P/E, evidence-backed causes, explicit data cutoffs, and current-cycle handling
 - `non-consensus-company-discovery` - theme-to-company discovery for high-potential non-consensus opportunities
 - `gold-trend-analysis` - gold bubble risk and macro signal analysis
 - `reflexivity-analysis` - Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes
@@ -208,6 +216,7 @@ Recommended live usage is to say `使用 invest-flow:multi-agent-stock-analysis 
 - Company profile: `output/company-profile/company-profile-{TICKER}-{YYYY-MM-DD}.md`
 - Company valuation risk: `output/company-valuation-risk/company-valuation-risk-{TICKER}-{YYYY-MM-DD}.md`
 - Index PE sensitivity: `output/index-pe-sensitivity/index-pe-sensitivity-{index}-{YYYY-MM-DD}.md`
+- Index bull/bear cycles: `output/index-market-cycles/bull-market-cycles-{CODE}.md` and `output/index-market-cycles/bear-market-cycles-{CODE}.md` (stable filenames updated in place)
 - Institutional analysis: `output/institutional-accumulation-analysis/机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - Non-consensus company discovery: `output/non-consensus-company-discovery/non-consensus-company-discovery-{theme}-{YYYY-MM-DD}.md`
 - Gold analysis: `output/gold-analysis/gold-{analysis-type}-{date}.md`

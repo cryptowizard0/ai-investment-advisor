@@ -6,13 +6,14 @@ InvestFlow is a repo-local agent plugin for investment research, compatible with
 
 Its flagship workflow is **chain-alpha** — a theme → industry-chain → investable-company funnel with ongoing revenue/profit-delivery tracking. See [Featured Workflow: chain-alpha](#featured-workflow-chain-alpha).
 
-At a glance, the skills fall into three user-facing categories, grouped by what you bring in (plus a supporting infrastructure layer):
+At a glance, the skills fall into four user-facing categories, grouped by what you bring in (plus a supporting infrastructure layer):
 
 | Category | Input | Start with | For |
 |---|---|---|---|
 | **1. Find opportunities** | a theme | `chain-alpha-pipeline` | Turn a big theme into investable companies |
 | **2. Research a single stock** | a ticker | `multi-agent-stock-analysis` | Judge one company from several independent angles |
 | **3. Daily & periodic tracking** | a calendar | `daily-us-market-scan` | Recurring reads that run well as scheduled tasks |
+| **4. Cycle scanning** | an index | `index-bull-bear-cycle-tracking` | Maintain a close-to-close bull/bear cycle history |
 
 See [Skills By Category](#skills-by-category) for the full list, including the infrastructure layer.
 
@@ -69,7 +70,7 @@ Funnel discipline: industry definition and growth gate → 2-4 mismatch links �
 
 ## Skills By Category
 
-InvestFlow's skills group into three user-facing categories by what you bring in — a theme, a ticker, or a calendar — plus a supporting infrastructure layer.
+InvestFlow's skills group into four user-facing categories by what you bring in — a theme, a ticker, a calendar, or an index — plus a supporting infrastructure layer.
 
 ### 1. Find opportunities (you bring a theme)
 
@@ -113,6 +114,14 @@ Recurring reads that work well as scheduled tasks.
 | `chain-alpha-delivery-tracking` | Quarterly / on earnings | Revenue/profit-delivery tracking for pending-verification names (also listed under category 1). |
 | `gold-trend-analysis` | Monthly / ad-hoc | Gold trend, bubble-risk, and macro-driver analysis. |
 
+### 4. Cycle scanning (you bring an index)
+
+Maintain a repeatable index cycle history from official EOD closes, with explicit confirmation rules and stable reports that can be updated in place.
+
+| Skill | Cadence | Purpose |
+|---|---|---|
+| `index-bull-bear-cycle-tracking` | Daily / ad-hoc | Create and update index bull/bear cycle tables using a configurable close-to-close reversal threshold; record extrema, duration, amplitude, turning-point P/E, evidence-backed causes, and the latest complete-market-data date. |
+
 ### Infrastructure (supporting layer, no investment view of its own)
 
 | Skill | Purpose | Use when |
@@ -131,6 +140,7 @@ Use invest-flow:non-consensus-company-discovery to find non-consensus opportunit
 Use invest-flow:chain-alpha-pipeline to find investable companies in AI data center power.
 Use invest-flow:reflexivity-analysis in quick mode to check NVIDIA's current narrative stage.
 Use invest-flow:index-pe-sensitivity to build a valuation-sensitivity table for the STAR 50 index.
+Use invest-flow:index-bull-bear-cycle-tracking to update the SOX bull and bear market cycle tables.
 Use invest-flow:company-valuation-risk to judge NVDA's valuation percentile and downside risk.
 Use invest-flow:earnings-report-analysis to analyze NVIDIA's latest earnings.
 Use invest-flow:output-report-index to update the output report index.
@@ -155,6 +165,7 @@ Generated reports and cache files are written under `output/`:
 | Chain-alpha pipeline summary | `output/chain-alpha-pipeline/` |
 | Chain-alpha delivery tracking | `output/chain-alpha-delivery-tracking/` |
 | Index PE sensitivity | `output/index-pe-sensitivity/` |
+| Index bull/bear cycle tracking | `output/index-market-cycles/` |
 | Institutional analysis | `output/institutional-accumulation-analysis/` |
 | Non-consensus company discovery | `output/non-consensus-company-discovery/` |
 | Gold analysis | `output/gold-analysis/` |
@@ -165,7 +176,7 @@ Generated reports and cache files are written under `output/`:
 | Report index | `output/index.md`, `output/index.html` |
 | Market data cache | `output/cache/market-data/` |
 
-Existing files should not be overwritten. Skills append suffixes such as `(1)` and `(2)` when needed.
+Report generators normally avoid overwriting and append suffixes such as `(1)` and `(2)` when needed. Index bull/bear cycle documents are the exception: their stable filenames are updated in place so each index has one current bull table and one current bear table.
 
 Open the HTML report reader through the UTF-8 report server so it can fetch Markdown files on demand and direct `.md` links render Chinese correctly:
 

@@ -6,13 +6,14 @@ InvestFlow 是一个仓库内置的投资研究插件，同时兼容 Codex 和 C
 
 它的旗舰工作流是 **chain-alpha 产业链选股**——从一个大主题出发，经"产业链 → 可投公司"漏斗筛选，并持续跟踪营收兑现。详见下方「首推工作流：chain-alpha 产业链选股」。
 
-概览：技能按"你带什么进来"分成三大用户类（外加一个基础设施支撑层）：
+概览：技能按"你带什么进来"分成四大用户类（外加一个基础设施支撑层）：
 
 | 分类 | 输入 | 入口 Skill | 用来 |
 |---|---|---|---|
 | **一、找机会** | 一个主题 | `chain-alpha-pipeline` | 把一个大主题变成可投公司 |
 | **二、研究一只股票** | 一个股票代码 | `multi-agent-stock-analysis` | 从多个独立视角判断一家公司 |
 | **三、日常与定期跟踪** | 一个日历 | `daily-us-market-scan` | 周期性复盘，适合设为定时任务 |
+| **四、周期扫描** | 一个指数 | `index-bull-bear-cycle-tracking` | 按统一收盘价规则维护牛熊周期历史 |
 
 完整清单（含基础设施层）见 [技能分类](#技能分类)。
 
@@ -69,7 +70,7 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 
 ## 技能分类
 
-InvestFlow 的技能按"你带什么进来"分成三大用户类——主题、股票代码、还是日历——外加一个支撑性的基础设施层。
+InvestFlow 的技能按"你带什么进来"分成四大用户类——主题、股票代码、日历、还是指数——外加一个支撑性的基础设施层。
 
 ### 一、找机会（你带一个主题进来）
 
@@ -113,6 +114,14 @@ InvestFlow 的技能按"你带什么进来"分成三大用户类——主题、�
 | `chain-alpha-delivery-tracking` | 每季 / 财报时 | 对待验证标的做营收/利润兑现追踪（同时列在第一类）。 |
 | `gold-trend-analysis` | 月度 / 按需 | 分析黄金趋势、泡沫风险和宏观驱动。 |
 
+### 四、周期扫描（你带一个指数进来）
+
+使用官方 EOD 收盘数据和统一确认规则维护可复现的指数周期历史，并通过稳定文件持续原地更新。
+
+| 技能 | 频率 | 用途 |
+|---|---|---|
+| `index-bull-bear-cycle-tracking` | 每日 / 按需 | 使用可配置的收盘价反转阈值创建和更新指数牛熊周期表；记录峰谷、持续天数、幅度、转折点 P/E、证据支持的原因及最新完整行情截止日。 |
+
 ### 基础设施（支撑层，本身不产投资观点）
 
 | 技能 | 用途 | 适用场景 |
@@ -130,6 +139,7 @@ InvestFlow 的技能按"你带什么进来"分成三大用户类——主题、�
 使用 invest-flow:non-consensus-company-discovery 发现 AI 数据中心电力里的非共识机会
 使用 invest-flow:chain-alpha-pipeline 分析具身智能（人形机器人）产业链
 使用 invest-flow:reflexivity-analysis 快扫 NVIDIA 当前叙事阶段
+使用 invest-flow:index-bull-bear-cycle-tracking 更新 SOX 牛熊周期表
 使用 invest-flow:company-valuation-risk 判断 NVDA 的估值分位与潜在风险
 使用 invest-flow:earnings-report-analysis 解读 NVIDIA 最新财报
 ```
@@ -153,6 +163,7 @@ InvestFlow 的技能按"你带什么进来"分成三大用户类——主题、�
 | chain-alpha 流程汇总 | `output/chain-alpha-pipeline/` |
 | chain-alpha 营收兑现追踪 | `output/chain-alpha-delivery-tracking/` |
 | 指数估值敏感性 | `output/index-pe-sensitivity/` |
+| 指数牛熊周期扫描 | `output/index-market-cycles/` |
 | 机构资金分析 | `output/institutional-accumulation-analysis/` |
 | 非共识公司发现 | `output/non-consensus-company-discovery/` |
 | 黄金分析 | `output/gold-analysis/` |
@@ -162,7 +173,7 @@ InvestFlow 的技能按"你带什么进来"分成三大用户类——主题、�
 | 多智能体汇总报告 | `output/summary/` |
 | 市场数据缓存 | `output/cache/market-data/` |
 
-已有文件不应被覆盖。技能会在需要时追加 `(1)`、`(2)` 等后缀。
+报告生成类技能通常不覆盖已有文件，而是在需要时追加 `(1)`、`(2)` 等后缀。指数牛熊周期文档是例外：它使用稳定文件名原地更新，确保每个指数始终只有一份最新牛市表和一份最新熊市表。
 
 ## 维护说明
 

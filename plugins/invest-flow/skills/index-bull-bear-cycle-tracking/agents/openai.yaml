@@ -1,0 +1,4 @@
+interface:
+  display_name: "Index Bull/Bear Cycle Tracking"
+  short_description: "Track and update index bull/bear market cycles"
+  default_prompt: "Use $index-bull-bear-cycle-tracking to update an index bull and bear cycle table."
