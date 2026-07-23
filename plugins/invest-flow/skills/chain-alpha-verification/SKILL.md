@@ -3,7 +3,7 @@ name: chain-alpha-verification
 description: "chain-alpha 工作流第三步：对全球主要可投市场（美股/ADR、A 股、港股、日股、台股主板）候选公司做最终验证——环节收入占比双轨硬门槛（≥40% 纯正 / 20-40% 增量贡献测试 / 低于 20% 剔除）、利润增速硬门槛（最低 20%、优选 30%+）、100 分模型四档分级（金池子/通过/待验证/剔除）。只做验证分级、不定仓位：通过及以上标的交给第四步 chain-alpha-entry-plan 定买点与仓位（仓位上限 = 回撤预算 ÷ 潜在风险）。适用于：(1) 验证产业链筛出的候选公司是否可投并给档位, (2) chain-alpha 的第三步。输出保存至 ./output/chain-alpha-verification/。"
 ---
 
-# chain-alpha 公司验证与仓位
+# Chain Alpha 公司验证
 
 ## Web Research Routing
 
@@ -24,7 +24,7 @@ description: "chain-alpha 工作流第三步：对全球主要可投市场（美
 - `使用 invest-flow:chain-alpha-verification 验证 <TICKER 或候选清单>`
 - 作为 `chain-alpha` 的第三步被调用
 
-非美股不再自动排除；A 股、港股、日股、台股主板候选按各自上市地市场口径验证并给仓位。未上市或仅 OTC 粉单标的只列背景参考，不给仓位建议。
+非美股不再自动排除；A 股、港股、日股、台股主板候选按各自上市地市场口径验证并给档位。未上市或仅 OTC 粉单标的只列背景参考，不给档位或仓位建议。
 
 ## Workflow
 
