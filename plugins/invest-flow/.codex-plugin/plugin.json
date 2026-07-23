@@ -1,7 +1,7 @@
 {
   "name": "invest-flow",
-  "version": "0.4.9+codex.20260721174703",
-  "description": "Bundle investment research skills with Firecrawl-first web research, earnings report analysis, non-consensus company discovery, daily market scans, reflexivity workflows, report generation, multi-agent analysis, chain-alpha industry-chain stock selection pipeline, index valuation sensitivity, company valuation percentile-risk analysis, and market data routing.",
+  "version": "0.5.0+codex.20260723160952",
+  "description": "Bundle investment research skills with Firecrawl-first web research, earnings report analysis, non-consensus company discovery, daily market scans, reflexivity workflows, report generation, multi-agent analysis, the canonical chain-alpha industry-chain workflow and entry planning, index valuation sensitivity, and market data routing.",
   "author": {
     "name": "Potter",
     "email": "45678072+cryptowizard0@users.noreply.github.com",
@@ -26,7 +26,8 @@
       "Use InvestFlow to perform a reflexivity quick scan on NVIDIA.",
       "Use InvestFlow to generate a structured stock report for AAPL.",
       "Use InvestFlow to find non-consensus companies in AI data center power.",
-      "Use InvestFlow to run the chain-alpha pipeline on AI data center power."
+      "Use InvestFlow to run chain-alpha on AI data center power.",
+      "Use InvestFlow to create NVDA's chain-alpha entry plan."
     ],
     "brandColor": "#F5F5F7",
     "composerIcon": "./assets/icon.png",

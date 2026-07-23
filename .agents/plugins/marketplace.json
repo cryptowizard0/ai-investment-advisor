@@ -1,7 +1,7 @@
 {
   "name": "investflow-local",
   "interface": {
-    "displayName": "InvestFlow Local"
+    "displayName": "InvestFlow Local - Chain Alpha"
   },
   "plugins": [
     {
