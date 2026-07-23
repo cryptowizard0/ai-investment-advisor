@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a company valuation & risk (percentile-band) report.
+"""Generate a Chain Alpha entry-plan report from valuation and risk inputs.
 
 Method (matches the skill's methodology):
   1. Company-type gate: only 成长/现金牛/收费站 pass; 周期/脉冲/资产困境 stop
@@ -1190,7 +1190,7 @@ def create_report(
 
     report_body = render_template(template_path.read_text(encoding="utf-8"), replacements)
     output_dir.mkdir(parents=True, exist_ok=True)
-    filename = f"company-valuation-risk-{slugify(ticker).upper()}-{report_date.isoformat()}.md"
+    filename = f"chain-alpha-entry-plan-{slugify(ticker).upper()}-{report_date.isoformat()}.md"
     output_path = find_unique_path(output_dir / filename)
     output_path.write_text(report_body, encoding="utf-8")
     return output_path
@@ -1198,7 +1198,7 @@ def create_report(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Generate a company valuation & risk (percentile-band) Markdown report."
+        description="Generate a Chain Alpha entry-plan Markdown report from valuation, risk, and position inputs."
     )
     parser.add_argument("ticker", help="Ticker, e.g. NVDA or 688017.")
     parser.add_argument("--company", default="", help="Company display name.")
@@ -1242,7 +1242,7 @@ def main() -> None:
     parser.add_argument("--forward-ps", default=None, type=float, help="Forward TTM PS proving the PS ruler is back inside the alert line. Required with --alert-release under the PS ruler; rejected if still above --ps-alert.")
     parser.add_argument("--digestion", default=None, choices=list(DIGESTION_VERDICTS), help="Growth-digestion verdict from section 6 (PE ruler: earnings growth + exit PE; PS ruler: revenue growth + exit PS). 透支 applies an extra x0.5 to new positions; other verdicts do not change the cap.")
     parser.add_argument("--date", type=parse_date, default=date.today(), help="Analysis date YYYY-MM-DD. Defaults to today.")
-    parser.add_argument("--output-dir", default="./output/company-valuation-risk", help="Output directory for the report.")
+    parser.add_argument("--output-dir", default="./output/chain-alpha-entry-plan", help="Output directory for the report.")
     parser.add_argument("--template", default="", help="Optional custom template path.")
     args = parser.parse_args()
 

@@ -1,6 +1,6 @@
 ---
-name: chain-alpha-monopoly-screen
-description: "chain-alpha 工作流第二步：把单个供需错位环节拆成上中下游子环节，列出全球公司格局（含中国大陆及日韩台欧），用 CR3 高于 50%/寡头证据、毛利率与壁垒、环节收入占比、利润增速四道硬门槛筛选，再按 30 分候选评分排序，每环节输出 ≤10 家候选公司。适用于：(1) 已确认某环节供需错位、要找其中的垄断公司, (2) chain-alpha-pipeline 的第二步。输出保存至 ./output/chain-alpha-monopoly-screen/。"
+name: chain-alpha-monopoly
+description: "chain-alpha 工作流第二步：把单个供需错位环节拆成上中下游子环节，列出全球公司格局（含中国大陆及日韩台欧），用 CR3 高于 50%/寡头证据、毛利率与壁垒、环节收入占比、利润增速四道硬门槛筛选，再按 30 分候选评分排序，每环节输出 ≤10 家候选公司。适用于：(1) 已确认某环节供需错位、要找其中的垄断公司, (2) chain-alpha 的第二步。输出保存至 ./output/chain-alpha-monopoly/。"
 ---
 
 # chain-alpha 垄断环节筛选
@@ -13,16 +13,16 @@ description: "chain-alpha 工作流第二步：把单个供需错位环节拆成
 
 ## Overview
 
-本 skill 是 chain-alpha 工作流的第二步：找壁垒、找垄断、排除低端竞争，并确认垄断优势是否能转化为可持续利润增速。输入一个供需错位环节（通常来自 `chain-alpha-mismatch-discovery`），输出该环节内 ≤10 家通过硬门槛的候选公司，并标注上市地与可投性。
+本 skill 是 chain-alpha 工作流的第二步：找壁垒、找垄断、排除低端竞争，并确认垄断优势是否能转化为可持续利润增速。输入一个供需错位环节（通常来自 `chain-alpha-mismatch`），输出该环节内 ≤10 家通过硬门槛的候选公司，并标注上市地与可投性。
 
 第一性原理：股价长期跟着公司利润走，所有公司筛选指标最终必须落到"利润增速"。利润增速最好 ≥30%，最低 ≥20%；低于 20% 的公司直接筛掉。
 
-默认输出目录：`./output/chain-alpha-monopoly-screen/`
+默认输出目录：`./output/chain-alpha-monopoly/`
 
 ## Trigger
 
-- `使用 invest-flow:chain-alpha-monopoly-screen 筛选 <环节>`
-- 作为 `chain-alpha-pipeline` 的第二步被调用
+- `使用 invest-flow:chain-alpha-monopoly 筛选 <环节>`
+- 作为 `chain-alpha` 的第二步被调用
 - 用户已有明确的瓶颈环节、想找其中的垄断公司
 
 ## Workflow
@@ -63,7 +63,7 @@ description: "chain-alpha 工作流第二步：把单个供需错位环节拆成
 ### 6) 输出报告
 - 使用 `references/report-template.md` 输出中文 Markdown 报告。
 - 标注每家候选的上市地与可投性；所有可投主板候选（美股/ADR、A 股、港股、日股、台股主板）均可进入第三步 `chain-alpha-verification`。仅粉单/未上市的最强格局者作为产业格局背景保留在报告中。
-- 保存至 `./output/chain-alpha-monopoly-screen/chain-alpha-monopoly-screen-{环节}-{YYYY-MM-DD}.md`。
+- 保存至 `./output/chain-alpha-monopoly/chain-alpha-monopoly-{环节}-{YYYY-MM-DD}.md`。
 - 文件已存在时追加 `(1)`, `(2)`，不覆盖。
 - 报告必须包含固定作者字段：`InvestmentFlow`。
 

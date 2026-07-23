@@ -1,4 +1,4 @@
-# chain-alpha-mismatch-discovery 方法论
+# chain-alpha-mismatch 方法论
 
 ## 1. 行业是什么
 

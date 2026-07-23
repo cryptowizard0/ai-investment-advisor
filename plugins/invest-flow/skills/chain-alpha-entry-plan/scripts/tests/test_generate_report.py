@@ -1,4 +1,4 @@
-"""Tests for the company valuation & risk report generator."""
+"""Tests for the Chain Alpha entry-plan report generator."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ def load_generator_module():
         raise AssertionError(f"Generator script is missing: {SCRIPT_PATH}")
 
     spec = importlib.util.spec_from_file_location(
-        "company_valuation_risk_generate_report", SCRIPT_PATH
+        "chain_alpha_entry_plan_generate_report", SCRIPT_PATH
     )
     if spec is None or spec.loader is None:
         raise AssertionError(f"Cannot load generator script: {SCRIPT_PATH}")
@@ -50,8 +50,13 @@ TEMPLATE = "\n".join(
         "{{分位备注}}",
         "## 读数",
         "{{风险读数}}",
-        "## 建仓计划",
+        "## 七、入场计划",
+        "### 7.1 仓位上限",
         "{{建仓计划}}",
+        "### 7.2 买入执行（分析师填写）",
+        "- 入场决策：待填写",
+        "- 买入区间：待填写",
+        "- 分批计划：待填写",
     ]
 )
 
@@ -323,10 +328,14 @@ class CreateReportTests(unittest.TestCase):
             first_path = generator.create_report(**kwargs)
             second_path = generator.create_report(**kwargs)
 
-            self.assertEqual(first_path.name, "company-valuation-risk-NVDA-2026-07-17.md")
-            self.assertEqual(second_path.name, "company-valuation-risk-NVDA-2026-07-17(1).md")
+            self.assertEqual(first_path.name, "chain-alpha-entry-plan-NVDA-2026-07-17.md")
+            self.assertEqual(second_path.name, "chain-alpha-entry-plan-NVDA-2026-07-17(1).md")
 
             text = first_path.read_text(encoding="utf-8")
+            self.assertIn("## 七、入场计划", text)
+            self.assertIn("入场决策：", text)
+            self.assertIn("买入区间：", text)
+            self.assertIn("分批计划：", text)
             # Current percentile: 90 below + 0.5*1 equal out of 100 -> 90.5%.
             self.assertIn("90.5%", text)
             self.assertIn("高估/透支区", text)

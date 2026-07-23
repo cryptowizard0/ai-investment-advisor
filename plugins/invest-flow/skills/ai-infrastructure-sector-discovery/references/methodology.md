@@ -2,7 +2,7 @@
 
 ## 目标
 
-本方法论用于每周发现和排序 AI 基建板块。输出结果不是投资建议，而是决定哪些板块应该交给 chain-alpha 工作流（`chain-alpha-mismatch-discovery` / `chain-alpha-pipeline`）深挖。
+本方法论用于每周发现和排序 AI 基建板块。输出结果不是投资建议，而是决定哪些板块应该交给 chain-alpha 工作流（`chain-alpha-mismatch` / `chain-alpha`）深挖。
 
 ## 评分模型
 
@@ -64,7 +64,7 @@
 
 ## Chain-alpha handoff 规则
 
-将板块交给 chain-alpha 工作流（轻量确认用 `chain-alpha-mismatch-discovery`，完整漏斗用 `chain-alpha-pipeline`）的条件：
+将板块交给 chain-alpha 工作流（轻量确认用 `chain-alpha-mismatch`，完整漏斗用 `chain-alpha`）的条件：
 - `discovery_score >= 80`：必须进入 handoff queue。
 - `70 <= discovery_score < 80`：证据置信度为中或高时进入 handoff queue。
 - `<70`：不进入 handoff queue，除非出现强订单、价格、交期或财报异常。
