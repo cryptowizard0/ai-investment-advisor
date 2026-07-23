@@ -673,7 +673,7 @@ def build_position_section(plan: PositionPlan) -> str:
         lines.append("- 注：仓位 >100% 表示该回撤预算已超过标的单杀空间（需杠杆才能达到），仅作参照。")
     lines.append(
         "- 潜在风险为估值单杀口径；若分母（E/S）同步下修为双杀，实际回撤可能超过回撤预算——"
-        "建仓后交给 chain-alpha-delivery-tracking 按季跟踪。"
+        "建仓后交给 monitor-chain-alpha-delivery 按季跟踪。"
     )
     return "\n".join(lines)
 

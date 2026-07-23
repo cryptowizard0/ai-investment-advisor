@@ -87,7 +87,7 @@ description: "chain-alpha 工作流第三步：对全球主要可投市场（美
 ## 下游衔接
 
 - **第四步定仓**：`通过 / 金池子` 标的进入 `invest-flow:chain-alpha-entry-plan`（chain-alpha 第四步），完成估值分位带、潜在风险（两腿取大）与建仓计划（仓位上限 = 回撤预算 ÷ 潜在风险；档位与弹性折扣由该步应用）。
-- **第五步追踪**：`待验证` 与在监控的 `通过 / 金池子` 标的，用 `invest-flow:chain-alpha-delivery-tracking` 做周期性营收兑现追踪（验证链阶段闸门 + 增速 / 归因 / 动态估值三引擎），据其结论回灌本 skill 的档位；升档触发建仓时重跑第四步定仓。
+- **第五步追踪**：`待验证` 与在监控的 `通过 / 金池子` 标的，用 `invest-flow:monitor-chain-alpha-delivery` 做周期性营收兑现追踪（验证链阶段闸门 + 增速 / 归因 / 动态估值三引擎），据其结论回灌本 skill 的档位；升档触发建仓时重跑第四步定仓。
 
 ## Resources
 

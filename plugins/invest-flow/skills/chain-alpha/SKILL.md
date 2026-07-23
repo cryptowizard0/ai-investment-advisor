@@ -80,7 +80,7 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 1. 先单独跑 Step 1（成本低）：`使用 invest-flow:chain-alpha-mismatch 分析 <主题>`。
 2. 人工确认错位环节靠谱后，再对选中的 1-2 个环节跑 Step 2、3、4。
 3. 完整工作流建议在单独会话运行；并行模式下 subagent 各自独立上下文，主会话只保留交接字段。
-4. 进入 `待验证` 的标的，后续用 `使用 invest-flow:chain-alpha-delivery-tracking 跟踪 <TICKER>` 做按季营收兑现追踪与升降档，不必每次重跑完整工作流。
+4. 进入 `待验证` 的标的，后续用 `使用 invest-flow:monitor-chain-alpha-delivery 跟踪 <TICKER>` 做按季营收兑现追踪与升降档，不必每次重跑完整工作流。
 
 ## Quality Rules
 

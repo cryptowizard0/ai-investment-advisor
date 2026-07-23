@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Infrastructure Sector Discovery"
+  short_description: "Weekly AI infrastructure sector scan feeding chain-alpha"
+  default_prompt: "Use $monitor-ai-infrastructure to run this week's AI infrastructure sector scan."

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Daily US Market Scan"
+  short_description: "Daily Chinese US market close scan"
+  default_prompt: "Use $monitor-us-market to generate the latest Chinese US market close report."
+
+policy:
+  allow_implicit_invocation: true

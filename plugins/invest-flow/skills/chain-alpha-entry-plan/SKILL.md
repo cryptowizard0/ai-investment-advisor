@@ -36,7 +36,7 @@ description: "chain-alpha 入场计划（第四步）：在 chain-alpha-verifica
 - `NVDA 现在贵不贵？跌回中位数要跌多少？最多买多少？`
 - `这家公司该看 PE 还是 PS？现在处于历史什么分位？`
 - 作为 chain-alpha 第四步被 `chain-alpha` 调用：对 `chain-alpha-verification` 给出"通过及以上"档位的标的定买点与仓位（带入 `--grade`/`--elastic`）
-- `chain-alpha-delivery-tracking` 升档触发建仓时重跑本 skill 定仓；其引擎 C 复用本 skill 的分位带
+- `monitor-chain-alpha-delivery` 升档触发建仓时重跑本 skill 定仓；其引擎 C 复用本 skill 的分位带
 
 ## Workflow
 
@@ -122,7 +122,7 @@ python plugins/invest-flow/skills/chain-alpha-entry-plan/scripts/generate_report
 chain-alpha 四步漏斗：① `chain-alpha-mismatch` → ② `chain-alpha-monopoly` → ③ `chain-alpha-verification`（只验证分级）→ **④ `chain-alpha-entry-plan`（入场决策 + 仓位 + 买入计划）** → delivery-tracking（季度兑现循环）。
 
 - **上游 `chain-alpha-verification`（③）**：只输出档位与弹性标记，不定仓位；"通过及以上"标的进入本 skill，档位通过 `--grade`、弹性通过 `--elastic` 带入并转成仓位折扣；增速数值 g（含证据等级）、增速久期 N 与未来收入增速随交接字段带入，供增速消化核对使用。
-- **下游 `chain-alpha-delivery-tracking`（⑤）**：升降档回灌 ③ 的档位；升档触发建仓时重跑本 skill 定买点与仓位；其引擎 C 直接复用本 skill 的分位带（PE/PS 双轨同口径）。
+- **下游 `monitor-chain-alpha-delivery`（⑤）**：升降档回灌 ③ 的档位；升档触发建仓时重跑本 skill 定买点与仓位；其引擎 C 直接复用本 skill 的分位带（PE/PS 双轨同口径）。
 - **类型闸门不通过 ≠ 剔除标的**：chain-alpha 会捞到周期错位标的（如存储/HBM），它们在 ③ 的档位不变，只是分位法仓位框架不适用——报告明示，人工评估回撤后可用 `--fallback-drawdown` 兜底定仓。
 
 ## Resources

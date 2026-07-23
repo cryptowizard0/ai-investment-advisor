@@ -6,14 +6,13 @@ InvestFlow 是一个仓库内置的投资研究插件，同时兼容 Codex 和 C
 
 它的旗舰工作流是 **chain-alpha 产业链选股**——从一个大主题出发，经"产业链 → 可投公司"漏斗筛选，并持续跟踪营收兑现。详见下方「首推工作流：chain-alpha 产业链选股」。
 
-概览：技能按"你带什么进来"分成四大用户类（外加一个基础设施支撑层）：
+概览：技能按用途分成三大用户类（外加一个基础设施支撑层）：
 
 | 分类 | 输入 | 入口 Skill | 用来 |
 |---|---|---|---|
-| **一、找机会** | 一个主题 | `chain-alpha-pipeline` | 把一个大主题变成可投公司 |
+| **一、找机会** | 一个主题 | `chain-alpha` | 把一个大主题变成可投公司 |
 | **二、研究一只股票** | 一个股票代码 | `research-stock` | 从多个独立视角判断一家公司 |
-| **三、日常与定期跟踪** | 一个日历 | `daily-us-market-scan` | 周期性复盘，适合设为定时任务 |
-| **四、周期扫描** | 一个指数 | `index-bull-bear-cycle-tracking` | 按统一收盘价规则维护牛熊周期历史 |
+| **三、监控周期状态** | 一个日历或指数 | 选择对应的 `monitor-*` skill | 执行定期检查和事件触发更新 |
 
 完整清单（含基础设施层）见 [技能分类](#技能分类)。
 
@@ -66,11 +65,11 @@ chain-alpha 是 InvestFlow 的旗舰工作流：把一个大主题转化为可�
 使用 invest-flow:chain-alpha-pipeline 分析具身智能（人形机器人）
 ```
 
-漏斗纪律：行业定义与增长门槛 → 2-4 个错位环节 → 每环节 ≤10 候选 → top-6 进入验证 → 通过及以上进入第四步定仓 → 深挖 2-3 家。行业/关键环节收入增速必须 >20%、增长原因清楚、持续窗口至少 6 个月，才进入后续环节；最终仍必须落到可持续利润增速：≥30% 优先，20% 是最低放行线，<20% 筛掉。第三步 `chain-alpha-verification` 只做验证分级；仓位统一由第四步 `company-valuation-risk` 给出（仓位上限 = 回撤预算 ÷ 潜在风险，档位/弹性折扣叠乘）。落在 `待验证` 的标的，用 `chain-alpha-delivery-tracking` 按季跟踪营收兑现，其升降档结论回灌 `chain-alpha-verification`，升档触发建仓时重跑第四步定仓。每一步也可单独运行——先用 `chain-alpha-mismatch-discovery` 低成本完成行业定义、增长门槛并确认错位环节，再决定是否跑完整流程。
+漏斗纪律：行业定义与增长门槛 → 2-4 个错位环节 → 每环节 ≤10 候选 → top-6 进入验证 → 通过及以上进入第四步定仓 → 深挖 2-3 家。行业/关键环节收入增速必须 >20%、增长原因清楚、持续窗口至少 6 个月，才进入后续环节；最终仍必须落到可持续利润增速：≥30% 优先，20% 是最低放行线，<20% 筛掉。第三步 `chain-alpha-verification` 只做验证分级；仓位统一由第四步 `company-valuation-risk` 给出（仓位上限 = 回撤预算 ÷ 潜在风险，档位/弹性折扣叠乘）。落在 `待验证` 的标的，用 `monitor-chain-alpha-delivery` 按季跟踪营收兑现，其升降档结论回灌 `chain-alpha-verification`，升档触发建仓时重跑第四步定仓。每一步也可单独运行——先用 `chain-alpha-mismatch-discovery` 低成本完成行业定义、增长门槛并确认错位环节，再决定是否跑完整流程。
 
 ## 技能分类
 
-InvestFlow 的技能按"你带什么进来"分成四大用户类——主题、股票代码、日历、还是指数——外加一个支撑性的基础设施层。
+InvestFlow 的技能按用途分成三大用户类：Chain Alpha、Research 和 Monitor，外加一个支撑性的基础设施层。
 
 ### 一、找机会（你带一个主题进来）
 
@@ -83,8 +82,8 @@ InvestFlow 的技能按"你带什么进来"分成四大用户类——主题、�
 | `chain-alpha-monopoly-screen` | 错位环节拆子环节 + 用 CR3/毛利/收入占比/利润增速硬门槛做垄断筛选。 | 已确认某个错位环节，需要找出其中最强的 ≤10 家公司。 |
 | `chain-alpha-verification` | 100 分四档公司验证 + 利润增速硬门槛（只验证分级，不定仓位）。 | 有候选公司，需要金池子/通过/待验证/剔除分级；通过及以上交给第四步定仓。 |
 | `company-valuation-risk` | chain-alpha 第四步：类型闸门 → PE/PS 选尺（含警戒线）→ 5 年 TTM 分位带 → 潜在风险两腿取大 → 增速消化核对（成长模型合理 PE，防机械读分位）→ 建仓计划（仓位上限 = 回撤预算 ÷ 潜在风险，档位/弹性结构折扣叠乘；信号层两系数均 ≤1 永不放大：警戒线触发新仓归零、仅一档硬证据可放宽半仓，透支再 ×0.5）。 | verification 给出档位后，需要买点判断和仓位上限。（同时列在第二类。） |
-| `chain-alpha-delivery-tracking` | 对待验证标的做前瞻性营收/利润兑现追踪：5 级验证链 + 兑现窗口超时判死 + 增速/归因/动态估值引擎 + 格局哨兵 + 双向升降档。 | 持有待验证标的（如绿的谐波），需要按季判断营收和利润增速是否真兑现。（同时也是季度跟踪任务——见第三类。） |
-| `ai-infrastructure-sector-discovery` | 每周扫描并评分 AI 基建板块，交接队列直接喂给 chain-alpha。 | 想每周确定最值得研究的 AI 基建方向。（同时也是每周跟踪任务——见第三类。） |
+| `monitor-chain-alpha-delivery` | 对待验证标的做前瞻性营收/利润兑现追踪：5 级验证链 + 兑现窗口超时判死 + 增速/归因/动态估值引擎 + 格局哨兵 + 双向升降档。 | 持有待验证标的（如绿的谐波），需要按季判断营收和利润增速是否真兑现。（同时也是季度跟踪任务——见第三类。） |
+| `monitor-ai-infrastructure` | 每周扫描并评分 AI 基建板块，交接队列直接喂给 chain-alpha。 | 想每周确定最值得研究的 AI 基建方向。（同时也是每周跟踪任务——见第三类。） |
 
 ### 二、研究一只股票（你带一个股票代码进来）
 
@@ -105,21 +104,14 @@ InvestFlow 的技能按"你带什么进来"分成四大用户类——主题、�
 
 适合设为定时任务的周期性复盘。
 
-| 技能 | 频率 | 用途 |
-|---|---|---|
-| `daily-us-market-scan` | 每日（美股收盘后） | 生成中文美股收盘复盘和次日计划，结论先行、有长度预算、板块/主题动态排序 + 新动态雷达。 |
-| `ai-infrastructure-sector-discovery` | 每周 | 扫描 AI 基建板块，交接队列喂给 chain-alpha（同时列在第一类）。 |
-| `index-pe-sensitivity` | 每周 / 按需 | 指数估值价格敏感性表（±涨跌 → TTM 整体法 P/E → N 年分位），单口径一致性护栏 + 周期盈利失真检查。 |
-| `chain-alpha-delivery-tracking` | 每季 / 财报时 | 对待验证标的做营收/利润兑现追踪（同时列在第一类）。 |
-| `gold-trend-analysis` | 月度 / 按需 | 分析黄金趋势、泡沫风险和宏观驱动。 |
-
-### 四、周期扫描（你带一个指数进来）
-
-使用官方 EOD 收盘数据和统一确认规则维护可复现的指数周期历史，并通过稳定文件持续原地更新。
-
-| 技能 | 频率 | 用途 |
-|---|---|---|
-| `index-bull-bear-cycle-tracking` | 每日 / 按需 | 使用可配置的收盘价反转阈值创建和更新指数牛熊周期表；记录峰谷、持续天数、幅度、转折点 P/E、证据支持的原因及最新完整行情截止日。 |
+| 技能 | 固定频率 | 补充触发 | 用途 |
+|---|---|---|---|
+| `monitor-us-market` | 每个完整美股交易日收盘后 | 重大盘后事件 | 生成中文美股收盘复盘和次日计划，结论先行、有长度预算、板块/主题动态排序 + 新动态雷达。 |
+| `monitor-ai-infrastructure` | 每周 | hyperscaler capex、架构、订单或产能发生重大变化 | 扫描 AI 基建板块，达标队列交给 `chain-alpha-mismatch` 或 `chain-alpha`。 |
+| `monitor-index-cycle` | 每个交易日做轻量检查 | 状态变化或定期复核时生成完整报告 | 使用收盘价反转阈值维护指数牛熊状态和稳定周期报告。 |
+| `monitor-index-valuation` | 每月 | 指数涨跌至少 ±5%、成分调整或盈利口径重大变化 | 生成指数估值价格敏感性表，并执行单口径一致性和周期盈利失真检查。 |
+| `monitor-gold` | 每周 | FOMC、CPI、实际利率、地缘政治或异常价格事件 | 分析黄金趋势、泡沫风险和宏观驱动。 |
+| `monitor-chain-alpha-delivery` | 每次季度财报后 | 重大订单、产能、客户、指引或竞争结构变化 | 跟踪营收/利润兑现，回灌 Chain Alpha 档位，并可重新触发 `chain-alpha-entry-plan`。 |
 
 ### 基础设施（支撑层，本身不产投资观点）
 
@@ -134,10 +126,10 @@ InvestFlow 的技能按"你带什么进来"分成四大用户类——主题、�
 
 ```text
 使用 invest-flow:research-stock 分析 TSLA
-使用 invest-flow:daily-us-market-scan 扫描今天的美股收盘
+使用 invest-flow:monitor-us-market 扫描今天的美股收盘
 使用 invest-flow:chain-alpha-pipeline 分析具身智能（人形机器人）产业链
 使用 invest-flow:research-reflexivity 快扫 NVIDIA 当前叙事阶段
-使用 invest-flow:index-bull-bear-cycle-tracking 更新 SOX 牛熊周期表
+使用 invest-flow:monitor-index-cycle 更新 SOX 牛熊周期表
 使用 invest-flow:company-valuation-risk 判断 NVDA 的估值分位与潜在风险
 使用 invest-flow:research-earnings 解读 NVIDIA 最新财报
 ```
@@ -154,19 +146,19 @@ InvestFlow 的技能按"你带什么进来"分成四大用户类——主题、�
 | 公司估值与风险 | `output/company-valuation-risk/` |
 | 基本面分析 | `output/research-fundamentals/` |
 | 财报分析 | `output/research-earnings/` |
-| AI 基建板块扫描 | `output/ai-infrastructure-sector-discovery/` |
+| AI 基建板块扫描 | `output/monitor-ai-infrastructure/` |
 | chain-alpha 错位发现 | `output/chain-alpha-mismatch-discovery/` |
 | chain-alpha 垄断筛选 | `output/chain-alpha-monopoly-screen/` |
 | chain-alpha 公司验证 | `output/chain-alpha-verification/` |
 | chain-alpha 流程汇总 | `output/chain-alpha-pipeline/` |
-| chain-alpha 营收兑现追踪 | `output/chain-alpha-delivery-tracking/` |
-| 指数估值敏感性 | `output/index-pe-sensitivity/` |
-| 指数牛熊周期扫描 | `output/index-market-cycles/` |
+| chain-alpha 营收兑现追踪 | `output/monitor-chain-alpha-delivery/` |
+| 指数估值敏感性 | `output/monitor-index-valuation/` |
+| 指数牛熊周期扫描 | `output/monitor-index-cycle/` |
 | 机构资金分析 | `output/research-institutional/` |
-| 黄金分析 | `output/gold-analysis/` |
+| 黄金分析 | `output/monitor-gold/` |
 | 反身性分析 | `output/research-reflexivity/` |
 | Reportify 个股报告 | `output/research-reportify/` |
-| 美股日报 | `output/daily-us-market-scan/` |
+| 美股日报 | `output/monitor-us-market/` |
 | 多智能体汇总报告 | `output/research-stock/` |
 | 市场数据缓存 | `output/cache/market-data/` |
 

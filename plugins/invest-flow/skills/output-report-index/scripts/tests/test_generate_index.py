@@ -31,7 +31,7 @@ class GenerateIndexTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
             fundamental_dir = output_dir / "research-fundamentals"
-            daily_dir = output_dir / "daily-us-market-scan"
+            daily_dir = output_dir / "monitor-us-market"
             institutional_dir = output_dir / "research-institutional"
             fundamental_dir.mkdir()
             daily_dir.mkdir()
@@ -67,7 +67,7 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertTrue(index_bytes.startswith(b"\xef\xbb\xbf"))
             self.assertTrue(html_path.exists())
             self.assertIn("# Output 报告索引", index_text)
-            self.assertIn("## daily-us-market-scan", index_text)
+            self.assertIn("## monitor-us-market", index_text)
             self.assertIn("## research-fundamentals", index_text)
             self.assertIn("## research-institutional", index_text)
             self.assertIn("| 日期 | 标题 | 原文链接 |", index_text)
@@ -80,7 +80,7 @@ class GenerateIndexTests(unittest.TestCase):
                 index_text,
             )
             self.assertIn(
-                "| 2026-01-03 | us market close 2026-01-03 | [原文](./daily-us-market-scan/us%20market%20close%202026-01-03.md) |",
+                "| 2026-01-03 | us market close 2026-01-03 | [原文](./monitor-us-market/us%20market%20close%202026-01-03.md) |",
                 index_text,
             )
             self.assertIn(
