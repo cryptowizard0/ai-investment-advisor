@@ -2,7 +2,7 @@
 
 [英文版本](README.md)
 
-InvestFlow 是一个仓库内置的投资研究插件，同时兼容 Codex 和 Claude Code。它把市场扫描、产业链研究、非共识发现、个股分析、财报解读、反身性分析和市场数据路由封装成可复用的技能。
+InvestFlow 是一个仓库内置的投资研究插件，同时兼容 Codex 和 Claude Code。它把市场扫描、产业链研究、个股分析、财报解读、反身性分析和市场数据路由封装成可复用的技能。
 
 它的旗舰工作流是 **chain-alpha 产业链选股**——从一个大主题出发，经"产业链 → 可投公司"漏斗筛选，并持续跟踪营收兑现。详见下方「首推工作流：chain-alpha 产业链选股」。
 
@@ -11,7 +11,7 @@ InvestFlow 是一个仓库内置的投资研究插件，同时兼容 Codex 和 C
 | 分类 | 输入 | 入口 Skill | 用来 |
 |---|---|---|---|
 | **一、找机会** | 一个主题 | `chain-alpha-pipeline` | 把一个大主题变成可投公司 |
-| **二、研究一只股票** | 一个股票代码 | `multi-agent-stock-analysis` | 从多个独立视角判断一家公司 |
+| **二、研究一只股票** | 一个股票代码 | `research-stock` | 从多个独立视角判断一家公司 |
 | **三、日常与定期跟踪** | 一个日历 | `daily-us-market-scan` | 周期性复盘，适合设为定时任务 |
 | **四、周期扫描** | 一个指数 | `index-bull-bear-cycle-tracking` | 按统一收盘价规则维护牛熊周期历史 |
 
@@ -40,7 +40,7 @@ InvestFlow 是一个仓库内置的投资研究插件，同时兼容 Codex 和 C
 ```text
 使用 InvestFlow 分析 TSLA
 使用 InvestFlow 生成今天的美股收盘复盘
-使用 InvestFlow 发现 AI 数据中心电力里的非共识公司
+使用 InvestFlow 用 chain-alpha 研究 AI 数据中心电力产业链
 使用 InvestFlow 分析 HBM 产业链
 ```
 
@@ -85,22 +85,21 @@ InvestFlow 的技能按"你带什么进来"分成四大用户类——主题、�
 | `company-valuation-risk` | chain-alpha 第四步：类型闸门 → PE/PS 选尺（含警戒线）→ 5 年 TTM 分位带 → 潜在风险两腿取大 → 增速消化核对（成长模型合理 PE，防机械读分位）→ 建仓计划（仓位上限 = 回撤预算 ÷ 潜在风险，档位/弹性结构折扣叠乘；信号层两系数均 ≤1 永不放大：警戒线触发新仓归零、仅一档硬证据可放宽半仓，透支再 ×0.5）。 | verification 给出档位后，需要买点判断和仓位上限。（同时列在第二类。） |
 | `chain-alpha-delivery-tracking` | 对待验证标的做前瞻性营收/利润兑现追踪：5 级验证链 + 兑现窗口超时判死 + 增速/归因/动态估值引擎 + 格局哨兵 + 双向升降档。 | 持有待验证标的（如绿的谐波），需要按季判断营收和利润增速是否真兑现。（同时也是季度跟踪任务——见第三类。） |
 | `ai-infrastructure-sector-discovery` | 每周扫描并评分 AI 基建板块，交接队列直接喂给 chain-alpha。 | 想每周确定最值得研究的 AI 基建方向。（同时也是每周跟踪任务——见第三类。） |
-| `non-consensus-company-discovery` | 从主题到公司，发现高潜力非共识机会。 | 想寻找市场仍用旧框架定价的公司。 |
 
 ### 二、研究一只股票（你带一个股票代码进来）
 
-从多个独立视角判断一家公司。`multi-agent-stock-analysis` 在一次会话里编排下面这些技能。
+从多个独立视角判断一家公司。`research-stock` 在一次会话里编排下面这些技能。
 
 | 技能 | 用途 | 适用场景 |
 |---|---|---|
-| `multi-agent-stock-analysis` | 在当前 agent 会话中编排下面的个股技能（公司画像 → 基本面 → 资金流 → 反身性 → Reportify → 非共识）。 | 想从多个独立视角交叉验证一只股票。 |
-| `company-profile` | 生成投资分析前置公司画像。 | 用户第一次听说某家公司时，用于快速理解公司简介、核心业务、技术壁垒、产业链位置、AI 相关性、竞争对手和行业地位。 |
-| `fundamental-analysis` | 做单股基本面、估值和技术面分析。 | 需要快速形成一家公司是否值得继续研究的结构化判断。 |
+| `research-stock` | 在当前 agent 会话中编排五个默认阶段（公司画像 → 基本面 → 机构资金 → 反身性 → Reportify）。 | 想从多个独立视角交叉验证一只股票。 |
+| `research-profile` | 生成投资分析前置公司画像。 | 用户第一次听说某家公司时，用于快速理解公司简介、核心业务、技术壁垒、产业链位置、AI 相关性、竞争对手和行业地位。 |
+| `research-fundamentals` | 做单股基本面、估值和技术面分析。 | 需要快速形成一家公司是否值得继续研究的结构化判断。 |
 | `company-valuation-risk` | 类型闸门（成长/现金牛/收费站可分析，周期/脉冲/资产困境排除）→ PE/PS 选尺子（PE>100 倍 / PS>40 倍警戒线触发即重点提示，不停止、读数降置信度）→ 5 年 TTM 分位带 → 潜在风险取「跌回 50% 分位」与「跌回熊市参考点」两跌幅之大者 → 增速消化核对（合理 TTM PE = 退出倍数×(1+g)^(N+1)÷(1+r)^N，消化时间 = ln(溢价)÷ln(1+r)）→ 建仓计划（仓位上限 = 回撤预算 ÷ 潜在风险，按 2%/5%/10%/20%/30%/50%/70% 逐档列表）。 | 想知道一只股票相对自己 5 年历史贵不贵、估值单杀能跌多少、最多买多少。（同时是 chain-alpha 第四步——见第一类。） |
-| `institutional-accumulation-analysis` | 分析机构吸筹、派发和资金行为。 | 想判断主力资金是在买入、出货还是对冲。 |
-| `reflexivity-analysis` | 索罗斯反身性分析，含快扫（5 分钟阶段判断）和深度（完整周期）两档。 | 想快速判断叙事处于启动/强化/透支/反转，或做完整的叙事、价格、现实、反转风险拆解。 |
-| `reportify-stock-analysis` | 生成标准化八段式个股报告，决策层含买方级三情景估值、可证伪假设、催化剂和跟踪 Dashboard。 | 需要可比较、可复盘、有证据链的正式投研报告。 |
-| `earnings-report-analysis` | 从机构视角分析财报、指引、电话会和预期差。 | 公司刚发布财报，需要判断投资逻辑是否改变。 |
+| `research-institutional` | 分析机构吸筹、派发和资金行为。 | 想判断主力资金是在买入、出货还是对冲。 |
+| `research-reflexivity` | 索罗斯反身性分析，含快扫（5 分钟阶段判断）和深度（完整周期）两档。 | 想快速判断叙事处于启动/强化/透支/反转，或做完整的叙事、价格、现实、反转风险拆解。 |
+| `research-reportify` | 生成标准化八段式个股报告，决策层含买方级三情景估值、可证伪假设、催化剂和跟踪 Dashboard。 | 需要可比较、可复盘、有证据链的正式投研报告。 |
+| `research-earnings` | 从机构视角分析财报、指引、电话会和预期差；不属于 `research-stock` 默认五阶段。 | 用户指定报告期，或公司刚发布相关新财报时。 |
 
 ### 三、日常与定期跟踪（你带一个日历进来）
 
@@ -134,14 +133,13 @@ InvestFlow 的技能按"你带什么进来"分成四大用户类——主题、�
 在 Codex 或 Claude Code 智能体中用自然语言调用 InvestFlow。需要指定流程时，建议直接写出技能名称：
 
 ```text
-使用 invest-flow:multi-agent-stock-analysis 分析 TSLA
+使用 invest-flow:research-stock 分析 TSLA
 使用 invest-flow:daily-us-market-scan 扫描今天的美股收盘
-使用 invest-flow:non-consensus-company-discovery 发现 AI 数据中心电力里的非共识机会
 使用 invest-flow:chain-alpha-pipeline 分析具身智能（人形机器人）产业链
-使用 invest-flow:reflexivity-analysis 快扫 NVIDIA 当前叙事阶段
+使用 invest-flow:research-reflexivity 快扫 NVIDIA 当前叙事阶段
 使用 invest-flow:index-bull-bear-cycle-tracking 更新 SOX 牛熊周期表
 使用 invest-flow:company-valuation-risk 判断 NVDA 的估值分位与潜在风险
-使用 invest-flow:earnings-report-analysis 解读 NVIDIA 最新财报
+使用 invest-flow:research-earnings 解读 NVIDIA 最新财报
 ```
 
 如果需要接入外部市场数据源，可从 `.env_example` 创建本地 `.env`，再填写相关密钥。
@@ -152,10 +150,10 @@ InvestFlow 的技能按"你带什么进来"分成四大用户类——主题、�
 
 | 流程 | 输出路径 |
 |---|---|
-| 公司画像 | `output/company-profile/` |
+| 公司画像 | `output/research-profile/` |
 | 公司估值与风险 | `output/company-valuation-risk/` |
-| 基本面分析 | `output/fundamental-analysis/` |
-| 财报分析 | `output/earnings-report-analysis/` |
+| 基本面分析 | `output/research-fundamentals/` |
+| 财报分析 | `output/research-earnings/` |
 | AI 基建板块扫描 | `output/ai-infrastructure-sector-discovery/` |
 | chain-alpha 错位发现 | `output/chain-alpha-mismatch-discovery/` |
 | chain-alpha 垄断筛选 | `output/chain-alpha-monopoly-screen/` |
@@ -164,13 +162,12 @@ InvestFlow 的技能按"你带什么进来"分成四大用户类——主题、�
 | chain-alpha 营收兑现追踪 | `output/chain-alpha-delivery-tracking/` |
 | 指数估值敏感性 | `output/index-pe-sensitivity/` |
 | 指数牛熊周期扫描 | `output/index-market-cycles/` |
-| 机构资金分析 | `output/institutional-accumulation-analysis/` |
-| 非共识公司发现 | `output/non-consensus-company-discovery/` |
+| 机构资金分析 | `output/research-institutional/` |
 | 黄金分析 | `output/gold-analysis/` |
-| 反身性分析 | `output/reflexivity-analysis/` |
-| Reportify 个股报告 | `output/reportify-stock-analysis/` |
+| 反身性分析 | `output/research-reflexivity/` |
+| Reportify 个股报告 | `output/research-reportify/` |
 | 美股日报 | `output/daily-us-market-scan/` |
-| 多智能体汇总报告 | `output/summary/` |
+| 多智能体汇总报告 | `output/research-stock/` |
 | 市场数据缓存 | `output/cache/market-data/` |
 
 报告生成类技能通常不覆盖已有文件，而是在需要时追加 `(1)`、`(2)` 等后缀。指数牛熊周期文档是例外：它使用稳定文件名原地更新，确保每个指数始终只有一份最新牛市表和一份最新熊市表。

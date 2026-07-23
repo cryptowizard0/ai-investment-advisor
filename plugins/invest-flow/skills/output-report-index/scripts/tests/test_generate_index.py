@@ -30,9 +30,9 @@ class GenerateIndexTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
-            fundamental_dir = output_dir / "fundamental-analysis"
+            fundamental_dir = output_dir / "research-fundamentals"
             daily_dir = output_dir / "daily-us-market-scan"
-            institutional_dir = output_dir / "institutional-accumulation-analysis"
+            institutional_dir = output_dir / "research-institutional"
             fundamental_dir.mkdir()
             daily_dir.mkdir()
             institutional_dir.mkdir()
@@ -68,15 +68,15 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertTrue(html_path.exists())
             self.assertIn("# Output 报告索引", index_text)
             self.assertIn("## daily-us-market-scan", index_text)
-            self.assertIn("## fundamental-analysis", index_text)
-            self.assertIn("## institutional-accumulation-analysis", index_text)
+            self.assertIn("## research-fundamentals", index_text)
+            self.assertIn("## research-institutional", index_text)
             self.assertIn("| 日期 | 标题 | 原文链接 |", index_text)
             self.assertIn(
-                "| 2026-01-02 | Old Fundamental Report | [原文](./fundamental-analysis/AAA-Old-2026-01-02.md) |",
+                "| 2026-01-02 | Old Fundamental Report | [原文](./research-fundamentals/AAA-Old-2026-01-02.md) |",
                 index_text,
             )
             self.assertIn(
-                "| 2026-01-05 | New Fundamental Report | [原文](./fundamental-analysis/BBB-New-2026-01-05.md) |",
+                "| 2026-01-05 | New Fundamental Report | [原文](./research-fundamentals/BBB-New-2026-01-05.md) |",
                 index_text,
             )
             self.assertIn(
@@ -84,7 +84,7 @@ class GenerateIndexTests(unittest.TestCase):
                 index_text,
             )
             self.assertIn(
-                "| 2026-01-04 | 机构测试报告 | [原文](./institutional-accumulation-analysis/机构操作分析-20260104-测试(1).md) |",
+                "| 2026-01-04 | 机构测试报告 | [原文](./research-institutional/机构操作分析-20260104-测试(1).md) |",
                 index_text,
             )
             self.assertNotIn("Old manual index", index_text)
@@ -133,7 +133,7 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn('<span class="metric-value">2026-01-05</span>', html_text)
             self.assertIn("New Fundamental Report", html_text)
             self.assertIn(
-                '<a class="metric-value metric-link" href="#fundamental-analysis/BBB-New-2026-01-05.md">New Fundamental Report</a>',
+                '<a class="metric-value metric-link" href="#research-fundamentals/BBB-New-2026-01-05.md">New Fundamental Report</a>',
                 html_text,
             )
             self.assertIn("const REPORTS =", html_text)
@@ -142,9 +142,9 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn("renderMarkdown(markdown)", html_text)
             self.assertIn("location.hash", html_text)
             self.assertIn("decodeURIComponent", html_text)
-            self.assertIn("href=\"#fundamental-analysis/BBB-New-2026-01-05.md\"", html_text)
+            self.assertIn("href=\"#research-fundamentals/BBB-New-2026-01-05.md\"", html_text)
             self.assertIn(
-                "href=\"./fundamental-analysis/BBB-New-2026-01-05.md\"",
+                "href=\"./research-fundamentals/BBB-New-2026-01-05.md\"",
                 html_text,
             )
             self.assertIn("function renderMarkdown", html_text)

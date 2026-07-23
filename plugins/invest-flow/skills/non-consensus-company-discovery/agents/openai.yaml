@@ -1,4 +1,0 @@
-interface:
-  display_name: "Non-Consensus Company Discovery"
-  short_description: "Finds high-potential non-consensus companies from a trend"
-  default_prompt: "Use $non-consensus-company-discovery to find high-potential non-consensus companies in AI data center power."

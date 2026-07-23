@@ -47,7 +47,7 @@ python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py -
 - 日期优先从文件名解析 `YYYY-MM-DD`，其次解析 `YYYYMMDD` 并格式化为 `YYYY-MM-DD`。
 - 分类内按日期升序排列；同日按文件路径升序排列。
 - 每个分类表格列为：`日期 | 标题 | 原文链接`。
-- 原文链接相对 `output/index.md`，例如 `./fundamental-analysis/HPE-Hewlett-Packard-Enterprise-2026-06-03.md`。
+- 原文链接相对 `output/index.md`，例如 `./research-fundamentals/HPE-Hewlett-Packard-Enterprise-2026-06-03.md`。
 - HTML 页面顶部显示报告总数、分类总数、最新日期和最新报告。
 - HTML 页面不把每个报告转换为 HTML 文件，只通过 `fetch()` 按需读取原始 Markdown。
 - `serve_reports.py` 会为 `.md` 和 `.html` 显式返回 UTF-8 Content-Type，解决浏览器直开中文 Markdown 乱码。

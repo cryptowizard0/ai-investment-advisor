@@ -2,7 +2,7 @@
 
 [中文文档](README.zh-CN.md)
 
-InvestFlow is a repo-local agent plugin for investment research, compatible with both Codex and Claude Code. It bundles reusable skills for market scans, industry-chain research, non-consensus discovery, single-stock analysis, earnings review, reflexivity analysis, and routed market data.
+InvestFlow is a repo-local agent plugin for investment research, compatible with both Codex and Claude Code. It bundles reusable skills for market scans, industry-chain research, single-stock analysis, earnings review, reflexivity analysis, and routed market data.
 
 Its flagship workflow is **chain-alpha** — a theme → industry-chain → investable-company funnel with ongoing revenue/profit-delivery tracking. See [Featured Workflow: chain-alpha](#featured-workflow-chain-alpha).
 
@@ -11,7 +11,7 @@ At a glance, the skills fall into four user-facing categories, grouped by what y
 | Category | Input | Start with | For |
 |---|---|---|---|
 | **1. Find opportunities** | a theme | `chain-alpha` | Turn a big theme into investable companies |
-| **2. Research a single stock** | a ticker | `multi-agent-stock-analysis` | Judge one company from several independent angles |
+| **2. Research a single stock** | a ticker | `research-stock` | Judge one company from several independent angles |
 | **3. Daily & periodic tracking** | a calendar | `daily-us-market-scan` | Recurring reads that run well as scheduled tasks |
 | **4. Cycle scanning** | an index | `index-bull-bear-cycle-tracking` | Maintain a close-to-close bull/bear cycle history |
 
@@ -40,7 +40,6 @@ Examples (both platforms):
 ```text
 Use InvestFlow to run a multi-agent analysis for TSLA.
 Use InvestFlow to scan the US market close today.
-Use InvestFlow to find non-consensus companies in AI data center power.
 Use InvestFlow to map the HBM supply chain with chain-alpha.
 ```
 
@@ -85,22 +84,21 @@ Turn a big theme into investable companies. `chain-alpha` is the flagship — se
 | `chain-alpha-entry-plan` | chain-alpha step 4: type gate → PE/PS ruler (with alert lines) → 5-year TTM percentile band → potential risk → growth-digestion check → entry decision, position cap, entry range, staged buying plan, and blocking/reopen conditions. | Verification produced a grade and you need an executable entry plan. (Also listed under category 2.) |
 | `chain-alpha-delivery-tracking` | Forward-looking revenue/profit-delivery tracking for pending-verification candidates with a 5-gate ladder plus delivery-window timeouts, growth/attribution/dynamic-valuation engines, structure sentinels, and symmetric grade up/down. | You hold a pending-verification name (e.g. a harmonic-reducer supplier) and need a quarterly read on whether revenue and profit growth are actually being delivered. (Also a quarterly tracking task — see category 3.) |
 | `ai-infrastructure-sector-discovery` | Weekly AI infrastructure sector scan and scoring; the handoff queue feeds chain-alpha. | You want a scheduled weekly read on which AI infrastructure sectors to research next. (Also a weekly tracking task — see category 3.) |
-| `non-consensus-company-discovery` | Theme-to-company discovery for high-potential non-consensus opportunities. | You want names the market may still value using the wrong framework. |
 
 ### 2. Research a single stock (you bring a ticker)
 
-Judge one company from several independent angles. `multi-agent-stock-analysis` orchestrates the rest in one session.
+Judge one company from several independent angles. `research-stock` orchestrates the rest in one session.
 
 | Skill | Purpose | Use when |
 |---|---|---|
-| `multi-agent-stock-analysis` | In-session orchestration across the single-stock skills below (company profile → fundamentals → capital flow → reflexivity → Reportify → non-consensus). | You want one stock analyzed from several independent angles. |
-| `company-profile` | Builds a company primer before investment analysis. | A user is hearing about a company for the first time and needs business, technology, value-chain, AI relevance, competitors, and industry-position context. |
-| `fundamental-analysis` | Single-stock fundamental, valuation, and technical analysis. | You need a fast but structured view of a company. |
+| `research-stock` | In-session orchestration across the five default single-stock stages (profile → fundamentals → institutional → reflexivity → Reportify). | You want one stock analyzed from several independent angles. |
+| `research-profile` | Builds a company primer before investment analysis. | A user is hearing about a company for the first time and needs business, technology, value-chain, AI relevance, competitors, and industry-position context. |
+| `research-fundamentals` | Single-stock fundamental, valuation, and technical analysis. | You need a fast but structured view of a company. |
 | `chain-alpha-entry-plan` | Type-gated entry planning backed by a valuation percentile band, potential-risk calculation, growth-digestion check, and drawdown-budget position cap. The output owns the entry decision, position cap, entry range, staged buying plan, and blocking/reopen conditions. | You need an executable buying plan rather than valuation analysis alone. (Also chain-alpha step 4 — see category 1.) |
-| `institutional-accumulation-analysis` | Institutional accumulation and distribution analysis. | You want to judge whether major players are buying, distributing, or hedging. |
-| `reflexivity-analysis` | Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes. | You need to read where a narrative sits — a fast stage check, or a full narrative/price/reality/reversal map. |
-| `reportify-stock-analysis` | Standardized 8-part stock report with a buy-side-grade decision layer (3-scenario valuation, falsifiable thesis, catalysts, tracking dashboard). | You need a repeatable, formal, trackable report covering facts, interpretation, decision, and risk. |
-| `earnings-report-analysis` | Institutional earnings, guidance, call, and expectation-gap analysis. | A company has reported and you need to know whether the thesis changed. |
+| `research-institutional` | Institutional accumulation and distribution analysis. | You want to judge whether major players are buying, distributing, or hedging. |
+| `research-reflexivity` | Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes. | You need to read where a narrative sits — a fast stage check, or a full narrative/price/reality/reversal map. |
+| `research-reportify` | Standardized 8-part stock report with a buy-side-grade decision layer (3-scenario valuation, falsifiable thesis, catalysts, tracking dashboard). | You need a repeatable, formal, trackable report covering facts, interpretation, decision, and risk. |
+| `research-earnings` | Institutional earnings, guidance, call, and expectation-gap analysis; it is not one of the five default `research-stock` stages. | The user specifies a reporting period or a relevant new earnings event occurs. |
 
 ### 3. Daily & periodic tracking (you bring a calendar)
 
@@ -134,15 +132,14 @@ Maintain a repeatable index cycle history from official EOD closes, with explici
 Use InvestFlow through natural-language prompts in Codex or Claude Code. Prefer skill names when you want a specific workflow:
 
 ```text
-Use invest-flow:multi-agent-stock-analysis to analyze TSLA.
+Use invest-flow:research-stock to analyze TSLA.
 Use invest-flow:daily-us-market-scan to scan today's US market close.
-Use invest-flow:non-consensus-company-discovery to find non-consensus opportunities in AI data center power.
 Use invest-flow:chain-alpha to find investable companies in AI data center power.
-Use invest-flow:reflexivity-analysis in quick mode to check NVIDIA's current narrative stage.
+Use invest-flow:research-reflexivity in quick mode to check NVIDIA's current narrative stage.
 Use invest-flow:index-pe-sensitivity to build a valuation-sensitivity table for the STAR 50 index.
 Use invest-flow:index-bull-bear-cycle-tracking to update the SOX bull and bear market cycle tables.
 Use invest-flow:chain-alpha-entry-plan to create NVDA's entry decision, position cap, entry range, and staged buying plan.
-Use invest-flow:earnings-report-analysis to analyze NVIDIA's latest earnings.
+Use invest-flow:research-earnings to analyze NVIDIA's latest earnings.
 Use invest-flow:output-report-index to update the output report index.
 ```
 
@@ -154,10 +151,10 @@ Generated reports and cache files are written under `output/`:
 
 | Workflow | Output path |
 |---|---|
-| Company profile | `output/company-profile/` |
+| Company profile | `output/research-profile/` |
 | Chain Alpha entry plan | `output/chain-alpha-entry-plan/` |
-| Fundamental analysis | `output/fundamental-analysis/` |
-| Earnings report analysis | `output/earnings-report-analysis/` |
+| Fundamental analysis | `output/research-fundamentals/` |
+| Earnings report analysis | `output/research-earnings/` |
 | AI infrastructure sector discovery | `output/ai-infrastructure-sector-discovery/` |
 | Chain-alpha mismatch discovery | `output/chain-alpha-mismatch/` |
 | Chain-alpha monopoly screen | `output/chain-alpha-monopoly/` |
@@ -166,13 +163,12 @@ Generated reports and cache files are written under `output/`:
 | Chain-alpha delivery tracking | `output/chain-alpha-delivery-tracking/` |
 | Index PE sensitivity | `output/index-pe-sensitivity/` |
 | Index bull/bear cycle tracking | `output/index-market-cycles/` |
-| Institutional analysis | `output/institutional-accumulation-analysis/` |
-| Non-consensus company discovery | `output/non-consensus-company-discovery/` |
+| Institutional analysis | `output/research-institutional/` |
 | Gold analysis | `output/gold-analysis/` |
-| Reflexivity analysis | `output/reflexivity-analysis/` |
-| Reportify stock analysis | `output/reportify-stock-analysis/` |
+| Reflexivity analysis | `output/research-reflexivity/` |
+| Reportify stock analysis | `output/research-reportify/` |
 | Daily US market scan | `output/daily-us-market-scan/` |
-| Multi-agent summaries | `output/summary/` |
+| Multi-agent summaries | `output/research-stock/` |
 | Report index | `output/index.md`, `output/index.html` |
 | Market data cache | `output/cache/market-data/` |
 

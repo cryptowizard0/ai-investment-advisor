@@ -1,0 +1,88 @@
+---
+name: research-reportify
+description: "个股分析报告生成器（含买方研究风格深度）。基于固定方法论（事实层到解释层到决策层）对股票进行结构化分析，并按八段式模板输出中文 Markdown 报告，决策层带三情景估值、可证伪投资假设、催化剂时间表和跟踪指标 Dashboard。适用于：(1) 用户要求分析单个股票或生成正式/买方风格个股报告, (2) 需要统一格式、可比较、可复盘、有证据链的投研报告, (3) 需要把财务/技术/风险信息整合成可执行、可跟踪的投资建议。支持输出到 ./output/research-reportify/ 并自动处理重名文件。"
+---
+
+# Reportify Stock Analysis
+
+## Web Research Routing
+
+- 当任务需要联网搜索、网页抓取或多页研究，且当前 agent 会话已安装对应 Firecrawl skill 时，优先使用 `firecrawl-search`（发现来源）、`firecrawl-scrape`（单页提取）、`firecrawl-crawl`（站点遍历）或 `firecrawl-deep-research`（多来源深研）。
+- Firecrawl skill 不可用或调用失败时，再回退到当前会话提供的 web search / browser 工具。
+- 工具优先级不得降低证据标准：仍优先公司公告、监管文件、交易所、IR 等一手来源，并按本 skill 的规则交叉验证。
+
+## Overview
+
+本 skill 用于产出“可比较、可复核”的个股分析报告，同时承担买方研究风格的深度决策输出（正式个股报告的统一入口）。执行时必须同时满足：
+- 使用 `references/methodology.md` 的分析方法。
+- 使用 `references/report-template.md` 的章节结构与字段。
+
+决策层（第七、八段）必须给出买方级结论：当前估值多维对照、三情景估值（乐观/基准/悲观 + 反证条件）、可证伪投资假设（H1-H3 + 失效条件）、催化剂时间表和跟踪指标 Dashboard。深度基本面/竞争/护城河、叙事反身性等前置认知，交由 `research-profile`、`research-fundamentals`、`research-reflexivity` 覆盖，本 skill 不重复展开。
+
+输出目录：`./output/research-reportify/`
+
+## Trigger
+
+在对话中使用：
+- `/research-reportify <ticker>`
+- 示例：`/research-reportify TSLA`
+
+## Workflow（可执行）
+
+### 1) 识别输入
+- 提取 `ticker`、公司名、分析日期。
+- 若用户给了指定日期，使用用户日期；否则使用当前日期。
+
+### 2) 收集与整理事实
+- 公司信息：主营、行业、管理层、上市信息。
+- 财务信息：最新季度 + 最新全年，覆盖收入/利润/现金流/资本开支。
+- 市场与技术：股价区间、估值倍数、关键技术指标（至少 RSI）。
+- 业务与区域：战略进展、区域市场表现。
+- 风险信息：经营/竞争/转型/财务四类。
+
+### 3) 方法论分析
+- 严格按 `references/methodology.md` 的三层结构分析：
+  - 事实层
+  - 解释层
+  - 决策层
+- 决策层必须给出：
+  - 一句话核心观点
+  - 建议动作（持有/增持/减持/观望）
+  - 触发条件
+  - 失效条件
+  - 复核时间
+  - 三情景估值（乐观/基准/悲观，各带关键假设与反证条件）
+  - 可证伪投资假设 H1-H3（当前证据 + 需验证数据 + 失效条件）
+  - 催化剂时间表（0-6 / 6-12 / 12-24 个月）
+  - 跟踪指标 Dashboard（强化信号 / 弱化反证信号）
+
+### 4) 套用模板并生成报告
+- 按 `references/report-template.md` 填充全部章节。
+- 不删除章节，仅允许在无法获取数据时标注“数据暂缺”。
+- 核心数字必须带时间点与来源。
+- 所有输出报告必须包含固定作者字段：`InvestmentFlow`
+
+### 5) 落盘与重名处理
+- 建议优先执行：
+  - `python plugins/invest-flow/skills/research-reportify/scripts/generate_report.py --ticker TSLA --company 特斯拉`
+- 文件命名：`research-reportify-{TICKER}-{YYYY-MM-DD}.md`
+- 若重名，自动追加 `(1)`, `(2)`。
+
+## Output Requirements
+
+- 语言：中文（财务与技术术语保留英文）。
+- 格式：Markdown。
+- 必须包含：
+  - 作者：InvestmentFlow
+  - 八段式主体结构
+  - `数据来源` 区块（可追溯）
+  - `风险提示` 区块
+
+## Resources
+
+### scripts/
+- `generate_report.py`: 生成模板化报告文件，自动处理日期和重名。
+
+### references/
+- `methodology.md`: 个股分析方法论（事实层 -> 解释层 -> 决策层）。
+- `report-template.md`: 报告标准模板（八段式）。
