@@ -54,7 +54,7 @@ If the plugin does not appear, confirm these files exist:
 chain-alpha is InvestFlow's flagship workflow: it turns a big theme into investable companies, defines the entry plan, then keeps tracking whether revenue and profit growth actually deliver. Six skills form a closed loop, orchestrated end-to-end by `chain-alpha`:
 
 ```text
-theme ─▶ chain-alpha-mismatch ─▶ chain-alpha-monopoly ─▶ chain-alpha-verification ─▶ chain-alpha-entry-plan ⇄ delivery-tracking
+theme ─▶ chain-alpha-mismatch ─▶ chain-alpha-monopoly ─▶ chain-alpha-verification ─▶ chain-alpha-entry-plan ⇄ chain-alpha-delivery-tracking
         industry + growth        sub-links +           4-tier grade               entry decision +         quarterly revenue/
         screen + mismatch        ≤10 candidates        (grading only)             staged buying plan       profit tracking
         └──────────────────── orchestrated by chain-alpha ────────────────────┘
