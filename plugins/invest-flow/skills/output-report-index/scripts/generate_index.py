@@ -17,6 +17,29 @@ INDEX_FILENAME = "index.md"
 HTML_INDEX_FILENAME = "index.html"
 ISO_DATE_RE = re.compile(r"(?<!\d)(\d{4}-\d{2}-\d{2})(?!\d)")
 COMPACT_DATE_RE = re.compile(r"(?<!\d)(\d{4})(\d{2})(\d{2})(?!\d)")
+LEGACY_CATEGORY_ALIASES: dict[str, str] = {
+    "ai-infrastructure-scarcity-radar": "monitor-ai-infrastructure",
+    "ai-infrastructure-sector-discovery": "monitor-ai-infrastructure",
+    "chain-alpha-delivery-tracking": "monitor-chain-alpha-delivery",
+    "chain-alpha-mismatch-discovery": "chain-alpha-mismatch",
+    "chain-alpha-monopoly-screen": "chain-alpha-monopoly",
+    "chain-alpha-pipeline": "chain-alpha",
+    "company-buyability-score": "chain-alpha-entry-plan",
+    "company-profile": "research-profile",
+    "company-valuation-risk": "chain-alpha-entry-plan",
+    "daily-us-market-scan": "monitor-us-market",
+    "earnings-report-analysis": "research-earnings",
+    "fundamental-analysis": "research-fundamentals",
+    "gold-analysis": "monitor-gold",
+    "index-market-cycles": "monitor-index-cycle",
+    "index-pe-sensitivity": "monitor-index-valuation",
+    "institutional-accumulation-analysis": "research-institutional",
+    "non-consensus-company-discovery": "chain-alpha-mismatch",
+    "reflexivity-deep-analysis": "research-reflexivity",
+    "reflexivity-quick-scan": "research-reflexivity",
+    "reportify-stock-analysis": "research-reportify",
+    "research": "research-stock",
+}
 
 
 class ReportEntry(NamedTuple):
@@ -25,6 +48,10 @@ class ReportEntry(NamedTuple):
     title: str
     relative_link: str
     relative_path: str
+
+
+def normalize_report_category(directory: str) -> str:
+    return LEGACY_CATEGORY_ALIASES.get(directory, directory)
 
 
 def parse_report_date(path: Path) -> str:
@@ -83,7 +110,7 @@ def collect_reports(output_dir: Path) -> list[ReportEntry]:
 
         relative_path = path.relative_to(output_dir)
         parts = relative_path.parts
-        category = parts[0] if len(parts) > 1 else "root"
+        category = normalize_report_category(parts[0]) if len(parts) > 1 else "root"
         reports.append(
             ReportEntry(
                 category=category,

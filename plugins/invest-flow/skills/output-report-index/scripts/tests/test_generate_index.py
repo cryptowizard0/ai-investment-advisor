@@ -25,6 +25,88 @@ def load_generator_module():
 
 
 class GenerateIndexTests(unittest.TestCase):
+    def test_legacy_category_names_are_mapped_to_canonical_sections(self) -> None:
+        generator = load_generator_module()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            legacy_monitor_dir = output_dir / "daily-us-market-scan"
+            legacy_research_dir = output_dir / "fundamental-analysis"
+            legacy_chain_dir = output_dir / "chain-alpha-mismatch-discovery"
+            legacy_ai_infra_dir = output_dir / "ai-infrastructure-sector-discovery"
+            legacy_monitor_dir.mkdir()
+            legacy_research_dir.mkdir()
+            legacy_chain_dir.mkdir()
+            legacy_ai_infra_dir.mkdir()
+
+            legacy_monitor_report = legacy_monitor_dir / "us-market-close-daily-2026-01-11.md"
+            legacy_monitor_report.write_text(
+                "# Legacy monitor report\n\nHistory should remain searchable.",
+                encoding="utf-8",
+            )
+            legacy_research_report = legacy_research_dir / "fundamental-analysis-TSLA-2026-01-12.md"
+            legacy_research_report.write_text(
+                "# Legacy research report\n\nHistory should remain searchable.",
+                encoding="utf-8",
+            )
+            legacy_chain_report = legacy_chain_dir / "chain-alpha-mismatch-discovery-MLCC-2026-01-13.md"
+            legacy_chain_report.write_text(
+                "# Legacy chain report\n\nHistory should remain searchable.",
+                encoding="utf-8",
+            )
+            legacy_ai_infra_report = legacy_ai_infra_dir / "ai-infrastructure-sector-discovery-2026-01-14.md"
+            legacy_ai_infra_report.write_text(
+                "# Legacy AI infrastructure report\n\nHistory should remain searchable.",
+                encoding="utf-8",
+            )
+
+            result_path = generator.generate_index(output_dir=output_dir)
+            index_text = result_path.read_text(encoding="utf-8")
+            html_path = output_dir / "index.html"
+            html_text = html_path.read_text(encoding="utf-8")
+
+            self.assertIn("## monitor-us-market", index_text)
+            self.assertIn("## research-fundamentals", index_text)
+            self.assertIn("## chain-alpha-mismatch", index_text)
+            self.assertIn("## monitor-ai-infrastructure", index_text)
+            self.assertIn(
+                "| 2026-01-11 | Legacy monitor report | [原文](./daily-us-market-scan/us-market-close-daily-2026-01-11.md) |",
+                index_text,
+            )
+            self.assertIn(
+                "| 2026-01-12 | Legacy research report | [原文](./fundamental-analysis/fundamental-analysis-TSLA-2026-01-12.md) |",
+                index_text,
+            )
+            self.assertIn(
+                "| 2026-01-13 | Legacy chain report | [原文](./chain-alpha-mismatch-discovery/chain-alpha-mismatch-discovery-MLCC-2026-01-13.md) |",
+                index_text,
+            )
+            self.assertIn(
+                "| 2026-01-14 | Legacy AI infrastructure report | [原文](./ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-2026-01-14.md) |",
+                index_text,
+            )
+            self.assertIn('"category": "monitor-us-market"', html_text)
+            self.assertIn('"category": "research-fundamentals"', html_text)
+            self.assertIn('"category": "chain-alpha-mismatch"', html_text)
+            self.assertIn('"category": "monitor-ai-infrastructure"', html_text)
+            self.assertIn("\"daily-us-market-scan/us-market-close-daily-2026-01-11.md\"", html_text)
+            self.assertIn("\"ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-2026-01-14.md\"", html_text)
+            self.assertEqual(
+                generator.LEGACY_CATEGORY_ALIASES["daily-us-market-scan"],
+                "monitor-us-market",
+            )
+
+            self.assertEqual(
+                generator.LEGACY_CATEGORY_ALIASES["ai-infrastructure-sector-discovery"],
+                "monitor-ai-infrastructure",
+            )
+
+            # Compatibility allowlist is explicit and centrally maintained in module constant.
+            self.assertIn(
+                "fundamental-analysis",
+                generator.LEGACY_CATEGORY_ALIASES,
+            )
+
     def test_writes_categorized_index_with_titles_links_and_ascending_dates(self) -> None:
         generator = load_generator_module()
 
