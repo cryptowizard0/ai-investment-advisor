@@ -1,6 +1,6 @@
 ---
 name: chain-alpha-entry-plan
-description: "chain-alpha 入场计划（第四步）：在 chain-alpha-verification 之后，使用公司类型闸门、PE/PS 历史分位带、潜在回撤、增长消化和账户回撤预算，确定是否允许入场、仓位上限、买入区间、分批计划以及暂停/重新开放条件。估值与风险是内部决策引擎；仓位上限仍按回撤预算 ÷ 潜在风险计算，并叠加档位、弹性、数据不足、警戒线和增长透支折扣。也可独立用于分析相对历史估值与假设性入场计划。输出保存至 ./output/chain-alpha-entry-plan/。"
+description: "chain-alpha 入场计划（第四步）：在 chain-alpha-verification 之后，使用公司类型闸门、PE/PS 历史分位带、潜在回撤、增长消化和账户回撤预算，确定是否允许入场、仓位上限、买入区间、分批计划以及暂停/重新开放条件。估值与风险是内部决策引擎；仓位上限仍按回撤预算 ÷ 潜在风险计算，并叠加档位、弹性、数据不足、警戒线和增长透支折扣。也可独立用于分析相对历史估值与假设性入场计划。输出保存至 ./output/chain-alpha/。"
 ---
 
 # Chain Alpha 入场计划（第四步）
@@ -28,7 +28,7 @@ description: "chain-alpha 入场计划（第四步）：在 chain-alpha-verifica
 
 分位仅相对公司自身历史，不跨公司比较。细则见 `references/methodology.md`。
 
-默认输出目录：`./output/chain-alpha-entry-plan/`
+默认输出目录：`./output/chain-alpha/`
 
 ## Trigger
 

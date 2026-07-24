@@ -1,6 +1,6 @@
 ---
 name: chain-alpha-verification
-description: "chain-alpha 工作流第三步：对全球主要可投市场（美股/ADR、A 股、港股、日股、台股主板）候选公司做最终验证——环节收入占比双轨硬门槛（≥40% 纯正 / 20-40% 增量贡献测试 / 低于 20% 剔除）、利润增速硬门槛（最低 20%、优选 30%+）、100 分模型四档分级（金池子/通过/待验证/剔除）。只做验证分级、不定仓位：通过及以上标的交给第四步 chain-alpha-entry-plan 定买点与仓位（仓位上限 = 回撤预算 ÷ 潜在风险）。适用于：(1) 验证产业链筛出的候选公司是否可投并给档位, (2) chain-alpha 的第三步。输出保存至 ./output/chain-alpha-verification/。"
+description: "chain-alpha 工作流第三步：对全球主要可投市场（美股/ADR、A 股、港股、日股、台股主板）候选公司做最终验证——环节收入占比双轨硬门槛（≥40% 纯正 / 20-40% 增量贡献测试 / 低于 20% 剔除）、利润增速硬门槛（最低 20%、优选 30%+）、100 分模型四档分级（金池子/通过/待验证/剔除）。只做验证分级、不定仓位：通过及以上标的交给第四步 chain-alpha-entry-plan 定买点与仓位（仓位上限 = 回撤预算 ÷ 潜在风险）。适用于：(1) 验证产业链筛出的候选公司是否可投并给档位, (2) chain-alpha 的第三步。输出保存至 ./output/chain-alpha/。"
 ---
 
 # Chain Alpha 公司验证
@@ -17,7 +17,7 @@ description: "chain-alpha 工作流第三步：对全球主要可投市场（美
 
 第一性原理：股价长期跟着公司利润走，所有验证指标最终必须落到"利润增速"。利润增速最好 ≥30%，最低 ≥20%；低于 20% 的公司直接剔除，不用估值或格局高分救回。
 
-默认输出目录：`./output/chain-alpha-verification/`
+默认输出目录：`./output/chain-alpha/`
 
 ## Trigger
 
@@ -68,7 +68,7 @@ description: "chain-alpha 工作流第三步：对全球主要可投市场（美
 
 ### 5) 输出验证卡
 - 使用 `references/report-template.md`，每家公司一张验证卡（评分明细、档位、弹性标记、反证条件、下一步指引）。
-- 单公司保存至 `./output/chain-alpha-verification/chain-alpha-verification-{TICKER}-{YYYY-MM-DD}.md`；多公司汇总为 `chain-alpha-verification-{环节}-{YYYY-MM-DD}.md`。
+- 单公司保存至 `./output/chain-alpha/chain-alpha-verification-{TICKER}-{YYYY-MM-DD}.md`；多公司汇总为 `chain-alpha-verification-{环节}-{YYYY-MM-DD}.md`。
 - 文件已存在时追加 `(1)`, `(2)`，不覆盖。
 - 报告必须包含固定作者字段：`InvestmentFlow`。
 

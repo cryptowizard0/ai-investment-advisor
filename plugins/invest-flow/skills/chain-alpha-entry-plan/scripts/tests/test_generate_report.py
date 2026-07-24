@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -771,6 +772,37 @@ class CreateReportTests(unittest.TestCase):
                     output_dir=output_dir,
                     template_path=self._template(output_dir),
                 )
+
+
+class OutputDefaultsTests(unittest.TestCase):
+    def test_cli_writes_to_chain_alpha_topic_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT_PATH),
+                    "MU",
+                    "--company-type",
+                    "周期",
+                    "--fallback-drawdown",
+                    "50",
+                    "--date",
+                    "2026-07-24",
+                ],
+                cwd=tmpdir,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertTrue(
+                (
+                    Path(tmpdir)
+                    / "output"
+                    / "chain-alpha"
+                    / "chain-alpha-entry-plan-MU-2026-07-24.md"
+                ).exists()
+            )
 
 
 if __name__ == "__main__":

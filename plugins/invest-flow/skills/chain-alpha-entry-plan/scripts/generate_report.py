@@ -1242,7 +1242,7 @@ def main() -> None:
     parser.add_argument("--forward-ps", default=None, type=float, help="Forward TTM PS proving the PS ruler is back inside the alert line. Required with --alert-release under the PS ruler; rejected if still above --ps-alert.")
     parser.add_argument("--digestion", default=None, choices=list(DIGESTION_VERDICTS), help="Growth-digestion verdict from section 6 (PE ruler: earnings growth + exit PE; PS ruler: revenue growth + exit PS). 透支 applies an extra x0.5 to new positions; other verdicts do not change the cap.")
     parser.add_argument("--date", type=parse_date, default=date.today(), help="Analysis date YYYY-MM-DD. Defaults to today.")
-    parser.add_argument("--output-dir", default="./output/chain-alpha-entry-plan", help="Output directory for the report.")
+    parser.add_argument("--output-dir", default="./output/chain-alpha", help="Output directory for the report.")
     parser.add_argument("--template", default="", help="Optional custom template path.")
     args = parser.parse_args()
 

@@ -3,9 +3,9 @@
 - 日期：{YYYY-MM-DD}
 - 作者：InvestmentFlow
 - 各步骤报告：
-  - Step 1: {output/chain-alpha-mismatch/ 文件路径}
-  - Step 2: {output/chain-alpha-monopoly/ 文件路径，每环节一份}
-  - Step 3: {output/chain-alpha-verification/ 文件路径}
+  - Step 1: {output/chain-alpha/ 文件路径}
+  - Step 2: {output/chain-alpha/ 文件路径，每环节一份}
+  - Step 3: {output/chain-alpha/ 文件路径}
 
 ## 一、一句话结论
 

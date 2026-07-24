@@ -1,6 +1,6 @@
 ---
 name: chain-alpha-mismatch
-description: "chain-alpha 工作流第一步：从用户给定的大主题出发，先用白话回答行业是什么、增长快不快、处于哪个产业周期阶段（技术验证/商用起步/规模上量/大规模渗透 + 各阶段预测时间），再输出完整产业链全景列表，识别需求增量大、供给跟不上的供需错位环节，并验证错位是否能落到利润增速。适用于：(1) 用户要求做行业定义、增长初筛、产业链全景并找供需错位/瓶颈环节, (2) chain-alpha 的第一步, (3) 单独验证某条产业链是否存在真实的供需缺口。输出 2-4 个错位环节及错位强度评分，保存至 ./output/chain-alpha-mismatch/。"
+description: "chain-alpha 工作流第一步：从用户给定的大主题出发，先用白话回答行业是什么、增长快不快、处于哪个产业周期阶段（技术验证/商用起步/规模上量/大规模渗透 + 各阶段预测时间），再输出完整产业链全景列表，识别需求增量大、供给跟不上的供需错位环节，并验证错位是否能落到利润增速。适用于：(1) 用户要求做行业定义、增长初筛、产业链全景并找供需错位/瓶颈环节, (2) chain-alpha 的第一步, (3) 单独验证某条产业链是否存在真实的供需缺口。输出 2-4 个错位环节及错位强度评分，保存至 ./output/chain-alpha/。"
 ---
 
 # chain-alpha 供需错位环节发现
@@ -19,7 +19,7 @@ description: "chain-alpha 工作流第一步：从用户给定的大主题出发
 
 第一性原理：股价长期跟着公司利润走，所有行业/环节筛选指标最终必须落到"利润增速"。行业/收入增速 >20% 只是增长初筛，利润增速最好 ≥30%，最低 ≥20%；代表公司或可投标的的可持续利润增速低于 20% 的环节不得进入第二步，只能进入观察池或标记为"高景气但利润弹性不足"。
 
-默认输出目录：`./output/chain-alpha-mismatch/`
+默认输出目录：`./output/chain-alpha/`
 
 ## Trigger
 
@@ -92,7 +92,7 @@ description: "chain-alpha 工作流第一步：从用户给定的大主题出发
 
 ### 8) 输出报告
 - 使用 `references/report-template.md` 输出中文 Markdown 报告。
-- 保存至 `./output/chain-alpha-mismatch/chain-alpha-mismatch-{主题}-{YYYY-MM-DD}.md`。
+- 保存至 `./output/chain-alpha/chain-alpha-mismatch-{主题}-{YYYY-MM-DD}.md`。
 - 文件已存在时追加 `(1)`, `(2)`，不覆盖。
 - 报告必须包含固定作者字段：`InvestmentFlow`。
 

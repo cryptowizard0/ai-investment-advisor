@@ -131,7 +131,7 @@ Forward 估值口径与预期收益率（通用；确定性=验证链点亮级�
 
 - 触发项：{导致档位变更的具体项}
 - 仓位归属：本 skill **不自行折算仓位**。档位变化（尤其升档、涉及建仓/加减仓）即触发第四步 `chain-alpha-entry-plan` 重跑；仓位上限 = 回撤预算 ÷ 潜在风险 × 档位/弹性/数据不足折扣 × 信号层系数，**由第四步唯一给出**，不在本卡另算第二套仓位。
-- 第四步重跑报告：{output/chain-alpha-entry-plan/chain-alpha-entry-plan-{TICKER}-{YYYY-MM-DD}.md 或 "本期维持、未触发重跑"}
+- 第四步重跑报告：{output/chain-alpha/chain-alpha-entry-plan-{TICKER}-{YYYY-MM-DD}.md 或 "本期维持、未触发重跑"}
 - 对应 verification 验证卡：{路径}（**仅同步档位**；verification 只管分级、不含仓位）
 
 ## 十、反证条件更新 + 下次复盘

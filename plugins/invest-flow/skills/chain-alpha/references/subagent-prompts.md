@@ -38,7 +38,7 @@ Codex 派发时，每个 subagent prompt 必须自包含，至少包含：
 1. 读取 invest-flow:chain-alpha-monopoly 的 SKILL.md 与 references/methodology.md，严格按其规则执行。
 2. 拆该环节上中下游子环节；列全球公司格局（必须含中国大陆及日韩台欧）。
 3. 先执行硬门槛（CR3>50% 或寡头证据；毛利<25% 且无壁垒剔除；占比<20% 初筛剔除；利润增速<20% 剔除），再按 30 分候选评分排序，取前 ≤10 家。
-4. 把报告写到 output/chain-alpha-monopoly/chain-alpha-monopoly-{环节名称}-{YYYY-MM-DD}.md（已存在则追加 (1)(2)）。
+4. 把报告写到 output/chain-alpha/chain-alpha-monopoly-{环节名称}-{YYYY-MM-DD}.md（已存在则追加 (1)(2)）。
 
 在 final message 末尾输出如下结构化交接（每家候选一行），不要省略字段：
 report_path: <报告路径>
@@ -65,7 +65,7 @@ candidates:
 1. 读取 invest-flow:chain-alpha-verification 的 SKILL.md 与 references/methodology.md，严格按其规则执行；按候选公司上市地使用同市场可比估值口径。
 2. 先执行占比双轨硬门槛（≥40% 纯正 / 20-40% 增量贡献测试 / <20% 剔除）和利润增速硬门槛（<20% 剔除 / 20-30% 低档通过 / ≥30% 优先），再按 100 分模型评分并定四档（金池子≥80 / 通过65-79 / 待验证50-64 / 剔除<50），含负分项。
 3. 本步只验证分级，不推断回撤、不算仓位（仓位由 Step 4 chain-alpha-entry-plan 统一给出）；弹性标的（占比 20-40%）必须显式标注。
-4. 把验证卡写到 output/chain-alpha-verification/chain-alpha-verification-{Ticker}-{YYYY-MM-DD}.md（已存在则追加 (1)(2)）。
+4. 把验证卡写到 output/chain-alpha/chain-alpha-verification-{Ticker}-{YYYY-MM-DD}.md（已存在则追加 (1)(2)）。
 
 在 final message 末尾输出如下结构化交接，不要省略字段：
 report_path: <报告路径>
@@ -104,7 +104,7 @@ report_path: <报告路径>
    (b) 警戒线放宽资格判定（仅当警戒线触发时）：唯有 g 达**一档硬证据**（公司指引+在手订单/产能锁定，或 delivery-tracking 已点亮 L4 入表）**且** forward 倍数（PE 轨用 forward 盈利、PS 轨用 forward 营收算）已 ≤ 警戒线，才放宽；记下 forward 值与证据文本。二/三档证据或叙事一律不放宽（维持归零）。
 4. **再用 generate_report.py 一次性生成最终报告，带齐全部参数**：`--grade {档位}` {弹性标的为"是"时加 `--elastic`} + 信号层（判定透支→ `--digestion 透支`；资格满足→ `--alert-release --alert-release-evidence "<证据>" --forward-pe/--forward-ps <值>`）。仓位上限 = 回撤预算 ÷ 潜在风险，报告按 2%/5%/10%/20%/30%/50%/70% 逐档列表（`--drawdown-budget` 选主档，默认 2%），档位/弹性/数据不足折扣叠乘，警戒线触发未放宽则新仓归零。脚本会在生成时校验放宽证据必填且 forward 须 ≤ 警戒线，不满足即拒绝——信号层由此在最终文件中生效，无需二次补写。随后按 methodology 的"入场执行字段"补齐入场决策、买入区间、分批计划、暂停与重新开放条件。
 5. **若为排查/取数已先跑过一版初稿，必须用完整信号层参数重跑，并以重跑文件为最终交付**（旧初稿按重名规则追加 (1)(2) 作废，不作为结论与交接来源）。
-6. 报告写到 output/chain-alpha-entry-plan/chain-alpha-entry-plan-{Ticker}-{YYYY-MM-DD}.md（已存在则追加 (1)(2)）。
+6. 报告写到 output/chain-alpha/chain-alpha-entry-plan-{Ticker}-{YYYY-MM-DD}.md（已存在则追加 (1)(2)）。
 
 在 final message 末尾输出如下结构化交接，不要省略字段：
 report_path: <报告路径>
