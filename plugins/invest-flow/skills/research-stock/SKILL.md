@@ -150,7 +150,7 @@ python plugins/invest-flow/skills/research-stock/scripts/orchestrator.py MRVL --
 该脚本只输出：
 
 - `output/research/research-stock-prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md`
-- `output/research/research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
+- `output/cache/market-data/research-stock/research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
 
 它不会执行五个默认子 skill。真实分析仍由当前 agent 会话按上面的五段 prompt 完成。
 
@@ -167,15 +167,16 @@ python plugins/invest-flow/skills/research-stock/scripts/orchestrator.py MRVL --
 
 ```text
 output/
-├── research-profile/
-├── research-fundamentals/
-├── research-institutional/
-├── research-reflexivity/
-├── research-reportify/
-└── research-stock/
-    ├── prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md
-    ├── orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json
-    └── research-stock-{TICKER}-{YYYY-MM-DD}.md
+├── research/
+│   ├── research-profile-{TICKER}-{YYYY-MM-DD}.md
+│   ├── research-fundamentals-{TICKER}-{company}-{YYYY-MM-DD}.md
+│   ├── research-institutional-机构操作分析-{YYYYMMDD}-{TICKER}.md
+│   ├── research-reflexivity-deep-{TICKER}-{YYYY-MM-DD}.md
+│   ├── research-reportify-{TICKER}-{YYYY-MM-DD}.md
+│   ├── research-stock-prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md
+│   └── research-stock-{TICKER}-{YYYY-MM-DD}.md
+└── cache/market-data/research-stock/
+    └── research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json
 ```
 
 如输出文件已存在，脚本应追加 `(1)`、`(2)` 等编号，避免覆盖。

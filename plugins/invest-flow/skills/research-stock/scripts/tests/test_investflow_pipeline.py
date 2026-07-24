@@ -688,7 +688,16 @@ class ComposerTests(unittest.TestCase):
             plan_path = Path(written.prompt_plan_path)
             self.assertTrue(json_path.exists())
             self.assertTrue(plan_path.exists())
-            self.assertEqual(json_path.parent.name, "research")
+            self.assertEqual(
+                json_path.parent,
+                (
+                    Path(tmp)
+                    / "output"
+                    / "cache"
+                    / "market-data"
+                    / "research-stock"
+                ).resolve(),
+            )
             self.assertEqual(plan_path.parent.name, "research")
             self.assertTrue(
                 json_path.name.startswith("research-stock-orchestration-MRVL-")
@@ -722,11 +731,14 @@ class ComposerTests(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             written = write_outputs(Path(tmp), result)
             summary_dir = (Path(tmp) / "output" / "research").resolve()
+            cache_dir = (
+                Path(tmp) / "output" / "cache" / "market-data" / "research-stock"
+            ).resolve()
             summary_path = Path(written.summary_report_path).resolve()
             json_path = Path(written.orchestration_json_path).resolve()
 
         self.assertEqual(summary_path.parent, summary_dir)
-        self.assertEqual(json_path.parent, summary_dir)
+        self.assertEqual(json_path.parent, cache_dir)
         self.assertNotIn("/", summary_path.name)
         self.assertNotIn("/", json_path.name)
 

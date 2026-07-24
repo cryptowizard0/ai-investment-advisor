@@ -9,6 +9,7 @@ import json
 import re
 from pathlib import Path
 from typing import NamedTuple
+from urllib.parse import quote
 
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
@@ -17,7 +18,7 @@ INDEX_FILENAME = "index.md"
 HTML_INDEX_FILENAME = "index.html"
 ISO_DATE_RE = re.compile(r"(?<!\d)(\d{4}-\d{2}-\d{2})(?!\d)")
 COMPACT_DATE_RE = re.compile(r"(?<!\d)(\d{4})(\d{2})(\d{2})(?!\d)")
-LEGACY_CATEGORY_ALIASES: dict[str, str] = {
+HISTORICAL_FILENAME_PREFIX_ALIASES: dict[str, str] = {
     "ai-infrastructure-scarcity-radar": "monitor-ai-infrastructure",
     "ai-infrastructure-sector-discovery": "monitor-ai-infrastructure",
     "chain-alpha-delivery-tracking": "monitor-chain-alpha-delivery",
@@ -44,8 +45,6 @@ LEGACY_CATEGORY_ALIASES: dict[str, str] = {
     "research": "research-stock",
     "stock-analysis-template": "research-stock",
     "summary": "research-stock",
-}
-LEGACY_FILENAME_PREFIX_ALIASES: dict[str, str] = {
     "bear-market-cycles": "monitor-index-cycle",
     "bull-market-cycles": "monitor-index-cycle",
     "gold-bubble-risk": "monitor-gold",
@@ -90,13 +89,6 @@ def normalize_report_category(directory: str) -> str:
     if directory in TOPIC_CATEGORIES:
         return directory
 
-    canonical_skill_id = LEGACY_CATEGORY_ALIASES.get(directory, directory)
-    if canonical_skill_id == "chain-alpha" or canonical_skill_id.startswith("chain-alpha-"):
-        return "chain-alpha"
-    if canonical_skill_id.startswith("monitor-"):
-        return "monitor"
-    if canonical_skill_id.startswith("research-"):
-        return "research"
     return HISTORICAL_OTHER
 
 
@@ -108,23 +100,14 @@ def matches_filename_prefix(stem: str, prefix: str) -> bool:
     )
 
 
-def infer_report_skill(directory: str, stem: str) -> str:
-    if directory not in TOPIC_CATEGORIES:
-        directory_skill = LEGACY_CATEGORY_ALIASES.get(directory, directory)
-        if directory_skill in CANONICAL_SKILL_IDS:
-            return directory_skill
-
+def infer_report_skill(stem: str) -> str:
     for skill_id in sorted(CANONICAL_SKILL_IDS, key=len, reverse=True):
         if matches_filename_prefix(stem, skill_id):
             return skill_id
 
-    filename_aliases = {
-        **LEGACY_CATEGORY_ALIASES,
-        **LEGACY_FILENAME_PREFIX_ALIASES,
-    }
-    for prefix in sorted(filename_aliases, key=len, reverse=True):
+    for prefix in sorted(HISTORICAL_FILENAME_PREFIX_ALIASES, key=len, reverse=True):
         if matches_filename_prefix(stem, prefix):
-            return filename_aliases[prefix]
+            return HISTORICAL_FILENAME_PREFIX_ALIASES[prefix]
 
     return HISTORICAL_OTHER
 
@@ -162,7 +145,7 @@ def markdown_table_cell(value: str) -> str:
 
 
 def markdown_link_path(path: Path) -> str:
-    return "./" + path.as_posix().replace(" ", "%20")
+    return "./" + quote(path.as_posix(), safe="/")
 
 
 def html_attr(value: str) -> str:
@@ -175,31 +158,28 @@ def html_text(value: str) -> str:
 
 def collect_reports(output_dir: Path) -> list[ReportEntry]:
     reports: list[ReportEntry] = []
-    index_path = (output_dir / INDEX_FILENAME).resolve()
 
-    for path in sorted(output_dir.rglob("*.md")):
-        if path.resolve() == index_path:
+    for directory in sorted(TOPIC_CATEGORIES):
+        topic_dir = output_dir / directory
+        if not topic_dir.is_dir():
             continue
-        if not path.is_file():
-            continue
+        for path in sorted(topic_dir.rglob("*.md")):
+            if not path.is_file():
+                continue
 
-        relative_path = path.relative_to(output_dir)
-        parts = relative_path.parts
-        directory = parts[0] if len(parts) > 1 else ""
-        skill = infer_report_skill(directory, path.stem)
-        category = normalize_report_category(directory)
-        if category == HISTORICAL_OTHER and skill != HISTORICAL_OTHER:
-            category = normalize_report_category(skill)
-        reports.append(
-            ReportEntry(
-                category=category,
-                skill=skill,
-                date_text=parse_report_date(path),
-                title=extract_title(path),
-                relative_link=markdown_link_path(relative_path),
-                relative_path=relative_path.as_posix(),
+            relative_path = path.relative_to(output_dir)
+            skill = infer_report_skill(path.stem)
+            category = normalize_report_category(directory)
+            reports.append(
+                ReportEntry(
+                    category=category,
+                    skill=skill,
+                    date_text=parse_report_date(path),
+                    title=extract_title(path),
+                    relative_link=markdown_link_path(relative_path),
+                    relative_path=relative_path.as_posix(),
+                )
             )
-        )
 
     return reports
 
@@ -1057,7 +1037,7 @@ def render_html_index(reports: list[ReportEntry]) -> str:
         readerStatus.hidden = true;
         markdownBody.innerHTML = renderMarkdown(markdown);
       }} catch (error) {{
-        setStatus('无法加载 Markdown。请通过本地 HTTP 服务访问本页，例如在仓库根目录运行 python -m http.server 后打开 /output/index.html。错误：' + error.message);
+        setStatus('无法加载 Markdown。请在仓库根目录运行 python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py --port 8000，然后打开 /output/index.html。错误：' + error.message);
       }}
     }}
 

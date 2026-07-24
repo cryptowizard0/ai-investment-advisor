@@ -68,6 +68,7 @@ ALLOWED_LEGACY_REFS = {
     "plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py": {
         "ai-infrastructure-sector-discovery",
         "chain-alpha-mismatch-discovery",
+        "company-profile",
         "daily-us-market-scan",
         "fundamental-analysis",
     },

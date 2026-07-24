@@ -146,6 +146,8 @@ Generated reports and cache files are written under `output/`:
 | Report index | `output/index.md`, `output/index.html` |
 | Market data cache | `output/cache/market-data/` |
 
+The output root is limited to these three topic directories, `cache/`, and the two root index files.
+
 Within each series folder, report files are distinguished by skill prefixes (e.g. `chain-alpha-mismatch-...`, `research-fundamentals-...`, `monitor-us-market-...`, etc.). Normal duplicate handling still applies using `(1)`, `(2)` suffixes.
 
 Report generators normally avoid overwriting and append suffixes such as `(1)` and `(2)` when needed. Index bull/bear cycle documents are the exception: their stable filenames are updated in place so each index has one current bull table and one current bear table.
@@ -199,5 +201,5 @@ Avoid using bare `python -m http.server` for this reader. Python's default stati
 - This is a repo-local plugin, not a remote marketplace package.
 - Keep investment skills under `plugins/invest-flow/skills/`; both platforms load the same skill files.
 - Keep Codex plugin discovery metadata in `.agents/plugins/marketplace.json` and Claude Code metadata in `.claude-plugin/marketplace.json`.
-- When plugin packaging changes, update both manifests (`.codex-plugin/plugin.json` and `.claude-plugin/plugin.json`) and keep versions in sync.
+- When plugin packaging changes, update both manifests and both marketplace entries together, and keep all four versions in sync.
 - Keep README skill names aligned with the directories under `plugins/invest-flow/skills/`.

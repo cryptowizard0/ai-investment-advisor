@@ -43,7 +43,7 @@ Registry 为五个默认维度生成 prompt template：
 
 用户明确指定报告期或出现相关新财报事件时，可额外调用 `research-earnings`。它不属于默认五阶段。默认流程不得调用 `chain-alpha-entry-plan`。
 
-实际执行时，每个 prompt 都必须附加落盘要求：保存 Markdown 子报告到对应 `output/<skill-name>/` 目录，并在回复末尾明确写出 `report_path`。只返回对话内容或 handoff 不能算该维度完成。
+实际执行时，每个 prompt 都必须附加落盘要求：保存 Markdown 子报告到共享 `output/research/` 目录，并在回复末尾明确写出 `report_path`。只返回对话内容或 handoff 不能算该维度完成。
 
 ### 阶段3: 子 Skill -> Handoff
 
@@ -67,13 +67,13 @@ Registry 为五个默认维度生成 prompt template：
 
 Composer 根据成功或部分成功的 handoff 生成：
 
-- `output/research/research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
+- `output/cache/market-data/research-stock/research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
 - `output/research/research-stock-{TICKER}-{YYYY-MM-DD}.md`
 
 如果只是生成 prompt plan，则输出：
 
 - `output/research/research-stock-prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md`
-- `output/research/research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
+- `output/cache/market-data/research-stock/research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
 
 综合报告固定作者字段：`InvestmentFlow`。
 

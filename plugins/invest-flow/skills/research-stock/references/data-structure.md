@@ -147,7 +147,7 @@ PipelineResult(
     ended_at="2026-05-26T12:00:01",
     stage_results=[...],
     summary_report_path=None,
-    orchestration_json_path="output/research/research-stock-orchestration-MRVL-20260526-120001.json",
+    orchestration_json_path="output/cache/market-data/research-stock/research-stock-orchestration-MRVL-20260526-120001.json",
     prompt_plan_path="output/research/research-stock-prompt-plan-MRVL-20260526-120001.md",
 )
 ```
@@ -158,7 +158,7 @@ PipelineResult(
 PipelineResult(
     status="partial_success",
     summary_report_path="output/research/research-stock-MRVL-2026-05-26.md",
-    orchestration_json_path="output/research/research-stock-orchestration-MRVL-20260526-121000.json",
+    orchestration_json_path="output/cache/market-data/research-stock/research-stock-orchestration-MRVL-20260526-121000.json",
     prompt_plan_path=None,
     stage_results=[...],
 )
@@ -189,10 +189,12 @@ OrchestrationConfig(
 ## 输出文件
 
 ```text
-output/research/
-├── research-stock-prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md
-├── research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json
-└── research-stock-{TICKER}-{YYYY-MM-DD}.md
+output/
+├── research/
+│   ├── research-stock-prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md
+│   └── research-stock-{TICKER}-{YYYY-MM-DD}.md
+└── cache/market-data/research-stock/
+    └── research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json
 ```
 
 只有 prompt plan 时不生成综合投资结论；只有至少一个成功 handoff 时才生成综合 Markdown 报告。

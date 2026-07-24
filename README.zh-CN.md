@@ -142,7 +142,10 @@ InvestFlow 的技能按用途分成三大用户类：Chain Alpha、Research 和 
 | chain-alpha 系列 | `output/chain-alpha/` |
 | Research 系列 | `output/research/` |
 | Monitor 系列 | `output/monitor/` |
+| 报告索引 | `output/index.md`、`output/index.html` |
 | 市场数据缓存 | `output/cache/market-data/` |
+
+输出根目录仅保留以上三个主题目录、`cache/` 和两个根级索引文件。
 
 同一个系列目录下用 skill 前缀区分文件名，例如：`chain-alpha-mismatch-...`、`research-fundamentals-...`、`monitor-us-market-...` 等；若同名文件重复，仍使用 `(1)`、`(2)` 后缀分流。
 
@@ -153,5 +156,5 @@ InvestFlow 的技能按用途分成三大用户类：Chain Alpha、Research 和 
 - 这是仓库内置插件，不是远程市场包。
 - 投资技能只维护在 `plugins/invest-flow/skills/`，两个平台共享同一份。
 - Codex 插件发现元数据位于 `.agents/plugins/marketplace.json`，Claude Code 位于 `.claude-plugin/marketplace.json`。
-- 插件打包信息变更时，需同步更新两个清单（`.codex-plugin/plugin.json` 和 `.claude-plugin/plugin.json`）并保持版本一致。
+- 插件打包信息变更时，需同步更新两份 manifest 和两份 marketplace，并保持四处版本一致。
 - README 中的技能名称应与 `plugins/invest-flow/skills/` 下的目录保持一致。

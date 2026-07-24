@@ -240,10 +240,13 @@ def _summary_date(ended_at: str) -> str:
 
 def write_outputs(project_root: Path, result: PipelineResult) -> PipelineResult:
     summary_dir = ensure_output_dir(project_root, "output/research")
+    cache_dir = ensure_output_dir(
+        project_root, "output/cache/market-data/research-stock"
+    )
     ticker = _safe_symbol_token(result.ticker, result.target)
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     json_path = _safe_unique_path(
-        summary_dir, f"research-stock-orchestration-{ticker}-{timestamp}.json"
+        cache_dir, f"research-stock-orchestration-{ticker}-{timestamp}.json"
     )
 
     summary_path = None
