@@ -216,8 +216,8 @@ template_variables = {
     "current_price": "$406.01",
 
     # 公司画像
-    "company_profile_report_path": "./output/research-profile/...",
-    "company_profile_report_link": "./output/research-profile/...",
+    "company_profile_report_path": "./output/research/...",
+    "company_profile_report_link": "./output/research/...",
     "company_one_liner": "Tesla 是全球领先的电动车和能源科技公司。",
     "company_business_summary": "核心业务包括电动车、储能、能源服务和自动驾驶软件。",
     "company_revenue_model": "通过整车销售、能源产品、服务和软件订阅收费。",
@@ -239,7 +239,7 @@ template_variables = {
     "risk_level": "High",
     
     # 基本面
-    "fundamental_report_path": "./output/research-fundamentals/...",
+    "fundamental_report_path": "./output/research/...",
     "stock_type": "Growth",
     "pe_ratio": 290,
     "pe_assessment": "⚠️ 极高",
@@ -248,7 +248,7 @@ template_variables = {
     "rsi_assessment": "中性偏弱",
     
     # 机构分析
-    "institutional_report_path": "./output/research-institutional/...",
+    "institutional_report_path": "./output/research/...",
     "institutional_classification": "派发初级",
     "institutional_confidence": 65,
     "trend_direction": "短期看跌",
@@ -278,12 +278,12 @@ report = template.format(**template_variables)
 
 生成的报告应保存到：
 ```
-./output/research-stock/research-stock-{ticker}-{YYYY-MM-DD}.md
+./output/research/research-stock-{ticker}-{YYYY-MM-DD}.md
 ```
 
 如果文件已存在，使用编号后缀：
 ```
-./output/research-stock/research-stock-TSLA-2026-02-06.md
-./output/research-stock/research-stock-TSLA-2026-02-06(1).md
-./output/research-stock/research-stock-TSLA-2026-02-06(2).md
+./output/research/research-stock-TSLA-2026-02-06.md
+./output/research/research-stock-TSLA-2026-02-06(1).md
+./output/research/research-stock-TSLA-2026-02-06(2).md
 ```

@@ -1,6 +1,6 @@
 ---
 name: research-profile
-description: "公司画像 (Company Profile) - 为单个公司生成投资分析前置画像，覆盖公司简介、核心业务、收入来源、核心技术优势、产业链位置、AI 相关性、竞争格局和行业地位。适用于：(1) 用户第一次了解某家公司, (2) research-stock 的默认前置公司认知, (3) 投资判断前的业务与行业定位梳理。生成报告并保存至 ./output/research-profile/ 目录。"
+description: "公司画像 (Company Profile) - 为单个公司生成投资分析前置画像，覆盖公司简介、核心业务、收入来源、核心技术优势、产业链位置、AI 相关性、竞争格局和行业地位。适用于：(1) 用户第一次了解某家公司, (2) research-stock 的默认前置公司认知, (3) 投资判断前的业务与行业定位梳理。生成报告并保存至 ./output/research/ 目录。"
 ---
 
 # Company Profile (公司画像)
@@ -17,7 +17,7 @@ This skill builds a company primer before investment analysis. It explains what 
 
 It does not issue buy, sell, or hold recommendations. Downstream skills handle valuation, trading, reflexivity, capital flow, and final decision synthesis.
 
-**Output**: Markdown reports saved to `./output/research-profile/`
+**Output**: Markdown reports saved to `./output/research/`
 
 ## Workflow
 
@@ -70,7 +70,7 @@ Only call a company AI-relevant when there is evidence from revenue exposure, cu
 
 ### 5. Save Report
 
-- **Output Directory**: `./output/research-profile/`
+- **Output Directory**: `./output/research/`
 - **Filename Format**: `research-profile-{TICKER}-{YYYY-MM-DD}.md`
 - **Conflict Handling**: If a file with the same name exists, append a numbered suffix: `research-profile-{TICKER}-{YYYY-MM-DD}(1).md`
 - Ensure the output directory exists before saving.

@@ -43,7 +43,7 @@ SkillSpec(
     agent_name="fundamental",
     stage="single_asset_validation",
     prompt_template="使用 invest-flow:research-fundamentals 分析 {ticker}",
-    output_dir="output/research-fundamentals",
+    output_dir="output/research",
     required=True,
     extractor_type="markdown",
 )
@@ -89,7 +89,7 @@ StageResult(
 
 `retry_count` 仅保留兼容字段；当前 prompt-native 运行面不会自动重试子 skill。
 
-完整分析中，`success` 阶段必须带有 `report_path`，且路径应指向该阶段对应目录下的 Markdown 文件，例如 `output/research-fundamentals/research-fundamentals-HPE-Hewlett-Packard-Enterprise-2026-06-03.md`。如果只有 handoff、没有 `report_path`，应视为 `partial` 或补跑，而不是完整成功。
+完整分析中，`success` 阶段必须带有 `report_path`，且路径应指向 Research 主题目录下的 Markdown 文件，例如 `output/research/research-fundamentals-HPE-Hewlett-Packard-Enterprise-2026-06-03.md`。如果只有 handoff、没有 `report_path`，应视为 `partial` 或补跑，而不是完整成功。
 
 ## Handoff
 
@@ -147,8 +147,8 @@ PipelineResult(
     ended_at="2026-05-26T12:00:01",
     stage_results=[...],
     summary_report_path=None,
-    orchestration_json_path="output/research-stock/orchestration-MRVL-20260526-120001.json",
-    prompt_plan_path="output/research-stock/prompt-plan-MRVL-20260526-120001.md",
+    orchestration_json_path="output/research/research-stock-orchestration-MRVL-20260526-120001.json",
+    prompt_plan_path="output/research/research-stock-prompt-plan-MRVL-20260526-120001.md",
 )
 ```
 
@@ -157,8 +157,8 @@ PipelineResult(
 ```python
 PipelineResult(
     status="partial_success",
-    summary_report_path="output/research-stock/research-stock-MRVL-2026-05-26.md",
-    orchestration_json_path="output/research-stock/orchestration-MRVL-20260526-121000.json",
+    summary_report_path="output/research/research-stock-MRVL-2026-05-26.md",
+    orchestration_json_path="output/research/research-stock-orchestration-MRVL-20260526-121000.json",
     prompt_plan_path=None,
     stage_results=[...],
 )
@@ -189,22 +189,18 @@ OrchestrationConfig(
 ## 输出文件
 
 ```text
-output/research-stock/
-├── prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md
-├── orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json
+output/research/
+├── research-stock-prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md
+├── research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json
 └── research-stock-{TICKER}-{YYYY-MM-DD}.md
 ```
 
 只有 prompt plan 时不生成综合投资结论；只有至少一个成功 handoff 时才生成综合 Markdown 报告。
 
-正式综合个股分析还应生成五个默认子报告目录中的 Markdown 文件：
+正式综合个股分析还应在共享 Research 主题目录中生成五个默认子报告：
 
 ```text
-output/research-profile/
-output/research-fundamentals/
-output/research-institutional/
-output/research-reflexivity/
-output/research-reportify/
+output/research/
 ```
 
 若某个维度没有 `report_path`，综合报告必须在 `## 数据缺口与待验证事项` 和 `## 子报告索引` 中标注；默认行为是先补跑该维度，而不是直接用 handoff 汇总。

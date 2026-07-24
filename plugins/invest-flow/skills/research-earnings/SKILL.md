@@ -15,7 +15,7 @@ description: "机构视角财报解读 Skill。适用于用户要求解读公司
 
 本 skill 用于从机构投资者角度解读单家公司财报。目标不是复述财报数字，而是判断财报是否改变未来 6-24 个月盈利预期、估值中枢、市场叙事和投资动作。
 
-默认输出目录：`./output/research-earnings/`
+默认输出目录：`./output/research/`
 
 ## Trigger
 

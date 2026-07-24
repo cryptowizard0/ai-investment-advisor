@@ -60,9 +60,9 @@ def build_registry() -> SkillRegistry:
             stage="single_asset_context",
             prompt_template=_report_required_prompt(
                 "使用 invest-flow:research-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位",
-                "output/research-profile",
+                "output/research",
             ),
-            output_dir="output/research-profile",
+            output_dir="output/research",
             required=True,
         ),
         _spec(
@@ -71,9 +71,9 @@ def build_registry() -> SkillRegistry:
             stage="single_asset_validation",
             prompt_template=_report_required_prompt(
                 "使用 invest-flow:research-fundamentals 分析 {ticker}",
-                "output/research-fundamentals",
+                "output/research",
             ),
-            output_dir="output/research-fundamentals",
+            output_dir="output/research",
             required=True,
         ),
         _spec(
@@ -82,9 +82,9 @@ def build_registry() -> SkillRegistry:
             stage="event_research",
             prompt_template=_report_required_prompt(
                 "使用 invest-flow:research-earnings 分析 {ticker} / {company} 的指定财报期或最新财报事件",
-                "output/research-earnings",
+                "output/research",
             ),
-            output_dir="output/research-earnings",
+            output_dir="output/research",
             required=False,
         ),
         _spec(
@@ -93,9 +93,9 @@ def build_registry() -> SkillRegistry:
             stage="single_asset_validation",
             prompt_template=_report_required_prompt(
                 "使用 invest-flow:research-institutional 分析 {ticker}",
-                "output/research-institutional",
+                "output/research",
             ),
-            output_dir="output/research-institutional",
+            output_dir="output/research",
             required=False,
         ),
         _spec(
@@ -128,9 +128,9 @@ def build_registry() -> SkillRegistry:
             stage="single_asset_validation",
             prompt_template=_report_required_prompt(
                 "使用 invest-flow:research-reflexivity 对 {ticker} 做深度反身性分析",
-                "output/research-reflexivity",
+                "output/research",
             ),
-            output_dir="output/research-reflexivity",
+            output_dir="output/research",
             required=False,
         ),
         _spec(
@@ -139,9 +139,9 @@ def build_registry() -> SkillRegistry:
             stage="decision_report",
             prompt_template=_report_required_prompt(
                 "使用 invest-flow:research-reportify 分析 {ticker}",
-                "output/research-reportify",
+                "output/research",
             ),
-            output_dir="output/research-reportify",
+            output_dir="output/research",
             required=False,
         ),
     ]

@@ -189,9 +189,9 @@ Structure the output according to the report template in `references/analysis-te
 
 After completing the analysis, save the report to the project directory:
 
-**Save Location:** `./output/research-institutional/research-institutional-{日期}-{股票名}.md`
+**Save Location:** `./output/research/research-institutional-机构操作分析-{YYYYMMDD}-{TICKER}.md`
 
-**Example:** `./output/research-institutional/research-institutional-20260128-TSLA.md`
+**Example:** `./output/research/research-institutional-机构操作分析-20260128-TSLA.md`
 
 **To save the report:**
 1. Generate the complete analysis report using the template structure
@@ -199,8 +199,8 @@ After completing the analysis, save the report to the project directory:
 3. Or manually save the markdown output to the specified path
 
 The script will:
-- Create the `./output/research-institutional/` directory if it doesn't exist
-- Generate filename with format: `research-institutional-{YYYYMMDD}-{TICKER}.md`
+- Create the `./output/research/` directory if it doesn't exist
+- Generate filename with format: `research-institutional-机构操作分析-{YYYYMMDD}-{TICKER}.md`
 - If a file with the same name already exists, automatically append `(1)`, `(2)`, etc. to avoid overwriting
 - Save the full report content to the file
 
@@ -279,6 +279,6 @@ The script will:
 - **divergence-guide.md** - Technical indicator divergence interpretation guide
 
 ### scripts/
-- **save_report.py** - Save analysis report to `./output/research-institutional/research-institutional-{日期}-{股票名}.md`
+- **save_report.py** - Save analysis report to `./output/research/research-institutional-机构操作分析-{YYYYMMDD}-{TICKER}.md`
 
 > **注意**: 本 skill 依赖评分卡量化系统进行主观分析。技术指标（OBV、CMF、RSI 等）建议从专业数据源（Yahoo Finance、TradingView、Bloomberg）直接获取，或使用 pandas/ta-lib 等工具计算。评分卡的核心价值在于**分析框架和量化标准**，而非基础指标计算。

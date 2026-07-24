@@ -67,13 +67,13 @@ Registry 为五个默认维度生成 prompt template：
 
 Composer 根据成功或部分成功的 handoff 生成：
 
-- `output/research-stock/orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
-- `output/research-stock/research-stock-{TICKER}-{YYYY-MM-DD}.md`
+- `output/research/research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
+- `output/research/research-stock-{TICKER}-{YYYY-MM-DD}.md`
 
 如果只是生成 prompt plan，则输出：
 
-- `output/research-stock/prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md`
-- `output/research-stock/orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
+- `output/research/research-stock-prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md`
+- `output/research/research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
 
 综合报告固定作者字段：`InvestmentFlow`。
 

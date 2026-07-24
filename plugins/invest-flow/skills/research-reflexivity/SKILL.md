@@ -1,6 +1,6 @@
 ---
 name: research-reflexivity
-description: "反身性分析（索罗斯反身性框架），支持快扫和深度两档。快扫档做 5 分钟阶段判断，输出“启动 / 强化 / 透支 / 反转”导向；深度档做完整周期研究，覆盖叙事、行为、价格、现实、边际变化、错位关系与反转风险。适用于：(1) 快速判断一个市场叙事处于什么阶段（快扫）, (2) 对个股/行业/资产/宏观主题做完整反身性深度研究（深度）, (3) 把认知、价格、现实、边际变化放在同一框架里分析并保存到 ./output/research-reflexivity/。"
+description: "反身性分析（索罗斯反身性框架），支持快扫和深度两档。快扫档做 5 分钟阶段判断，输出“启动 / 强化 / 透支 / 反转”导向；深度档做完整周期研究，覆盖叙事、行为、价格、现实、边际变化、错位关系与反转风险。适用于：(1) 快速判断一个市场叙事处于什么阶段（快扫）, (2) 对个股/行业/资产/宏观主题做完整反身性深度研究（深度）, (3) 把认知、价格、现实、边际变化放在同一框架里分析并保存到 ./output/research/。"
 ---
 
 # Reflexivity Analysis
@@ -27,7 +27,7 @@ description: "反身性分析（索罗斯反身性框架），支持快扫和深
 | 快扫 | `references/framework-quick.md` | `assets/report-template-quick.md` | `quick` |
 | 深度 | `references/framework.md` | `assets/report-template.md` | `deep`（默认） |
 
-输出目录：`./output/research-reflexivity/`
+输出目录：`./output/research/`
 
 ## Trigger
 
@@ -165,4 +165,4 @@ python plugins/invest-flow/skills/research-reflexivity/scripts/save_report.py \
 - `report-template.md`: 深度档固定报告模板。
 
 ### scripts/
-- `save_report.py`: 将最终 Markdown 保存到 `./output/research-reflexivity/`，按 `--mode` 生成 `research-reflexivity-quick-` 或 `research-reflexivity-deep-` 前缀文件名，自动处理重名文件。
+- `save_report.py`: 将最终 Markdown 保存到 `./output/research/`，按 `--mode` 生成 `research-reflexivity-quick-` 或 `research-reflexivity-deep-` 前缀文件名，自动处理重名文件。

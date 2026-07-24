@@ -103,7 +103,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--output-dir",
-        default="./output/research-reportify",
+        default="./output/research",
         help="Output directory for the generated markdown file.",
     )
     parser.add_argument(

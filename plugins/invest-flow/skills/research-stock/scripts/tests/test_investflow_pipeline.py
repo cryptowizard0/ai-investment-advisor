@@ -224,10 +224,10 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(spec.agent_name, "company_profile")
         self.assertEqual(spec.stage, "single_asset_context")
         self.assertTrue(spec.required)
-        self.assertEqual(spec.output_dir, "output/research-profile")
+        self.assertEqual(spec.output_dir, "output/research")
         self.assertEqual(
             spec.prompt_template,
-            "使用 invest-flow:research-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/research-profile/，并在回复末尾明确写出 report_path",
+            "使用 invest-flow:research-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path",
         )
 
     def test_earnings_is_available_but_not_in_default_stock_plan(self):
@@ -239,9 +239,30 @@ class RegistryTests(unittest.TestCase):
         self.assertEqual(spec.agent_name, "earnings")
         self.assertEqual(spec.stage, "event_research")
         self.assertFalse(spec.required)
-        self.assertEqual(spec.output_dir, "output/research-earnings")
+        self.assertEqual(spec.output_dir, "output/research")
         self.assertIn("指定财报期或最新财报事件", spec.prompt_template)
         self.assertNotIn(spec, registry.basic_stock_specs())
+
+    def test_research_specs_share_topic_output_directory(self):
+        from investflow_pipeline.registry import build_registry
+
+        registry = build_registry()
+        research_skills = (
+            "research-profile",
+            "research-fundamentals",
+            "research-earnings",
+            "research-institutional",
+            "research-reflexivity",
+            "research-reportify",
+        )
+
+        for skill_name in research_skills:
+            spec = registry.get(skill_name)
+            self.assertEqual(spec.output_dir, "output/research")
+            self.assertIn(
+                "保存 Markdown 子报告到 output/research/",
+                spec.prompt_template,
+            )
 
 
 class PlannerTests(unittest.TestCase):
@@ -518,7 +539,7 @@ class ComposerTests(unittest.TestCase):
                     skill_name="research-profile",
                     agent_name="company_profile",
                     status=AnalysisStatus.SUCCESS,
-                    report_path="output/research-profile/research-profile-TSLA-2026-06-02.md",
+                    report_path="output/research/research-profile-TSLA-2026-06-02.md",
                     handoff=Handoff(
                         company_profile=CompanyProfile(
                             one_liner="Tesla 是电动车、储能和软件能力结合的能源技术公司。",
@@ -656,6 +677,14 @@ class ComposerTests(unittest.TestCase):
             plan_path = Path(written.prompt_plan_path)
             self.assertTrue(json_path.exists())
             self.assertTrue(plan_path.exists())
+            self.assertEqual(json_path.parent.name, "research")
+            self.assertEqual(plan_path.parent.name, "research")
+            self.assertTrue(
+                json_path.name.startswith("research-stock-orchestration-MRVL-")
+            )
+            self.assertTrue(
+                plan_path.name.startswith("research-stock-prompt-plan-MRVL-")
+            )
             plan = plan_path.read_text(encoding="utf-8")
             payload = json.loads(json_path.read_text(encoding="utf-8"))
 
@@ -681,7 +710,7 @@ class ComposerTests(unittest.TestCase):
 
         with TemporaryDirectory() as tmp:
             written = write_outputs(Path(tmp), result)
-            summary_dir = (Path(tmp) / "output" / "research-stock").resolve()
+            summary_dir = (Path(tmp) / "output" / "research").resolve()
             summary_path = Path(written.summary_report_path).resolve()
             json_path = Path(written.orchestration_json_path).resolve()
 
@@ -726,13 +755,13 @@ class ComposerTests(unittest.TestCase):
                 "research-profile",
                 "company_profile",
                 AnalysisStatus.SUCCESS,
-                report_path="output/research-profile/research-profile-TSLA-2026-06-03.md",
+                report_path="output/research/research-profile-TSLA-2026-06-03.md",
             ),
             StageResult(
                 "research-fundamentals",
                 "fundamental",
                 AnalysisStatus.SUCCESS,
-                report_path="output/research-fundamentals/research-fundamentals-TSLA-Tesla-2026-06-03.md",
+                report_path="output/research/research-fundamentals-TSLA-Tesla-2026-06-03.md",
                 handoff=Handoff(recommendation="观望"),
             ),
             StageResult(
@@ -750,11 +779,11 @@ class ComposerTests(unittest.TestCase):
 
         self.assertIn("## 子报告索引", summary)
         self.assertIn(
-            "- **research-profile**：output/research-profile/research-profile-TSLA-2026-06-03.md",
+            "- **research-profile**：output/research/research-profile-TSLA-2026-06-03.md",
             summary,
         )
         self.assertIn(
-            "- **research-fundamentals**：output/research-fundamentals/research-fundamentals-TSLA-Tesla-2026-06-03.md",
+            "- **research-fundamentals**：output/research/research-fundamentals-TSLA-Tesla-2026-06-03.md",
             summary,
         )
         self.assertIn(
@@ -887,23 +916,23 @@ class OrchestratorCompatibilityTests(unittest.TestCase):
         prompts = [stage["prompt"] for stage in result["stage_results"]]
         self.assertEqual(
             prompts[0],
-            "使用 invest-flow:research-profile 分析 MRVL / Marvell Technology，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/research-profile/，并在回复末尾明确写出 report_path",
+            "使用 invest-flow:research-profile 分析 MRVL / Marvell Technology，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(
             prompts[1],
-            "使用 invest-flow:research-fundamentals 分析 MRVL；必须生成并保存 Markdown 子报告到 output/research-fundamentals/，并在回复末尾明确写出 report_path",
+            "使用 invest-flow:research-fundamentals 分析 MRVL；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(
             prompts[2],
-            "使用 invest-flow:research-institutional 分析 MRVL；必须生成并保存 Markdown 子报告到 output/research-institutional/，并在回复末尾明确写出 report_path",
+            "使用 invest-flow:research-institutional 分析 MRVL；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(
             prompts[3],
-            "使用 invest-flow:research-reflexivity 对 MRVL 做深度反身性分析；必须生成并保存 Markdown 子报告到 output/research-reflexivity/，并在回复末尾明确写出 report_path",
+            "使用 invest-flow:research-reflexivity 对 MRVL 做深度反身性分析；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(
             prompts[4],
-            "使用 invest-flow:research-reportify 分析 MRVL；必须生成并保存 Markdown 子报告到 output/research-reportify/，并在回复末尾明确写出 report_path",
+            "使用 invest-flow:research-reportify 分析 MRVL；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path",
         )
         self.assertEqual(len(prompts), 5)
 

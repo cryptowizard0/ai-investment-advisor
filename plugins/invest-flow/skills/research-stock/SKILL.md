@@ -29,7 +29,7 @@ description: "综合个股研究系统 - 在当前 agent 会话（Codex / Claude
 
 Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责启动另一个 agent，也不执行外部命令。
 
-**硬性要求：** 除非用户已经明确提供某个维度的现成子报告路径，否则子维度分析不得只返回对话 handoff。每个子 skill 都必须生成自己的 Markdown 子报告，保存到对应 `output/<skill-name>/` 目录，并在返回内容中明确给出 `report_path`。综合报告的 `## 子报告索引` 必须引用这些路径。
+**硬性要求：** 除非用户已经明确提供某个维度的现成子报告路径，否则子维度分析不得只返回对话 handoff。每个子 skill 都必须生成自己的 Markdown 子报告，保存到共享 `output/research/` 目录，并在返回内容中明确给出 `report_path`。综合报告的 `## 子报告索引` 必须引用这些路径。
 
 ## 推荐使用方式
 
@@ -57,23 +57,23 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 按顺序在当前 agent 会话中执行：
 
 ```text
-使用 invest-flow:research-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/research-profile/，并在回复末尾明确写出 report_path
+使用 invest-flow:research-profile 分析 {ticker} / {company}，输出公司画像、核心业务、技术壁垒、产业链位置、AI 相关性、竞争格局和行业地位；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path
 ```
 
 ```text
-使用 invest-flow:research-fundamentals 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/research-fundamentals/，并在回复末尾明确写出 report_path
+使用 invest-flow:research-fundamentals 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path
 ```
 
 ```text
-使用 invest-flow:research-institutional 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/research-institutional/，并在回复末尾明确写出 report_path
+使用 invest-flow:research-institutional 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path
 ```
 
 ```text
-使用 invest-flow:research-reflexivity 对 {ticker} 做深度反身性分析；必须生成并保存 Markdown 子报告到 output/research-reflexivity/，并在回复末尾明确写出 report_path
+使用 invest-flow:research-reflexivity 对 {ticker} 做深度反身性分析；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path
 ```
 
 ```text
-使用 invest-flow:research-reportify 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/research-reportify/，并在回复末尾明确写出 report_path
+使用 invest-flow:research-reportify 分析 {ticker}；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path
 ```
 
 #### 可选财报模块
@@ -81,14 +81,14 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 仅当用户明确指定报告期，或存在与当前研究相关的新财报事件时，额外执行：
 
 ```text
-使用 invest-flow:research-earnings 分析 {ticker} / {company} 的指定财报期或最新财报事件；必须生成并保存 Markdown 子报告到 output/research-earnings/，并在回复末尾明确写出 report_path
+使用 invest-flow:research-earnings 分析 {ticker} / {company} 的指定财报期或最新财报事件；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path
 ```
 
 `research-earnings` 不属于默认五阶段。默认流程也不得调用 `chain-alpha-entry-plan`；后者只在已有 Chain Alpha verification 档位或用户明确要求执行 Chain Alpha 建仓流程时运行。
 
 执行每个子 skill 后，先确认 `report_path` 指向已保存的 Markdown 子报告，再提取以下 handoff 字段：
 
-- `report_path`：子报告路径，必须是 `output/<skill-name>/...md`
+- `report_path`：子报告路径，必须是 `output/research/...md`
 - `conclusion`：核心结论
 - `recommendation`：操作建议或评级
 - `confidence`：置信度
@@ -149,8 +149,8 @@ python plugins/invest-flow/skills/research-stock/scripts/orchestrator.py MRVL --
 
 该脚本只输出：
 
-- `output/research-stock/prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md`
-- `output/research-stock/orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
+- `output/research/research-stock-prompt-plan-{TICKER}-{YYYYMMDD-HHMMSS}.md`
+- `output/research/research-stock-orchestration-{TICKER}-{YYYYMMDD-HHMMSS}.json`
 
 它不会执行五个默认子 skill。真实分析仍由当前 agent 会话按上面的五段 prompt 完成。
 

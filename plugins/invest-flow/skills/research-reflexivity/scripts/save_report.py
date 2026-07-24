@@ -10,7 +10,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 
-DEFAULT_OUTPUT_DIR = "./output/research-reflexivity"
+DEFAULT_OUTPUT_DIR = "./output/research"
 
 
 def parse_date(value: str) -> date:

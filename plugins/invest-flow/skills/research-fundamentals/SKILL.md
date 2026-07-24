@@ -1,6 +1,6 @@
 ---
 name: research-fundamentals
-description: "基础分析 (Fundamental Analysis) - 针对个股的深度基本面与技术面分析。涵盖行业定位、核心指标、财务估值、催化剂分析及技术面判断。适用于：(1) 个股基本面分析, (2) 生成投资研究报告, (3) 评估公司商业模式, (4) 结合技术面给出投资建议。生成综合分析报告并保存至 ./output/research-fundamentals/ 目录。"
+description: "基础分析 (Fundamental Analysis) - 针对个股的深度基本面与技术面分析。涵盖行业定位、核心指标、财务估值、催化剂分析及技术面判断。适用于：(1) 个股基本面分析, (2) 生成投资研究报告, (3) 评估公司商业模式, (4) 结合技术面给出投资建议。生成综合分析报告并保存至 ./output/research/ 目录。"
 ---
 
 # Fundamental Analysis (基础分析)
@@ -15,7 +15,7 @@ description: "基础分析 (Fundamental Analysis) - 针对个股的深度基本�
 
 This skill enables Claude to act as a senior investment analyst, providing deep-dive reports on stocks and companies. It follows a structured workflow that integrates fundamental analysis, technical analysis, and strategic investment guidance.
 
-**Output**: Markdown reports saved to `./output/research-fundamentals/`
+**Output**: Markdown reports saved to `./output/research/`
 
 ## Workflow
 
@@ -46,7 +46,7 @@ Synthesize the data into actionable insights:
 - Provide specific **Trading** and **Investment Strategies** based on the combined fundamental/technical view.
 
 ### 5. Save Report
-- **Output Directory**: `./output/research-fundamentals/`
+- **Output Directory**: `./output/research/`
 - **Filename Format**: `research-fundamentals-{ticker}-{company-name}-{date}.md` (e.g., `research-fundamentals-AAPL-Apple-2026-01-28.md`)
 - **Conflict Handling**: If a file with the same name exists, append a numbered suffix: `{ticker}-{company-name}-{date}(1).md`
 - Ensure the output directory exists before saving (create if needed)

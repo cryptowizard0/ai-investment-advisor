@@ -13,7 +13,7 @@ Examples:
     python save_report.py - TSLA < report.md
 
 Output:
-    ./output/research-institutional/research-institutional-{YYYYMMDD}-{TICKER}.md
+    ./output/research/research-institutional-机构操作分析-{YYYYMMDD}-{TICKER}.md
 """
 
 import sys
@@ -27,11 +27,11 @@ def get_output_directory():
     """Get the output directory path.
     
     Returns:
-        Path: Output directory at ./output/research-institutional/
+        Path: Output directory at ./output/research/
     """
-    # Standard output path: ./output/research-institutional/
+    # Standard output path: ./output/research/
     # This aligns with SKILL.md documentation
-    output_dir = Path.cwd() / "output" / "research-institutional"
+    output_dir = Path.cwd() / "output" / "research"
     
     # Also check if we're being run from the skill's scripts directory
     if "scripts" in Path.cwd().name or ".agents" in str(Path.cwd()) or ".claude" in str(Path.cwd()):
@@ -47,7 +47,7 @@ def get_output_directory():
                 break
 
         if found_root:
-            output_dir = project_root / "output" / "research-institutional"
+            output_dir = project_root / "output" / "research"
     
     return output_dir
 
@@ -55,7 +55,7 @@ def get_output_directory():
 def generate_filename(ticker):
     """Generate report filename with date and ticker."""
     date_str = datetime.now().strftime("%Y%m%d")
-    return f"research-institutional-{date_str}-{ticker.upper()}.md"
+    return f"research-institutional-机构操作分析-{date_str}-{ticker.upper()}.md"
 
 
 def get_unique_filepath(output_dir, filename):
@@ -135,7 +135,7 @@ def main():
     parser.add_argument('ticker', help='Stock ticker symbol (e.g., TSLA, AAPL)')
     parser.add_argument('--content', action='store_true', help='Treat input as content string instead of file path')
     parser.add_argument('--stdin', action='store_true', help='Read content from stdin')
-    parser.add_argument('--output-dir', '-o', help='Custom output directory (default: ./output/research-institutional/)')
+    parser.add_argument('--output-dir', '-o', help='Custom output directory (default: ./output/research/)')
 
     args = parser.parse_args()
 
