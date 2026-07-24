@@ -313,7 +313,7 @@ def main() -> None:
     parser.add_argument("--series-file", default="", help="Path to a historical value series (one number per line) for empirical percentiles.")
     parser.add_argument("--current-percentile", default=None, type=float, help="Override current percentile (e.g. vendor-reported).")
     parser.add_argument("--date", type=parse_date, default=date.today(), help="Analysis date YYYY-MM-DD. Defaults to today.")
-    parser.add_argument("--output-dir", default="./output/monitor-index-valuation", help="Output directory for the report.")
+    parser.add_argument("--output-dir", default="./output/monitor", help="Output directory for the report.")
     parser.add_argument("--template", default="", help="Optional custom template path.")
     args = parser.parse_args()
 

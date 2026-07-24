@@ -99,7 +99,8 @@ class OutputContractTests(unittest.TestCase):
             module.report_filename(date(2026, 7, 23)),
             "monitor-us-market-2026-07-23.md",
         )
-        self.assertEqual(module.DEFAULT_OUTPUT_DIR.name, "monitor-us-market")
+        self.assertEqual(module.DEFAULT_OUTPUT_DIR.name, "monitor")
+        self.assertEqual(module.DEFAULT_OUTPUT_DIR.parent.name, "output")
 
 
 if __name__ == "__main__":

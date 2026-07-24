@@ -19,7 +19,7 @@ description: "Use when you need an index valuation price-sensitivity table — h
 
 默认口径：指数整体法；默认窗口：5 年。详见 `references/methodology.md`。
 
-输出目录：`./output/monitor-index-valuation/`
+输出目录：`./output/monitor/`
 
 ## 运行频率与事件触发
 

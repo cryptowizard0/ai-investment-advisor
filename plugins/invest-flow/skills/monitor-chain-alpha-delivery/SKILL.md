@@ -1,6 +1,6 @@
 ---
 name: monitor-chain-alpha-delivery
-description: "chain-alpha 营收兑现追踪：对 chain-alpha 待验证/观察池标的（如绿的谐波）做前瞻性兑现判断——验证链 5 级阶段闸门（订单→产能→放量→入表→盈利）+ 级间兑现窗口超时判死、增速/归因/动态估值(PE&PS双轨)三引擎、格局哨兵（竞对扩产/客户二供/客户自研/需求方 capex）、双向升降档并回灌 chain-alpha 档位与仓位。适用于：(1) 跟踪待验证标的营收是否真兑现, (2) chain-alpha-verification 的下游跟踪模块。输出保存至 ./output/monitor-chain-alpha-delivery/。"
+description: "chain-alpha 营收兑现追踪：对 chain-alpha 待验证/观察池标的（如绿的谐波）做前瞻性兑现判断——验证链 5 级阶段闸门（订单→产能→放量→入表→盈利）+ 级间兑现窗口超时判死、增速/归因/动态估值(PE&PS双轨)三引擎、格局哨兵（竞对扩产/客户二供/客户自研/需求方 capex）、双向升降档并回灌 chain-alpha 档位与仓位。适用于：(1) 跟踪待验证标的营收是否真兑现, (2) chain-alpha-verification 的下游跟踪模块。输出保存至 ./output/monitor/。"
 ---
 
 # chain-alpha 营收兑现追踪
@@ -21,7 +21,7 @@ description: "chain-alpha 营收兑现追踪：对 chain-alpha 待验证/观察�
 
 输出兑现度结论 + 升 / 降档建议，回灌 chain-alpha 的档位与仓位。
 
-默认输出目录：`./output/monitor-chain-alpha-delivery/`
+默认输出目录：`./output/monitor/`
 
 ## 运行频率与事件触发
 
@@ -79,7 +79,7 @@ description: "chain-alpha 营收兑现追踪：对 chain-alpha 待验证/观察�
 
 ### 5) 输出兑现追踪卡
 - 使用 `references/report-template.md`，单标的一张兑现追踪卡（验证链灯带 + 灯位变化与兑现窗口读数、三引擎读数、格局哨兵读数、预期差对账、本期结论与触发项、回灌档位 / Step 4 重跑触发 / delta、反证条件更新与下次复盘时间、数据来源）。仓位不在本卡计算，由第四步 chain-alpha-entry-plan 唯一给出。
-- 保存至 `./output/monitor-chain-alpha-delivery/monitor-chain-alpha-delivery-{TICKER}-{YYYY-MM-DD}.md`；文件已存在时追加 `(1)`, `(2)`，不覆盖。
+- 保存至 `./output/monitor/monitor-chain-alpha-delivery-{TICKER}-{YYYY-MM-DD}.md`；文件已存在时追加 `(1)`, `(2)`，不覆盖。
 - 报告必须包含固定作者字段：`InvestmentFlow`。
 
 ## Quality Rules

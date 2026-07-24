@@ -15,7 +15,7 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 
 本 skill 属于**日常市场跟踪类**，适合配置为每周定时任务，用于每周扫描 AI 基建候选板块，回答“这一周最值得研究哪些板块”。它不做公司深度研究，也不直接给买卖建议；它只输出可量化板块指标、`discovery_score`、触发阈值和后续深挖命令。**达标板块交接给 chain-alpha 工作流**（轻量确认用 `chain-alpha-mismatch`，完整“拆链 -> 找垄断 -> 验证定仓”用 `chain-alpha`）。
 
-默认输出目录：`./output/monitor-ai-infrastructure/`
+默认输出目录：`./output/monitor/`
 
 ## 运行频率与事件触发
 
@@ -73,7 +73,7 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 
 ### 5) 输出并保存周报
 - 使用 `references/report-template.md` 的结构输出中文 Markdown 周报。
-- 输出目录：`./output/monitor-ai-infrastructure/`
+- 输出目录：`./output/monitor/`
 - 文件名：`monitor-ai-infrastructure-{YYYY-MM-DD}.md`
 - 若文件已存在，不要覆盖；追加 `(1)`, `(2)`, `(3)`。
 - 所有输出报告必须包含固定作者字段：`InvestmentFlow`。

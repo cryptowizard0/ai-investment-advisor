@@ -1,6 +1,6 @@
 ---
 name: monitor-gold
-description: Deep dive gold market bubble risk analysis for macro commodities traders. Use this skill when (1) User requests gold market analysis or bubble risk assessment, (2) User asks to generate gold risk reports, (3) User mentions analyzing gold prices above $5000, real interest rates, hedge fund positioning, gold-silver ratio, or gold/SPX valuation, (4) User asks for gold trading strategy with stop-loss recommendations. Generates comprehensive markdown reports with 0-100 risk scores saved to ./output/monitor-gold/ directory.
+description: Deep dive gold market bubble risk analysis for macro commodities traders. Use this skill when (1) User requests gold market analysis or bubble risk assessment, (2) User asks to generate gold risk reports, (3) User mentions analyzing gold prices above $5000, real interest rates, hedge fund positioning, gold-silver ratio, or gold/SPX valuation, (4) User asks for gold trading strategy with stop-loss recommendations. Generates comprehensive markdown reports with 0-100 risk scores saved to ./output/monitor/ directory.
 ---
 
 # Gold Trend Analysis
@@ -22,7 +22,7 @@ As a senior commodities strategist and macro analyst, this skill enables compreh
 - Analyzing pricing anchors to determine what's supporting gold prices (geopolitical risk, interest rates, or central bank buying)
 - Generating actionable trading strategies with specific stop-loss levels and position adjustment recommendations
 
-**Output**: Markdown reports saved to `./output/monitor-gold/monitor-gold-{analysis-type}-{date}.md`
+**Output**: Markdown reports saved to `./output/monitor/monitor-gold-{analysis-type}-{date}.md`
 
 ## Cadence and Supplemental Triggers
 
@@ -279,7 +279,7 @@ Every generated report must include `作者：InvestmentFlow`.
 
 #### Save Process
 
-1. **Ensure directory exists**: `./output/monitor-gold/` (create if needed)
+1. **Ensure directory exists**: `./output/monitor/` (create if needed)
 
 2. **Generate base filename**: `monitor-gold-{analysis-type}-{date}`
    - Default: `monitor-gold-bubble-risk-2026-01-28`
@@ -294,8 +294,8 @@ Every generated report must include `作者：InvestmentFlow`.
 4. **Write the complete report** to the determined filename
 
 5. **Confirm to user** with actual saved path:
-   - First save: "深度风险扫描报告已生成: ./output/monitor-gold/monitor-gold-bubble-risk-2026-01-28.md"
-   - Duplicate: "深度风险扫描报告已生成: ./output/monitor-gold/monitor-gold-bubble-risk-2026-01-28(1).md"
+   - First save: "深度风险扫描报告已生成: ./output/monitor/monitor-gold-bubble-risk-2026-01-28.md"
+   - Duplicate: "深度风险扫描报告已生成: ./output/monitor/monitor-gold-bubble-risk-2026-01-28(1).md"
 
 #### Implementation Methods
 
@@ -319,7 +319,7 @@ def get_unique_filename(directory, base_name, extension=".md"):
         counter += 1
 
 # Usage
-directory = "./output/monitor-gold"
+directory = "./output/monitor"
 base_name = "monitor-gold-bubble-risk-2026-01-28"
 file_path = get_unique_filename(directory, base_name)
 # Write report content to file_path
@@ -410,7 +410,7 @@ file_path = get_unique_filename(directory, base_name)
 7. Analyze pricing anchors (geopolitics, rates, central banks)
 8. Formulate strategy with specific stop-loss and position adjustments
 9. Read `assets/report_template.md` and populate all fields
-10. Check for existing file `./output/monitor-gold/monitor-gold-bubble-risk-2026-01-28.md`
+10. Check for existing file `./output/monitor/monitor-gold-bubble-risk-2026-01-28.md`
     - If not exists: Save to `monitor-gold-bubble-risk-2026-01-28.md`
     - If exists: Save to `monitor-gold-bubble-risk-2026-01-28(1).md` (or next available number)
-11. Confirm with actual saved filename: "深度风险扫描报告已生成: ./output/monitor-gold/monitor-gold-bubble-risk-2026-01-28(1).md"
+11. Confirm with actual saved filename: "深度风险扫描报告已生成: ./output/monitor/monitor-gold-bubble-risk-2026-01-28(1).md"

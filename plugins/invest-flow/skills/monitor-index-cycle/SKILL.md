@@ -7,7 +7,7 @@ description: "Create, verify, and update stock-index bull/bear market cycle tabl
 
 建立或原地更新指数牛熊周期表。价格周期统一用收盘价确认；P/E 只记录峰谷估值，不参与牛熊判定。
 
-输出目录：`./output/monitor-index-cycle/`
+输出目录：`./output/monitor/`
 
 - 牛市：`monitor-index-cycle-bull-{CODE}.md`
 - 熊市：`monitor-index-cycle-bear-{CODE}.md`

@@ -111,7 +111,7 @@ def build_registry() -> SkillRegistry:
             agent_name="daily_scan",
             stage="market_context",
             prompt_template="使用 invest-flow:monitor-us-market 生成美股收盘日报",
-            output_dir="output/monitor-us-market",
+            output_dir="output/monitor",
             required=False,
         ),
         _spec(
@@ -119,7 +119,7 @@ def build_registry() -> SkillRegistry:
             agent_name="gold_trend",
             stage="opportunity_discovery",
             prompt_template="使用 invest-flow:monitor-gold 分析 {company}",
-            output_dir="output/monitor-gold",
+            output_dir="output/monitor",
             required=False,
         ),
         _spec(

@@ -71,7 +71,7 @@ def main():
     """命令行接口"""
     if len(sys.argv) < 4:
         print("Usage: python save_report.py <directory> <base_name> <content_file>")
-        print("Example: python save_report.py ./output/monitor-gold monitor-gold-risk-2026-01-28 report.txt")
+        print("Example: python save_report.py ./output/monitor monitor-gold-risk-2026-01-28 report.txt")
         sys.exit(1)
 
     directory = sys.argv[1]

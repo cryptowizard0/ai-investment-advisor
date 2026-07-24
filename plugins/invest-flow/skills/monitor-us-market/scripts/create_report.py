@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
 SKILL_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "output" / "monitor-us-market"
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "output" / "monitor"
 TEMPLATE_PATH = SKILL_DIR / "references" / "report-template.md"
 US_EASTERN = ZoneInfo("America/New_York")
 REGULAR_MARKET_CLOSE = time(16, 0)

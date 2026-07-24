@@ -264,6 +264,17 @@ class RegistryTests(unittest.TestCase):
                 spec.prompt_template,
             )
 
+    def test_monitor_specs_share_topic_output_directory(self):
+        from investflow_pipeline.registry import build_registry
+
+        registry = build_registry()
+
+        for skill_name in ("monitor-us-market", "monitor-gold"):
+            self.assertEqual(
+                registry.get(skill_name).output_dir,
+                "output/monitor",
+            )
+
 
 class PlannerTests(unittest.TestCase):
     def test_create_stock_request_sets_task_fields(self):
