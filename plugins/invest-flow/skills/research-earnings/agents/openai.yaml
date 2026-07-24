@@ -1,0 +1,4 @@
+interface:
+  display_name: "Earnings Report Analysis"
+  short_description: "Interprets earnings through an institutional lens"
+  default_prompt: "Use $research-earnings to analyze NVIDIA's latest earnings report."

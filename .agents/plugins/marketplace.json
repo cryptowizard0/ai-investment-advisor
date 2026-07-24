@@ -1,11 +1,12 @@
 {
   "name": "investflow-local",
   "interface": {
-    "displayName": "InvestFlow Local"
+    "displayName": "InvestFlow Local - Chain Alpha"
   },
   "plugins": [
     {
       "name": "invest-flow",
+      "version": "0.5.1",
       "source": {
         "source": "local",
         "path": "./plugins/invest-flow"

@@ -9,6 +9,7 @@ import json
 import re
 from pathlib import Path
 from typing import NamedTuple
+from urllib.parse import quote
 
 
 REPO_ROOT = Path(__file__).resolve().parents[5]
@@ -17,14 +18,98 @@ INDEX_FILENAME = "index.md"
 HTML_INDEX_FILENAME = "index.html"
 ISO_DATE_RE = re.compile(r"(?<!\d)(\d{4}-\d{2}-\d{2})(?!\d)")
 COMPACT_DATE_RE = re.compile(r"(?<!\d)(\d{4})(\d{2})(\d{2})(?!\d)")
+HISTORICAL_FILENAME_PREFIX_ALIASES: dict[str, str] = {
+    "ai-infrastructure-scarcity-radar": "monitor-ai-infrastructure",
+    "ai-infrastructure-sector-discovery": "monitor-ai-infrastructure",
+    "chain-alpha-delivery-tracking": "monitor-chain-alpha-delivery",
+    "chain-alpha-mismatch-discovery": "chain-alpha-mismatch",
+    "chain-alpha-monopoly-screen": "chain-alpha-monopoly",
+    "chain-alpha-pipeline": "chain-alpha",
+    "company-buyability-score": "chain-alpha-entry-plan",
+    "company-profile": "research-profile",
+    "company-valuation-risk": "chain-alpha-entry-plan",
+    "daily-us-market-scan": "monitor-us-market",
+    "earnings-report-analysis": "research-earnings",
+    "fundamental-analysis": "research-fundamentals",
+    "gold-analysis": "monitor-gold",
+    "index-market-cycles": "monitor-index-cycle",
+    "index-pe-sensitivity": "monitor-index-valuation",
+    "institutional-accumulation-analysis": "research-institutional",
+    "gie-investment-framework": "research-stock",
+    "industry-chain-analysis": "research-stock",
+    "non-consensus-company-discovery": "chain-alpha-mismatch",
+    "professional-investment-analyst": "research-stock",
+    "reflexivity-deep-analysis": "research-reflexivity",
+    "reflexivity-quick-scan": "research-reflexivity",
+    "reportify-stock-analysis": "research-reportify",
+    "research": "research-stock",
+    "stock-analysis-template": "research-stock",
+    "summary": "research-stock",
+    "bear-market-cycles": "monitor-index-cycle",
+    "bull-market-cycles": "monitor-index-cycle",
+    "gold-bubble-risk": "monitor-gold",
+    "us-market-close-daily": "monitor-us-market",
+    "机构操作分析": "research-institutional",
+    "综合分析": "research-stock",
+}
+CANONICAL_SKILL_IDS = (
+    "chain-alpha-entry-plan",
+    "chain-alpha-verification",
+    "chain-alpha-monopoly",
+    "chain-alpha-mismatch",
+    "chain-alpha",
+    "monitor-chain-alpha-delivery",
+    "monitor-ai-infrastructure",
+    "monitor-index-valuation",
+    "monitor-index-cycle",
+    "monitor-us-market",
+    "monitor-gold",
+    "research-institutional",
+    "research-fundamentals",
+    "research-reflexivity",
+    "research-reportify",
+    "research-earnings",
+    "research-profile",
+    "research-stock",
+)
+TOPIC_CATEGORIES = {"chain-alpha", "monitor", "research"}
+HISTORICAL_OTHER = "历史/其他"
 
 
 class ReportEntry(NamedTuple):
     category: str
+    skill: str
     date_text: str
     title: str
     relative_link: str
     relative_path: str
+
+
+def normalize_report_category(directory: str) -> str:
+    if directory in TOPIC_CATEGORIES:
+        return directory
+
+    return HISTORICAL_OTHER
+
+
+def matches_filename_prefix(stem: str, prefix: str) -> bool:
+    normalized_stem = stem.casefold()
+    normalized_prefix = prefix.casefold()
+    return normalized_stem == normalized_prefix or normalized_stem.startswith(
+        normalized_prefix + "-"
+    )
+
+
+def infer_report_skill(stem: str) -> str:
+    for skill_id in sorted(CANONICAL_SKILL_IDS, key=len, reverse=True):
+        if matches_filename_prefix(stem, skill_id):
+            return skill_id
+
+    for prefix in sorted(HISTORICAL_FILENAME_PREFIX_ALIASES, key=len, reverse=True):
+        if matches_filename_prefix(stem, prefix):
+            return HISTORICAL_FILENAME_PREFIX_ALIASES[prefix]
+
+    return HISTORICAL_OTHER
 
 
 def parse_report_date(path: Path) -> str:
@@ -60,7 +145,7 @@ def markdown_table_cell(value: str) -> str:
 
 
 def markdown_link_path(path: Path) -> str:
-    return "./" + path.as_posix().replace(" ", "%20")
+    return "./" + quote(path.as_posix(), safe="/")
 
 
 def html_attr(value: str) -> str:
@@ -73,35 +158,56 @@ def html_text(value: str) -> str:
 
 def collect_reports(output_dir: Path) -> list[ReportEntry]:
     reports: list[ReportEntry] = []
-    index_path = (output_dir / INDEX_FILENAME).resolve()
 
-    for path in sorted(output_dir.rglob("*.md")):
-        if path.resolve() == index_path:
+    for directory in sorted(TOPIC_CATEGORIES):
+        topic_dir = output_dir / directory
+        if not topic_dir.is_dir():
             continue
-        if not path.is_file():
-            continue
+        for path in sorted(topic_dir.rglob("*.md")):
+            if not path.is_file():
+                continue
 
-        relative_path = path.relative_to(output_dir)
-        parts = relative_path.parts
-        category = parts[0] if len(parts) > 1 else "root"
-        reports.append(
-            ReportEntry(
-                category=category,
-                date_text=parse_report_date(path),
-                title=extract_title(path),
-                relative_link=markdown_link_path(relative_path),
-                relative_path=relative_path.as_posix(),
+            relative_path = path.relative_to(output_dir)
+            skill = infer_report_skill(path.stem)
+            category = normalize_report_category(directory)
+            reports.append(
+                ReportEntry(
+                    category=category,
+                    skill=skill,
+                    date_text=parse_report_date(path),
+                    title=extract_title(path),
+                    relative_link=markdown_link_path(relative_path),
+                    relative_path=relative_path.as_posix(),
+                )
             )
-        )
 
     return reports
+
+
+def report_sort_key(report: ReportEntry) -> tuple[str, str]:
+    return (report.date_text, report.relative_path)
+
+
+def group_reports_by_skill(
+    reports: list[ReportEntry],
+) -> list[tuple[str, list[ReportEntry]]]:
+    return [
+        (
+            skill,
+            sorted(
+                (report for report in reports if report.skill == skill),
+                key=report_sort_key,
+            ),
+        )
+        for skill in sorted({report.skill for report in reports})
+    ]
 
 
 def render_index(reports: list[ReportEntry]) -> str:
     lines = [
         "# Output 报告索引",
         "",
-        "按 `output/` 一级目录分类，分类内按报告日期升序排列。",
+        "按 Chain Alpha、Monitor、Research 主题类分类，分类内按报告日期升序排列。",
         "",
     ]
 
@@ -115,35 +221,34 @@ def render_index(reports: list[ReportEntry]) -> str:
             (report for report in reports if report.category == category),
             key=lambda report: (report.date_text, report.relative_path),
         )
-        lines.extend(
-            [
-                f"## {category}",
-                "",
-                "| 日期 | 标题 | 原文链接 |",
-                "|---|---|---|",
-            ]
-        )
-        for report in category_reports:
-            lines.append(
-                "| {date} | {title} | [原文]({link}) |".format(
-                    date=markdown_table_cell(report.date_text),
-                    title=markdown_table_cell(report.title),
-                    link=report.relative_link,
-                )
+        lines.extend([f"## {category}", ""])
+        for skill, skill_reports in group_reports_by_skill(category_reports):
+            lines.extend(
+                [
+                    f"### {skill}",
+                    "",
+                    "| 日期 | 标题 | 原文链接 |",
+                    "|---|---|---|",
+                ]
             )
-        lines.append("")
+            for report in skill_reports:
+                lines.append(
+                    "| {date} | {title} | [原文]({link}) |".format(
+                        date=markdown_table_cell(report.date_text),
+                        title=markdown_table_cell(report.title),
+                        link=report.relative_link,
+                    )
+                )
+            lines.append("")
 
     return "\n".join(lines)
-
-
-def report_sort_key(report: ReportEntry) -> tuple[str, str]:
-    return (report.date_text, report.relative_path)
 
 
 def report_manifest(reports: list[ReportEntry]) -> list[dict[str, str]]:
     return [
         {
             "category": report.category,
+            "skill": report.skill,
             "date": report.date_text,
             "title": report.title,
             "path": report.relative_link.removeprefix("./"),
@@ -173,31 +278,51 @@ def render_report_nav(reports: list[ReportEntry]) -> str:
             (report for report in reports if report.category == category),
             key=report_sort_key,
         )
-        items = []
-        for report in category_reports:
-            hash_path = report.relative_link.removeprefix("./")
-            items.append(
+        skill_groups = []
+        for skill, skill_reports in group_reports_by_skill(category_reports):
+            items = []
+            for report in skill_reports:
+                hash_path = report.relative_link.removeprefix("./")
+                items.append(
+                    "\n".join(
+                        [
+                            '<article class="report-item" data-category="{category}" data-skill="{skill}" data-title="{title}" data-date="{date}" data-path="{path}">'.format(
+                                category=html_attr(report.category),
+                                skill=html_attr(report.skill),
+                                title=html_attr(report.title),
+                                date=html_attr(report.date_text),
+                                path=html_attr(hash_path),
+                            ),
+                            '  <a class="report-title" href="#{path}">{title}</a>'.format(
+                                path=html_attr(hash_path),
+                                title=html_text(report.title),
+                            ),
+                            '  <div class="report-meta">',
+                            '    <span>{date}</span>'.format(
+                                date=html_text(report.date_text or "无日期")
+                            ),
+                            '    <a class="source-link" href="{source}">原文</a>'.format(
+                                source=html_attr(report.relative_link)
+                            ),
+                            "  </div>",
+                            "</article>",
+                        ]
+                    )
+                )
+            skill_groups.append(
                 "\n".join(
                     [
-                        '<article class="report-item" data-category="{category}" data-title="{title}" data-date="{date}" data-path="{path}">'.format(
-                            category=html_attr(report.category),
-                            title=html_attr(report.title),
-                            date=html_attr(report.date_text),
-                            path=html_attr(hash_path),
+                        '<section class="skill-section" data-skill="{skill}">'.format(
+                            skill=html_attr(skill)
                         ),
-                        '  <a class="report-title" href="#{path}">{title}</a>'.format(
-                            path=html_attr(hash_path),
-                            title=html_text(report.title),
+                        '  <h3 class="skill-heading">',
+                        "    <span>{skill}</span>".format(skill=html_text(skill)),
+                        '    <span class="skill-count">{count}</span>'.format(
+                            count=len(skill_reports)
                         ),
-                        '  <div class="report-meta">',
-                        '    <span>{date}</span>'.format(
-                            date=html_text(report.date_text or "无日期")
-                        ),
-                        '    <a class="source-link" href="{source}">原文</a>'.format(
-                            source=html_attr(report.relative_link)
-                        ),
-                        "  </div>",
-                        "</article>",
+                        "  </h3>",
+                        "\n".join(items),
+                        "</section>",
                     ]
                 )
             )
@@ -219,7 +344,7 @@ def render_report_nav(reports: list[ReportEntry]) -> str:
                     "    </span>",
                     "  </button>",
                     '  <div class="category-items">',
-                    "\n".join(items),
+                    "\n".join(skill_groups),
                     "  </div>",
                     "</section>",
                 ]
@@ -474,6 +599,26 @@ def render_html_index(reports: list[ReportEntry]) -> str:
       font-weight: 700;
       cursor: pointer;
       letter-spacing: 0;
+    }}
+    .skill-section {{
+      margin: 2px 0 14px;
+    }}
+    .skill-heading {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }}
+    .skill-count {{
+      min-width: 24px;
+      border-radius: 999px;
+      padding: 1px 7px;
+      background: var(--panel-subtle);
+      text-align: center;
     }}
     .category-count {{
       min-width: 26px;
@@ -880,7 +1025,7 @@ def render_html_index(reports: list[ReportEntry]) -> str:
       }}
 
       readerTitle.textContent = report.title;
-      readerMeta.textContent = [report.category, report.date || '无日期'].join(' / ');
+      readerMeta.textContent = [report.category, report.skill, report.date || '无日期'].join(' / ');
       readerSource.href = report.source;
       readerSource.hidden = false;
       setStatus('正在加载 Markdown...');
@@ -892,7 +1037,7 @@ def render_html_index(reports: list[ReportEntry]) -> str:
         readerStatus.hidden = true;
         markdownBody.innerHTML = renderMarkdown(markdown);
       }} catch (error) {{
-        setStatus('无法加载 Markdown。请通过本地 HTTP 服务访问本页，例如在仓库根目录运行 python -m http.server 后打开 /output/index.html。错误：' + error.message);
+        setStatus('无法加载 Markdown。请在仓库根目录运行 python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py --port 8000，然后打开 /output/index.html。错误：' + error.message);
       }}
     }}
 
@@ -902,7 +1047,7 @@ def render_html_index(reports: list[ReportEntry]) -> str:
         let visibleCount = 0;
         section.querySelectorAll('.report-item').forEach(item => {{
           const matchesCategory = activeCategory === 'all' || item.dataset.category === activeCategory;
-          const haystack = [item.dataset.title, item.dataset.category, item.dataset.date].join(' ').toLowerCase();
+          const haystack = [item.dataset.title, item.dataset.category, item.dataset.skill, item.dataset.date].join(' ').toLowerCase();
           const matchesQuery = !query || haystack.includes(query);
           const visible = matchesCategory && matchesQuery;
           item.hidden = !visible;

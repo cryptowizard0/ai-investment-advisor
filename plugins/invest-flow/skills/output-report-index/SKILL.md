@@ -7,7 +7,7 @@ description: "Use when the user explicitly asks to 生成索引, 更新索引, �
 
 ## Overview
 
-为 `output/` 下已有 Markdown 报告生成或更新 `output/index.md` 和 `output/index.html`。Markdown 索引按 `output/` 一级目录分类展示报告表格；HTML 索引是一个单页 Markdown 阅读器，点击报告后按需加载原始 `.md` 并渲染。
+为 `output/` 下已有 Markdown 报告生成或更新 `output/index.md` 和 `output/index.html`。Markdown 索引按主题类和 skill 两级展示报告表格；HTML 索引是一个单页 Markdown 阅读器，点击报告后按需加载原始 `.md` 并渲染。
 
 ## Trigger
 
@@ -29,7 +29,7 @@ description: "Use when the user explicitly asks to 生成索引, 更新索引, �
 python plugins/invest-flow/skills/output-report-index/scripts/generate_index.py
 ```
 
-2. 脚本递归扫描 `output/**/*.md`，排除 `output/index.md` 本身。
+2. 脚本递归扫描 `output/{chain-alpha,monitor,research}/**/*.md`。
 3. 脚本会全量重写 `output/index.md` 和 `output/index.html`。
 4. 生成后检查 Markdown 索引包含分类、标题和原文链接；HTML 索引包含顶部指标、搜索、分类列表和阅读器。
 5. 测试 HTML 阅读器和原文 Markdown 链接时，运行：
@@ -42,12 +42,13 @@ python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py -
 
 ## Index Rules
 
-- 分类使用报告所在的 `output/` 一级子目录名。
+- 一级分类使用 `chain-alpha`、`monitor`、`research` 主题类。
+- 二级分类使用当前 skill 名。迁移后报告的旧文件名前缀映射到语义对应的当前 skill；无法识别的报告归入“历史/其他”。
 - 标题优先读取 Markdown 文件第一个 `# ` 一级标题；没有一级标题时使用文件名。
 - 日期优先从文件名解析 `YYYY-MM-DD`，其次解析 `YYYYMMDD` 并格式化为 `YYYY-MM-DD`。
-- 分类内按日期升序排列；同日按文件路径升序排列。
-- 每个分类表格列为：`日期 | 标题 | 原文链接`。
-- 原文链接相对 `output/index.md`，例如 `./fundamental-analysis/HPE-Hewlett-Packard-Enterprise-2026-06-03.md`。
+- 每个 skill 分组内按日期升序排列；同日按文件路径升序排列。
+- 每个 skill 分组表格列为：`日期 | 标题 | 原文链接`。
+- 原文链接相对 `output/index.md`，例如 `./research/research-fundamentals-HPE-Hewlett-Packard-Enterprise-2026-06-03.md`。
 - HTML 页面顶部显示报告总数、分类总数、最新日期和最新报告。
 - HTML 页面不把每个报告转换为 HTML 文件，只通过 `fetch()` 按需读取原始 Markdown。
 - `serve_reports.py` 会为 `.md` 和 `.html` 显式返回 UTF-8 Content-Type，解决浏览器直开中文 Markdown 乱码。

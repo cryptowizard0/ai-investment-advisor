@@ -1,7 +1,7 @@
 {
   "name": "invest-flow",
-  "version": "0.4.9+codex.20260721174703",
-  "description": "Bundle investment research skills with Firecrawl-first web research, earnings report analysis, non-consensus company discovery, daily market scans, reflexivity workflows, report generation, multi-agent analysis, chain-alpha industry-chain stock selection pipeline, index valuation sensitivity, company valuation percentile-risk analysis, and market data routing.",
+  "version": "0.5.1",
+  "description": "Bundle investment research skills with Firecrawl-first web research, earnings analysis, daily market scans, reflexivity workflows, comprehensive stock research, the canonical chain-alpha industry-chain workflow and entry planning, index valuation sensitivity, and market data routing.",
   "author": {
     "name": "Potter",
     "email": "45678072+cryptowizard0@users.noreply.github.com",
@@ -9,12 +9,12 @@
   },
   "homepage": "https://github.com/cryptowizard0/ai-investment-advisor",
   "repository": "https://github.com/cryptowizard0/ai-investment-advisor",
-  "keywords": ["investment", "finance", "stocks", "scoring", "earnings", "financial-results", "gold", "analysis", "reflexivity", "research", "market-scan", "non-consensus", "company-discovery", "industry-chain", "supply-demand", "chain-alpha", "valuation", "percentile-risk"],
+  "keywords": ["investment", "finance", "stocks", "scoring", "earnings", "financial-results", "gold", "analysis", "reflexivity", "research", "market-scan", "company-research", "industry-chain", "supply-demand", "chain-alpha", "valuation", "percentile-risk"],
   "skills": "./skills/",
   "interface": {
     "displayName": "InvestFlow",
     "shortDescription": "Investment research, reflexivity analysis, and market data",
-    "longDescription": "Run stock, earnings report, institutional flow, non-consensus company discovery, gold, daily US market scans, reflexivity, report-generation, and market-data workflows in one installable investment research plugin.",
+    "longDescription": "Run comprehensive stock research, earnings review, institutional flow, gold, daily US market scans, reflexivity, report-generation, and market-data workflows in one installable investment research plugin.",
     "developerName": "Potter",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
@@ -25,8 +25,9 @@
       "Use InvestFlow to generate a daily US market close report.",
       "Use InvestFlow to perform a reflexivity quick scan on NVIDIA.",
       "Use InvestFlow to generate a structured stock report for AAPL.",
-      "Use InvestFlow to find non-consensus companies in AI data center power.",
-      "Use InvestFlow to run the chain-alpha pipeline on AI data center power."
+      "Use InvestFlow research-stock to analyze AAPL across five default research stages.",
+      "Use InvestFlow to run chain-alpha on AI data center power.",
+      "Use InvestFlow to create NVDA's chain-alpha entry plan."
     ],
     "brandColor": "#F5F5F7",
     "composerIcon": "./assets/icon.png",

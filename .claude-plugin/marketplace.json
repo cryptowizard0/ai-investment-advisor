@@ -1,7 +1,7 @@
 {
   "name": "investflow-local",
   "metadata": {
-    "description": "Repo-local marketplace for the InvestFlow investment research plugin."
+    "description": "Repo-local marketplace for InvestFlow with the canonical Chain Alpha workflow."
   },
   "owner": {
     "name": "Potter",
@@ -11,8 +11,9 @@
   "plugins": [
     {
       "name": "invest-flow",
+      "version": "0.5.1",
       "source": "./plugins/invest-flow",
-      "description": "Investment research with Firecrawl-first web research, reflexivity analysis, and market data workflows: multi-agent stock analysis, chain-alpha industry-chain stock selection, earnings review, daily US market scans, non-consensus discovery, and report indexing.",
+      "description": "Investment research with Firecrawl-first web research, reflexivity analysis, and market data workflows: comprehensive stock research, canonical Chain Alpha industry-chain selection and entry planning, earnings review, daily US market scans, and report indexing.",
       "category": "productivity"
     }
   ]

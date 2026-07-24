@@ -25,33 +25,246 @@ def load_generator_module():
 
 
 class GenerateIndexTests(unittest.TestCase):
+    def test_markdown_link_path_encodes_reserved_characters(self) -> None:
+        generator = load_generator_module()
+
+        self.assertEqual(
+            generator.markdown_link_path(Path("research/report #1?(50%).md")),
+            "./research/report%20%231%3F%2850%25%29.md",
+        )
+
+    def test_groups_flat_topic_reports_by_current_and_historical_skill_prefixes(self) -> None:
+        generator = load_generator_module()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            research_dir = output_dir / "research"
+            monitor_dir = output_dir / "monitor"
+            chain_dir = output_dir / "chain-alpha"
+            research_dir.mkdir()
+            monitor_dir.mkdir()
+            chain_dir.mkdir()
+
+            (research_dir / "research-profile-TSLA-2026-01-10.md").write_text(
+                "# Current profile\n",
+                encoding="utf-8",
+            )
+            (research_dir / "company-profile-NVDA-2026-01-10.md").write_text(
+                "# Historical profile\n",
+                encoding="utf-8",
+            )
+            (research_dir / "custom-thesis-2026-01-11.md").write_text(
+                "# Unmapped research\n",
+                encoding="utf-8",
+            )
+            (monitor_dir / "us-market-close-daily-2026-01-12.md").write_text(
+                "# Historical market scan\n",
+                encoding="utf-8",
+            )
+            (
+                chain_dir
+                / "chain-alpha-verification-NVDA-2026-01-13.md"
+            ).write_text(
+                "# Current verification\n",
+                encoding="utf-8",
+            )
+
+            result_path = generator.generate_index(output_dir=output_dir)
+            index_text = result_path.read_text(encoding="utf-8")
+            html_text = (output_dir / "index.html").read_text(encoding="utf-8")
+
+            self.assertIn("## research\n", index_text)
+            self.assertIn("### research-profile\n", index_text)
+            self.assertIn("### 历史/其他\n", index_text)
+            self.assertIn("## monitor\n", index_text)
+            self.assertIn("### monitor-us-market\n", index_text)
+            self.assertIn("## chain-alpha\n", index_text)
+            self.assertIn("### chain-alpha-verification\n", index_text)
+            self.assertIn(
+                "| 2026-01-10 | Current profile | [原文](./research/research-profile-TSLA-2026-01-10.md) |",
+                index_text,
+            )
+            self.assertIn(
+                "| 2026-01-10 | Historical profile | [原文](./research/company-profile-NVDA-2026-01-10.md) |",
+                index_text,
+            )
+            current_profile_position = index_text.index(
+                "| 2026-01-10 | Current profile |"
+            )
+            historical_profile_position = index_text.index(
+                "| 2026-01-10 | Historical profile |"
+            )
+            self.assertLess(historical_profile_position, current_profile_position)
+            self.assertIn('"skill": "research-profile"', html_text)
+            self.assertIn('"skill": "monitor-us-market"', html_text)
+            self.assertIn('"skill": "历史/其他"', html_text)
+            self.assertIn(
+                'data-category="research" data-skill="research-profile"',
+                html_text,
+            )
+            self.assertIn('<h3 class="skill-heading">', html_text)
+            self.assertLess(
+                html_text.index(
+                    'href="#research/company-profile-NVDA-2026-01-10.md"'
+                ),
+                html_text.index(
+                    'href="#research/research-profile-TSLA-2026-01-10.md"'
+                ),
+            )
+
+    def test_historical_filenames_are_mapped_within_topic_directories(self) -> None:
+        generator = load_generator_module()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            monitor_dir = output_dir / "monitor"
+            research_dir = output_dir / "research"
+            chain_dir = output_dir / "chain-alpha"
+            monitor_dir.mkdir()
+            research_dir.mkdir()
+            chain_dir.mkdir()
+
+            legacy_monitor_report = monitor_dir / "us-market-close-daily-2026-01-11.md"
+            legacy_monitor_report.write_text(
+                "# Legacy monitor report\n\nHistory should remain searchable.",
+                encoding="utf-8",
+            )
+            legacy_research_report = research_dir / "fundamental-analysis-TSLA-2026-01-12.md"
+            legacy_research_report.write_text(
+                "# Legacy research report\n\nHistory should remain searchable.",
+                encoding="utf-8",
+            )
+            legacy_chain_report = chain_dir / "chain-alpha-mismatch-discovery-MLCC-2026-01-13.md"
+            legacy_chain_report.write_text(
+                "# Legacy chain report\n\nHistory should remain searchable.",
+                encoding="utf-8",
+            )
+            legacy_ai_infra_report = monitor_dir / "ai-infrastructure-sector-discovery-2026-01-14.md"
+            legacy_ai_infra_report.write_text(
+                "# Legacy AI infrastructure report\n\nHistory should remain searchable.",
+                encoding="utf-8",
+            )
+
+            result_path = generator.generate_index(output_dir=output_dir)
+            index_text = result_path.read_text(encoding="utf-8")
+            html_path = output_dir / "index.html"
+            html_text = html_path.read_text(encoding="utf-8")
+
+            self.assertIn("## monitor\n", index_text)
+            self.assertIn("## research\n", index_text)
+            self.assertIn("## chain-alpha\n", index_text)
+            self.assertIn("### monitor-us-market\n", index_text)
+            self.assertIn("### research-fundamentals\n", index_text)
+            self.assertIn("### chain-alpha-mismatch\n", index_text)
+            self.assertIn("### monitor-ai-infrastructure\n", index_text)
+            self.assertIn(
+                "| 2026-01-11 | Legacy monitor report | [原文](./monitor/us-market-close-daily-2026-01-11.md) |",
+                index_text,
+            )
+            self.assertIn(
+                "| 2026-01-12 | Legacy research report | [原文](./research/fundamental-analysis-TSLA-2026-01-12.md) |",
+                index_text,
+            )
+            self.assertIn(
+                "| 2026-01-13 | Legacy chain report | [原文](./chain-alpha/chain-alpha-mismatch-discovery-MLCC-2026-01-13.md) |",
+                index_text,
+            )
+            self.assertIn(
+                "| 2026-01-14 | Legacy AI infrastructure report | [原文](./monitor/ai-infrastructure-sector-discovery-2026-01-14.md) |",
+                index_text,
+            )
+            self.assertIn('"category": "monitor"', html_text)
+            self.assertIn('"category": "research"', html_text)
+            self.assertIn('"category": "chain-alpha"', html_text)
+            self.assertIn('"skill": "monitor-us-market"', html_text)
+            self.assertIn('"skill": "research-fundamentals"', html_text)
+            self.assertIn('"skill": "chain-alpha-mismatch"', html_text)
+            self.assertIn("\"monitor/us-market-close-daily-2026-01-11.md\"", html_text)
+            self.assertIn("\"monitor/ai-infrastructure-sector-discovery-2026-01-14.md\"", html_text)
+            self.assertEqual(
+                generator.HISTORICAL_FILENAME_PREFIX_ALIASES["daily-us-market-scan"],
+                "monitor-us-market",
+            )
+
+            self.assertEqual(
+                generator.HISTORICAL_FILENAME_PREFIX_ALIASES["ai-infrastructure-sector-discovery"],
+                "monitor-ai-infrastructure",
+            )
+
+            # Historical filename mapping is explicit and centrally maintained.
+            self.assertIn(
+                "fundamental-analysis",
+                generator.HISTORICAL_FILENAME_PREFIX_ALIASES,
+            )
+
+    def test_ignores_markdown_outside_topic_directories(self) -> None:
+        generator = load_generator_module()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            research_dir = output_dir / "research"
+            cache_dir = output_dir / "cache" / "market-data"
+            legacy_dir = output_dir / "fundamental-analysis"
+            research_dir.mkdir()
+            cache_dir.mkdir(parents=True)
+            legacy_dir.mkdir()
+
+            (research_dir / "research-profile-TSLA-2026-01-10.md").write_text(
+                "# Included report\n",
+                encoding="utf-8",
+            )
+            (output_dir / "root-report.md").write_text(
+                "# Excluded root report\n",
+                encoding="utf-8",
+            )
+            (cache_dir / "cached-report.md").write_text(
+                "# Excluded cache report\n",
+                encoding="utf-8",
+            )
+            (legacy_dir / "fundamental-analysis-TSLA-2026-01-10.md").write_text(
+                "# Excluded legacy report\n",
+                encoding="utf-8",
+            )
+
+            reports = generator.collect_reports(output_dir)
+            self.assertEqual(
+                [report.relative_path for report in reports],
+                ["research/research-profile-TSLA-2026-01-10.md"],
+            )
+
+            result_path = generator.generate_index(output_dir=output_dir)
+            index_text = result_path.read_text(encoding="utf-8")
+            html_text = (output_dir / "index.html").read_text(encoding="utf-8")
+            self.assertIn("Included report", index_text)
+            self.assertNotIn("Excluded root report", index_text)
+            self.assertNotIn("Excluded cache report", html_text)
+            self.assertNotIn("Excluded legacy report", html_text)
+
     def test_writes_categorized_index_with_titles_links_and_ascending_dates(self) -> None:
         generator = load_generator_module()
 
         with tempfile.TemporaryDirectory() as tmpdir:
             output_dir = Path(tmpdir)
-            fundamental_dir = output_dir / "fundamental-analysis"
-            daily_dir = output_dir / "daily-us-market-scan"
-            institutional_dir = output_dir / "institutional-accumulation-analysis"
-            fundamental_dir.mkdir()
-            daily_dir.mkdir()
-            institutional_dir.mkdir()
+            research_dir = output_dir / "research"
+            monitor_dir = output_dir / "monitor"
+            research_dir.mkdir()
+            monitor_dir.mkdir()
 
-            old_report = fundamental_dir / "AAA-Old-2026-01-02.md"
+            old_report = research_dir / "research-fundamentals-AAA-Old-2026-01-02.md"
             old_report.write_text(
                 "# Old Fundamental Report\n\nPrivate old report body should not be embedded.",
                 encoding="utf-8",
             )
-            new_report = fundamental_dir / "BBB-New-2026-01-05.md"
+            new_report = research_dir / "research-fundamentals-BBB-New-2026-01-05.md"
             new_report.write_text(
                 "# New Fundamental Report\n\nPrivate new report body should not be embedded.",
                 encoding="utf-8",
             )
-            untitled_report = daily_dir / "us market close 2026-01-03.md"
+            untitled_report = monitor_dir / "monitor-us-market-us market close 2026-01-03.md"
             untitled_report.write_text("No level one title\n", encoding="utf-8")
-            compact_date_report = institutional_dir / "机构操作分析-20260104-测试(1).md"
+            compact_date_report = research_dir / "research-institutional-analysis-20260104-test(1).md"
             compact_date_report.write_text("# 机构测试报告\n", encoding="utf-8")
-            no_date_report = daily_dir / "no-date-report.md"
+            no_date_report = monitor_dir / "monitor-us-market-no-date-report.md"
             no_date_report.write_text("# No Date Report\n", encoding="utf-8")
 
             index_path = output_dir / "index.md"
@@ -67,31 +280,32 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertTrue(index_bytes.startswith(b"\xef\xbb\xbf"))
             self.assertTrue(html_path.exists())
             self.assertIn("# Output 报告索引", index_text)
-            self.assertIn("## daily-us-market-scan", index_text)
-            self.assertIn("## fundamental-analysis", index_text)
-            self.assertIn("## institutional-accumulation-analysis", index_text)
+            self.assertIn("## monitor\n", index_text)
+            self.assertIn("## research\n", index_text)
             self.assertIn("| 日期 | 标题 | 原文链接 |", index_text)
             self.assertIn(
-                "| 2026-01-02 | Old Fundamental Report | [原文](./fundamental-analysis/AAA-Old-2026-01-02.md) |",
+                "| 2026-01-02 | Old Fundamental Report | [原文](./research/research-fundamentals-AAA-Old-2026-01-02.md) |",
                 index_text,
             )
             self.assertIn(
-                "| 2026-01-05 | New Fundamental Report | [原文](./fundamental-analysis/BBB-New-2026-01-05.md) |",
+                "| 2026-01-05 | New Fundamental Report | [原文](./research/research-fundamentals-BBB-New-2026-01-05.md) |",
                 index_text,
             )
             self.assertIn(
-                "| 2026-01-03 | us market close 2026-01-03 | [原文](./daily-us-market-scan/us%20market%20close%202026-01-03.md) |",
+                "| 2026-01-03 | monitor-us-market-us market close 2026-01-03 | [原文](./monitor/monitor-us-market-us%20market%20close%202026-01-03.md) |",
                 index_text,
             )
             self.assertIn(
-                "| 2026-01-04 | 机构测试报告 | [原文](./institutional-accumulation-analysis/机构操作分析-20260104-测试(1).md) |",
+                "| 2026-01-04 | 机构测试报告 | [原文](./research/research-institutional-analysis-20260104-test%281%29.md) |",
                 index_text,
             )
             self.assertNotIn("Old manual index", index_text)
             self.assertNotIn("[原文](./index.md)", index_text)
 
             no_date_position = index_text.index("|  | No Date Report |")
-            dated_daily_position = index_text.index("| 2026-01-03 | us market close 2026-01-03 |")
+            dated_daily_position = index_text.index(
+                "| 2026-01-03 | monitor-us-market-us market close 2026-01-03 |"
+            )
             old_position = index_text.index("| 2026-01-02 | Old Fundamental Report |")
             new_position = index_text.index("| 2026-01-05 | New Fundamental Report |")
             self.assertLess(no_date_position, dated_daily_position)
@@ -129,11 +343,11 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn("最新日期", html_text)
             self.assertIn("最新报告", html_text)
             self.assertIn('<span class="metric-value">5</span>', html_text)
-            self.assertIn('<span class="metric-value">3</span>', html_text)
+            self.assertIn('<span class="metric-value">2</span>', html_text)
             self.assertIn('<span class="metric-value">2026-01-05</span>', html_text)
             self.assertIn("New Fundamental Report", html_text)
             self.assertIn(
-                '<a class="metric-value metric-link" href="#fundamental-analysis/BBB-New-2026-01-05.md">New Fundamental Report</a>',
+                '<a class="metric-value metric-link" href="#research/research-fundamentals-BBB-New-2026-01-05.md">New Fundamental Report</a>',
                 html_text,
             )
             self.assertIn("const REPORTS =", html_text)
@@ -142,9 +356,9 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn("renderMarkdown(markdown)", html_text)
             self.assertIn("location.hash", html_text)
             self.assertIn("decodeURIComponent", html_text)
-            self.assertIn("href=\"#fundamental-analysis/BBB-New-2026-01-05.md\"", html_text)
+            self.assertIn("href=\"#research/research-fundamentals-BBB-New-2026-01-05.md\"", html_text)
             self.assertIn(
-                "href=\"./fundamental-analysis/BBB-New-2026-01-05.md\"",
+                "href=\"./research/research-fundamentals-BBB-New-2026-01-05.md\"",
                 html_text,
             )
             self.assertIn("function renderMarkdown", html_text)

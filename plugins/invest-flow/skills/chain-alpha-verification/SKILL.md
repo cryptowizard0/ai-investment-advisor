@@ -1,9 +1,9 @@
 ---
 name: chain-alpha-verification
-description: "chain-alpha 工作流第三步：对全球主要可投市场（美股/ADR、A 股、港股、日股、台股主板）候选公司做最终验证——环节收入占比双轨硬门槛（≥40% 纯正 / 20-40% 增量贡献测试 / 低于 20% 剔除）、利润增速硬门槛（最低 20%、优选 30%+）、100 分模型四档分级（金池子/通过/待验证/剔除）。只做验证分级、不定仓位：通过及以上标的交给第四步 company-valuation-risk 定买点与仓位（仓位上限 = 回撤预算 ÷ 潜在风险）。适用于：(1) 验证产业链筛出的候选公司是否可投并给档位, (2) chain-alpha-pipeline 的第三步。输出保存至 ./output/chain-alpha-verification/。"
+description: "chain-alpha 工作流第三步：对全球主要可投市场（美股/ADR、A 股、港股、日股、台股主板）候选公司做最终验证——环节收入占比双轨硬门槛（≥40% 纯正 / 20-40% 增量贡献测试 / 低于 20% 剔除）、利润增速硬门槛（最低 20%、优选 30%+）、100 分模型四档分级（金池子/通过/待验证/剔除）。只做验证分级、不定仓位：通过及以上标的交给第四步 chain-alpha-entry-plan 定买点与仓位（仓位上限 = 回撤预算 ÷ 潜在风险）。适用于：(1) 验证产业链筛出的候选公司是否可投并给档位, (2) chain-alpha 的第三步。输出保存至 ./output/chain-alpha/。"
 ---
 
-# chain-alpha 公司验证与仓位
+# Chain Alpha 公司验证
 
 ## Web Research Routing
 
@@ -13,25 +13,25 @@ description: "chain-alpha 工作流第三步：对全球主要可投市场（美
 
 ## Overview
 
-本 skill 是 chain-alpha 工作流的第三步：验证候选公司，给出四档结论（只验证、不定仓位）。输入为全球主要可投市场候选（美股/ADR、A 股、港股、日股、台股主板，通常来自 `chain-alpha-monopoly-screen`）；"通过及以上"档位的标的进入第四步 `invest-flow:company-valuation-risk` 定买点与仓位。
+本 skill 是 chain-alpha 工作流的第三步：验证候选公司，给出四档结论（只验证、不定仓位）。输入为全球主要可投市场候选（美股/ADR、A 股、港股、日股、台股主板，通常来自 `chain-alpha-monopoly`）；"通过及以上"档位的标的进入第四步 `invest-flow:chain-alpha-entry-plan` 定买点与仓位。
 
 第一性原理：股价长期跟着公司利润走，所有验证指标最终必须落到"利润增速"。利润增速最好 ≥30%，最低 ≥20%；低于 20% 的公司直接剔除，不用估值或格局高分救回。
 
-默认输出目录：`./output/chain-alpha-verification/`
+默认输出目录：`./output/chain-alpha/`
 
 ## Trigger
 
 - `使用 invest-flow:chain-alpha-verification 验证 <TICKER 或候选清单>`
-- 作为 `chain-alpha-pipeline` 的第三步被调用
+- 作为 `chain-alpha` 的第三步被调用
 
-非美股不再自动排除；A 股、港股、日股、台股主板候选按各自上市地市场口径验证并给仓位。未上市或仅 OTC 粉单标的只列背景参考，不给仓位建议。
+非美股不再自动排除；A 股、港股、日股、台股主板候选按各自上市地市场口径验证并给档位。未上市或仅 OTC 粉单标的只列背景参考，不给档位或仓位建议。
 
 ## Workflow
 
 ### 1) 收集证据
 - 季度收入、segment 拆分、毛利率、净利润、operating profit、EPS：10-K/10-Q、earnings release、IR 材料。
 - 估值与股价数据：yfinance / market-data-router。
-- 估值与透支度评分可参考数据源的分位读数做快速判断；精确的分位带、潜在风险与仓位在第四步 `invest-flow:company-valuation-risk` 完成，本步不重复取数。
+- 估值与透支度评分可参考数据源的分位读数做快速判断；精确的分位带、潜在风险与仓位在第四步 `invest-flow:chain-alpha-entry-plan` 完成，本步不重复取数。
 - 关键数字标注来源和日期；区分 事实 / 推断 / 假设。
 
 ### 2) 硬门槛（一票否决，不进入评分）
@@ -59,16 +59,16 @@ description: "chain-alpha 工作流第三步：对全球主要可投市场（美
 
 | 总分 | 档位 | 处置 |
 |---|---|---|
-| ≥80 | 金池子 | 重点跟踪 → 进入第四步 company-valuation-risk 定仓（全额档） |
-| 65-79 | 通过 | → 进入第四步 company-valuation-risk 定仓（×0.5 档） |
+| ≥80 | 金池子 | 重点跟踪 → 进入第四步 chain-alpha-entry-plan 定仓（全额档） |
+| 65-79 | 通过 | → 进入第四步 chain-alpha-entry-plan 定仓（×0.5 档） |
 | 50-64 | 待验证 | 观察池，列出补齐哪些证据可升档，不进入第四步 |
 | <50 | 剔除 | 除非出现新的强催化剂 |
 
-本步不计算仓位。档位与弹性标记（占比 20-40%）作为第四步的输入（`--grade` / `--elastic`），仓位上限 = 回撤预算 ÷ 潜在风险，由 `invest-flow:company-valuation-risk` 统一给出。
+本步不计算仓位。档位与弹性标记（占比 20-40%）作为第四步的输入（`--grade` / `--elastic`），仓位上限 = 回撤预算 ÷ 潜在风险，由 `invest-flow:chain-alpha-entry-plan` 统一给出。
 
 ### 5) 输出验证卡
 - 使用 `references/report-template.md`，每家公司一张验证卡（评分明细、档位、弹性标记、反证条件、下一步指引）。
-- 单公司保存至 `./output/chain-alpha-verification/chain-alpha-verification-{TICKER}-{YYYY-MM-DD}.md`；多公司汇总为 `chain-alpha-verification-{环节}-{YYYY-MM-DD}.md`。
+- 单公司保存至 `./output/chain-alpha/chain-alpha-verification-{TICKER}-{YYYY-MM-DD}.md`；多公司汇总为 `chain-alpha-verification-{环节}-{YYYY-MM-DD}.md`。
 - 文件已存在时追加 `(1)`, `(2)`，不覆盖。
 - 报告必须包含固定作者字段：`InvestmentFlow`。
 
@@ -86,13 +86,13 @@ description: "chain-alpha 工作流第三步：对全球主要可投市场（美
 
 ## 下游衔接
 
-- **第四步定仓**：`通过 / 金池子` 标的进入 `invest-flow:company-valuation-risk`（chain-alpha 第四步），完成估值分位带、潜在风险（两腿取大）与建仓计划（仓位上限 = 回撤预算 ÷ 潜在风险；档位与弹性折扣由该步应用）。
-- **第五步追踪**：`待验证` 与在监控的 `通过 / 金池子` 标的，用 `invest-flow:chain-alpha-delivery-tracking` 做周期性营收兑现追踪（验证链阶段闸门 + 增速 / 归因 / 动态估值三引擎），据其结论回灌本 skill 的档位；升档触发建仓时重跑第四步定仓。
+- **第四步定仓**：`通过 / 金池子` 标的进入 `invest-flow:chain-alpha-entry-plan`（chain-alpha 第四步），完成估值分位带、潜在风险（两腿取大）与建仓计划（仓位上限 = 回撤预算 ÷ 潜在风险；档位与弹性折扣由该步应用）。
+- **第五步追踪**：`待验证` 与在监控的 `通过 / 金池子` 标的，用 `invest-flow:monitor-chain-alpha-delivery` 做周期性营收兑现追踪（验证链阶段闸门 + 增速 / 归因 / 动态估值三引擎），据其结论回灌本 skill 的档位；升档触发建仓时重跑第四步定仓。
 
 ## Resources
 
 ### references/methodology.md
-双轨占比门槛与增量贡献测试细则、100 分模型逐维度评分标准、负分项标准、与第四步 company-valuation-risk 的档位/弹性交接。
+双轨占比门槛与增量贡献测试细则、100 分模型逐维度评分标准、负分项标准、与第四步 chain-alpha-entry-plan 的档位/弹性交接。
 
 ### references/report-template.md
 公司验证卡模板：硬门槛记录、评分明细表、档位、反证条件、跟踪指标、下一步指引。
