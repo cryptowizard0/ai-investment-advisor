@@ -25,6 +25,87 @@ def load_generator_module():
 
 
 class GenerateIndexTests(unittest.TestCase):
+    def test_groups_flat_topic_reports_by_current_and_historical_skill_prefixes(self) -> None:
+        generator = load_generator_module()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_dir = Path(tmpdir)
+            research_dir = output_dir / "research"
+            monitor_dir = output_dir / "monitor"
+            chain_dir = output_dir / "chain-alpha"
+            retired_dir = output_dir / "retired-company-workflow"
+            research_dir.mkdir()
+            monitor_dir.mkdir()
+            chain_dir.mkdir()
+            retired_dir.mkdir()
+
+            (research_dir / "research-profile-TSLA-2026-01-10.md").write_text(
+                "# Current profile\n",
+                encoding="utf-8",
+            )
+            (retired_dir / "company-profile-NVDA-2026-01-10.md").write_text(
+                "# Historical profile\n",
+                encoding="utf-8",
+            )
+            (research_dir / "custom-thesis-2026-01-11.md").write_text(
+                "# Unmapped research\n",
+                encoding="utf-8",
+            )
+            (monitor_dir / "us-market-close-daily-2026-01-12.md").write_text(
+                "# Historical market scan\n",
+                encoding="utf-8",
+            )
+            (
+                chain_dir
+                / "chain-alpha-verification-NVDA-2026-01-13.md"
+            ).write_text(
+                "# Current verification\n",
+                encoding="utf-8",
+            )
+
+            result_path = generator.generate_index(output_dir=output_dir)
+            index_text = result_path.read_text(encoding="utf-8")
+            html_text = (output_dir / "index.html").read_text(encoding="utf-8")
+
+            self.assertIn("## research\n", index_text)
+            self.assertIn("### research-profile\n", index_text)
+            self.assertIn("### 历史/其他\n", index_text)
+            self.assertIn("## monitor\n", index_text)
+            self.assertIn("### monitor-us-market\n", index_text)
+            self.assertIn("## chain-alpha\n", index_text)
+            self.assertIn("### chain-alpha-verification\n", index_text)
+            self.assertIn(
+                "| 2026-01-10 | Current profile | [原文](./research/research-profile-TSLA-2026-01-10.md) |",
+                index_text,
+            )
+            self.assertIn(
+                "| 2026-01-10 | Historical profile | [原文](./retired-company-workflow/company-profile-NVDA-2026-01-10.md) |",
+                index_text,
+            )
+            current_profile_position = index_text.index(
+                "| 2026-01-10 | Current profile |"
+            )
+            historical_profile_position = index_text.index(
+                "| 2026-01-10 | Historical profile |"
+            )
+            self.assertLess(current_profile_position, historical_profile_position)
+            self.assertIn('"skill": "research-profile"', html_text)
+            self.assertIn('"skill": "monitor-us-market"', html_text)
+            self.assertIn('"skill": "历史/其他"', html_text)
+            self.assertIn(
+                'data-category="research" data-skill="research-profile"',
+                html_text,
+            )
+            self.assertIn('<h3 class="skill-heading">', html_text)
+            self.assertLess(
+                html_text.index(
+                    'href="#research/research-profile-TSLA-2026-01-10.md"'
+                ),
+                html_text.index(
+                    'href="#retired-company-workflow/company-profile-NVDA-2026-01-10.md"'
+                ),
+            )
+
     def test_legacy_category_names_are_mapped_to_canonical_sections(self) -> None:
         generator = load_generator_module()
 
@@ -68,6 +149,10 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn("## monitor\n", index_text)
             self.assertIn("## research\n", index_text)
             self.assertIn("## chain-alpha\n", index_text)
+            self.assertIn("### monitor-us-market\n", index_text)
+            self.assertIn("### research-fundamentals\n", index_text)
+            self.assertIn("### chain-alpha-mismatch\n", index_text)
+            self.assertIn("### monitor-ai-infrastructure\n", index_text)
             self.assertIn(
                 "| 2026-01-11 | Legacy monitor report | [原文](./daily-us-market-scan/us-market-close-daily-2026-01-11.md) |",
                 index_text,
@@ -87,6 +172,9 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn('"category": "monitor"', html_text)
             self.assertIn('"category": "research"', html_text)
             self.assertIn('"category": "chain-alpha"', html_text)
+            self.assertIn('"skill": "monitor-us-market"', html_text)
+            self.assertIn('"skill": "research-fundamentals"', html_text)
+            self.assertIn('"skill": "chain-alpha-mismatch"', html_text)
             self.assertIn("\"daily-us-market-scan/us-market-close-daily-2026-01-11.md\"", html_text)
             self.assertIn("\"ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-2026-01-14.md\"", html_text)
             self.assertEqual(
