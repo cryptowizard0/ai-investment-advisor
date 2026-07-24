@@ -11,6 +11,7 @@
   "plugins": [
     {
       "name": "invest-flow",
+      "version": "0.5.0+codex.20260723160952",
       "source": "./plugins/invest-flow",
       "description": "Investment research with Firecrawl-first web research, reflexivity analysis, and market data workflows: comprehensive stock research, canonical Chain Alpha industry-chain selection and entry planning, earnings review, daily US market scans, and report indexing.",
       "category": "productivity"

@@ -81,8 +81,6 @@ Turn a big theme into investable companies. `chain-alpha` is the flagship — se
 | `chain-alpha-monopoly` | Sub-link breakdown and monopoly screening with CR3, margin, revenue-share, and profit-growth gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
 | `chain-alpha-verification` | 100-point four-tier company verification with profit-growth gating (grading only, no position sizing). | You have candidates and need a gold-pool/pass/pending/reject grade; pass-and-above names hand off to step 4 for sizing. |
 | `chain-alpha-entry-plan` | chain-alpha step 4: type gate → PE/PS ruler (with alert lines) → 5-year TTM percentile band → potential risk → growth-digestion check → entry decision, position cap, entry range, staged buying plan, and blocking/reopen conditions. | Verification produced a grade and you need an executable entry plan. (Also listed under category 2.) |
-| `monitor-chain-alpha-delivery` | Forward-looking revenue/profit-delivery tracking for pending-verification candidates with a 5-gate ladder plus delivery-window timeouts, growth/attribution/dynamic-valuation engines, structure sentinels, and symmetric grade up/down. | You hold a pending-verification name (e.g. a harmonic-reducer supplier) and need a quarterly read on whether revenue and profit growth are actually being delivered. (Also a quarterly tracking task — see category 3.) |
-| `monitor-ai-infrastructure` | Weekly AI infrastructure sector scan and scoring; the handoff queue feeds chain-alpha. | You want a scheduled weekly read on which AI infrastructure sectors to research next. (Also a weekly tracking task — see category 3.) |
 
 ### 2. Research a single stock (you bring a ticker)
 
@@ -93,7 +91,6 @@ Judge one company from several independent angles. `research-stock` orchestrates
 | `research-stock` | In-session orchestration across the five default single-stock stages (profile → fundamentals → institutional → reflexivity → Reportify). | You want one stock analyzed from several independent angles. |
 | `research-profile` | Builds a company primer before investment analysis. | A user is hearing about a company for the first time and needs business, technology, value-chain, AI relevance, competitors, and industry-position context. |
 | `research-fundamentals` | Single-stock fundamental, valuation, and technical analysis. | You need a fast but structured view of a company. |
-| `chain-alpha-entry-plan` | Type-gated entry planning backed by a valuation percentile band, potential-risk calculation, growth-digestion check, and drawdown-budget position cap. The output owns the entry decision, position cap, entry range, staged buying plan, and blocking/reopen conditions. | You need an executable buying plan rather than valuation analysis alone. (Also chain-alpha step 4 — see category 1.) |
 | `research-institutional` | Institutional accumulation and distribution analysis. | You want to judge whether major players are buying, distributing, or hedging. |
 | `research-reflexivity` | Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes. | You need to read where a narrative sits — a fast stage check, or a full narrative/price/reality/reversal map. |
 | `research-reportify` | Standardized 8-part stock report with a buy-side-grade decision layer (3-scenario valuation, falsifiable thesis, catalysts, tracking dashboard). | You need a repeatable, formal, trackable report covering facts, interpretation, decision, and risk. |
@@ -143,26 +140,13 @@ Generated reports and cache files are written under `output/`:
 
 | Workflow | Output path |
 |---|---|
-| Company profile | `output/research-profile/` |
-| Chain Alpha entry plan | `output/chain-alpha-entry-plan/` |
-| Fundamental analysis | `output/research-fundamentals/` |
-| Earnings report analysis | `output/research-earnings/` |
-| AI infrastructure sector discovery | `output/monitor-ai-infrastructure/` |
-| Chain-alpha mismatch discovery | `output/chain-alpha-mismatch/` |
-| Chain-alpha monopoly screen | `output/chain-alpha-monopoly/` |
-| Chain-alpha verification | `output/chain-alpha-verification/` |
-| Chain Alpha summary | `output/chain-alpha/` |
-| Chain-alpha delivery tracking | `output/monitor-chain-alpha-delivery/` |
-| Index PE sensitivity | `output/monitor-index-valuation/` |
-| Index bull/bear cycle tracking | `output/monitor-index-cycle/` |
-| Institutional analysis | `output/research-institutional/` |
-| Gold analysis | `output/monitor-gold/` |
-| Reflexivity analysis | `output/research-reflexivity/` |
-| Reportify stock analysis | `output/research-reportify/` |
-| Daily US market scan | `output/monitor-us-market/` |
-| Multi-agent summaries | `output/research-stock/` |
+| Chain Alpha series | `output/chain-alpha/` |
+| Research series | `output/research/` |
+| Monitor series | `output/monitor/` |
 | Report index | `output/index.md`, `output/index.html` |
 | Market data cache | `output/cache/market-data/` |
+
+Within each series folder, report files are distinguished by skill prefixes (e.g. `chain-alpha-mismatch-...`, `research-fundamentals-...`, `monitor-us-market-...`, etc.). Normal duplicate handling still applies using `(1)`, `(2)` suffixes.
 
 Report generators normally avoid overwriting and append suffixes such as `(1)` and `(2)` when needed. Index bull/bear cycle documents are the exception: their stable filenames are updated in place so each index has one current bull table and one current bear table.
 

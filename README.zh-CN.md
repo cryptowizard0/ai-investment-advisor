@@ -82,8 +82,6 @@ InvestFlow 的技能按用途分成三大用户类：Chain Alpha、Research 和 
 | `chain-alpha-monopoly` | 错位环节拆子环节 + 用 CR3/毛利/收入占比/利润增速硬门槛做垄断筛选。 | 已确认某个错位环节，需要找出其中最强的 ≤10 家公司。 |
 | `chain-alpha-verification` | 100 分四档公司验证 + 利润增速硬门槛（只验证分级，不定仓位）。 | 有候选公司，需要金池子/通过/待验证/剔除分级；通过及以上交给第四步定仓。 |
 | `chain-alpha-entry-plan` | chain-alpha 第四步：类型闸门 → PE/PS 选尺（含警戒线）→ 5 年 TTM 分位带 → 潜在风险两腿取大 → 增速消化核对（成长模型合理 PE，防机械读分位）→ 建仓计划（仓位上限 = 回撤预算 ÷ 潜在风险，档位/弹性结构折扣叠乘；信号层两系数均 ≤1 永不放大：警戒线触发新仓归零、仅一档硬证据可放宽半仓，透支再 ×0.5）。 | verification 给出档位后，需要买点判断和仓位上限。（同时列在第二类。） |
-| `monitor-chain-alpha-delivery` | 对待验证标的做前瞻性营收/利润兑现追踪：5 级验证链 + 兑现窗口超时判死 + 增速/归因/动态估值引擎 + 格局哨兵 + 双向升降档。 | 持有待验证标的（如绿的谐波），需要按季判断营收和利润增速是否真兑现。（同时也是季度跟踪任务——见第三类。） |
-| `monitor-ai-infrastructure` | 每周扫描并评分 AI 基建板块，交接队列直接喂给 chain-alpha。 | 想每周确定最值得研究的 AI 基建方向。（同时也是每周跟踪任务——见第三类。） |
 
 ### Research（你带一个股票代码进来）
 
@@ -94,7 +92,6 @@ InvestFlow 的技能按用途分成三大用户类：Chain Alpha、Research 和 
 | `research-stock` | 在当前 agent 会话中编排五个默认阶段（公司画像 → 基本面 → 机构资金 → 反身性 → Reportify）。 | 想从多个独立视角交叉验证一只股票。 |
 | `research-profile` | 生成投资分析前置公司画像。 | 用户第一次听说某家公司时，用于快速理解公司简介、核心业务、技术壁垒、产业链位置、AI 相关性、竞争对手和行业地位。 |
 | `research-fundamentals` | 做单股基本面、估值和技术面分析。 | 需要快速形成一家公司是否值得继续研究的结构化判断。 |
-| `chain-alpha-entry-plan` | 类型闸门（成长/现金牛/收费站可分析，周期/脉冲/资产困境排除）→ PE/PS 选尺子（PE>100 倍 / PS>40 倍警戒线触发即重点提示，不停止、读数降置信度）→ 5 年 TTM 分位带 → 潜在风险取「跌回 50% 分位」与「跌回熊市参考点」两跌幅之大者 → 增速消化核对（合理 TTM PE = 退出倍数×(1+g)^(N+1)÷(1+r)^N，消化时间 = ln(溢价)÷ln(1+r)）→ 建仓计划（仓位上限 = 回撤预算 ÷ 潜在风险，按 2%/5%/10%/20%/30%/50%/70% 逐档列表）。 | 想知道一只股票相对自己 5 年历史贵不贵、估值单杀能跌多少、最多买多少。（同时是 chain-alpha 第四步——见第一类。） |
 | `research-institutional` | 分析机构吸筹、派发和资金行为。 | 想判断主力资金是在买入、出货还是对冲。 |
 | `research-reflexivity` | 索罗斯反身性分析，含快扫（5 分钟阶段判断）和深度（完整周期）两档。 | 想快速判断叙事处于启动/强化/透支/反转，或做完整的叙事、价格、现实、反转风险拆解。 |
 | `research-reportify` | 生成标准化八段式个股报告，决策层含买方级三情景估值、可证伪假设、催化剂和跟踪 Dashboard。 | 需要可比较、可复盘、有证据链的正式投研报告。 |
@@ -142,25 +139,12 @@ InvestFlow 的技能按用途分成三大用户类：Chain Alpha、Research 和 
 
 | 流程 | 输出路径 |
 |---|---|
-| 公司画像 | `output/research-profile/` |
-| 公司估值与风险 | `output/chain-alpha-entry-plan/` |
-| 基本面分析 | `output/research-fundamentals/` |
-| 财报分析 | `output/research-earnings/` |
-| AI 基建板块扫描 | `output/monitor-ai-infrastructure/` |
-| chain-alpha 错位发现 | `output/chain-alpha-mismatch/` |
-| chain-alpha 垄断筛选 | `output/chain-alpha-monopoly/` |
-| chain-alpha 公司验证 | `output/chain-alpha-verification/` |
-| chain-alpha 流程汇总 | `output/chain-alpha/` |
-| chain-alpha 营收兑现追踪 | `output/monitor-chain-alpha-delivery/` |
-| 指数估值敏感性 | `output/monitor-index-valuation/` |
-| 指数牛熊周期扫描 | `output/monitor-index-cycle/` |
-| 机构资金分析 | `output/research-institutional/` |
-| 黄金分析 | `output/monitor-gold/` |
-| 反身性分析 | `output/research-reflexivity/` |
-| Reportify 个股报告 | `output/research-reportify/` |
-| 美股日报 | `output/monitor-us-market/` |
-| 多智能体汇总报告 | `output/research-stock/` |
+| chain-alpha 系列 | `output/chain-alpha/` |
+| Research 系列 | `output/research/` |
+| Monitor 系列 | `output/monitor/` |
 | 市场数据缓存 | `output/cache/market-data/` |
+
+同一个系列目录下用 skill 前缀区分文件名，例如：`chain-alpha-mismatch-...`、`research-fundamentals-...`、`monitor-us-market-...` 等；若同名文件重复，仍使用 `(1)`、`(2)` 后缀分流。
 
 报告生成类技能通常不覆盖已有文件，而是在需要时追加 `(1)`、`(2)` 等后缀。指数牛熊周期文档是例外：它使用稳定文件名原地更新，确保每个指数始终只有一份最新牛市表和一份最新熊市表。
 

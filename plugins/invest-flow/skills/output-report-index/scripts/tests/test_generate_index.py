@@ -65,10 +65,9 @@ class GenerateIndexTests(unittest.TestCase):
             html_path = output_dir / "index.html"
             html_text = html_path.read_text(encoding="utf-8")
 
-            self.assertIn("## monitor-us-market", index_text)
-            self.assertIn("## research-fundamentals", index_text)
-            self.assertIn("## chain-alpha-mismatch", index_text)
-            self.assertIn("## monitor-ai-infrastructure", index_text)
+            self.assertIn("## monitor\n", index_text)
+            self.assertIn("## research\n", index_text)
+            self.assertIn("## chain-alpha\n", index_text)
             self.assertIn(
                 "| 2026-01-11 | Legacy monitor report | [原文](./daily-us-market-scan/us-market-close-daily-2026-01-11.md) |",
                 index_text,
@@ -85,10 +84,9 @@ class GenerateIndexTests(unittest.TestCase):
                 "| 2026-01-14 | Legacy AI infrastructure report | [原文](./ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-2026-01-14.md) |",
                 index_text,
             )
-            self.assertIn('"category": "monitor-us-market"', html_text)
-            self.assertIn('"category": "research-fundamentals"', html_text)
-            self.assertIn('"category": "chain-alpha-mismatch"', html_text)
-            self.assertIn('"category": "monitor-ai-infrastructure"', html_text)
+            self.assertIn('"category": "monitor"', html_text)
+            self.assertIn('"category": "research"', html_text)
+            self.assertIn('"category": "chain-alpha"', html_text)
             self.assertIn("\"daily-us-market-scan/us-market-close-daily-2026-01-11.md\"", html_text)
             self.assertIn("\"ai-infrastructure-sector-discovery/ai-infrastructure-sector-discovery-2026-01-14.md\"", html_text)
             self.assertEqual(
@@ -149,9 +147,8 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertTrue(index_bytes.startswith(b"\xef\xbb\xbf"))
             self.assertTrue(html_path.exists())
             self.assertIn("# Output 报告索引", index_text)
-            self.assertIn("## monitor-us-market", index_text)
-            self.assertIn("## research-fundamentals", index_text)
-            self.assertIn("## research-institutional", index_text)
+            self.assertIn("## monitor\n", index_text)
+            self.assertIn("## research\n", index_text)
             self.assertIn("| 日期 | 标题 | 原文链接 |", index_text)
             self.assertIn(
                 "| 2026-01-02 | Old Fundamental Report | [原文](./research-fundamentals/AAA-Old-2026-01-02.md) |",

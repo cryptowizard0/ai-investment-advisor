@@ -55,24 +55,9 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── output-report-index/
 │           └── market-data-router/
 ├── output/
-│   ├── chain-alpha-mismatch/
-│   ├── chain-alpha-monopoly/
-│   ├── chain-alpha-verification/
 │   ├── chain-alpha/
-│   ├── monitor-chain-alpha-delivery/
-│   ├── research-profile/
-│   ├── chain-alpha-entry-plan/
-│   ├── research-fundamentals/
-│   ├── research-earnings/
-│   ├── monitor-ai-infrastructure/
-│   ├── monitor-index-valuation/
-│   ├── monitor-index-cycle/
-│   ├── research-institutional/
-│   ├── monitor-gold/
-│   ├── research-reflexivity/
-│   ├── research-reportify/
-│   ├── monitor-us-market/
-│   ├── research-stock/
+│   ├── research/
+│   ├── monitor/
 │   ├── index.md
 │   ├── index.html
 │   └── cache/market-data/
@@ -197,24 +182,29 @@ Recommended live usage is to say `使用 invest-flow:research-stock 分析 MRVL`
 
 ## Output Conventions
 
-- Fundamental analysis: `output/research-fundamentals/{ticker}-{company-name}-{date}.md`
-- Earnings report analysis: `output/research-earnings/research-earnings-{TICKER}-{period}-{YYYY-MM-DD}.md`
-- AI infrastructure sector discovery: `output/monitor-ai-infrastructure/monitor-ai-infrastructure-{YYYY-MM-DD}.md`
-- Chain-alpha mismatch discovery: `output/chain-alpha-mismatch/chain-alpha-mismatch-{主题}-{YYYY-MM-DD}.md`
-- Chain-alpha monopoly screen: `output/chain-alpha-monopoly/chain-alpha-monopoly-{环节}-{YYYY-MM-DD}.md`
-- Chain-alpha verification: `output/chain-alpha-verification/chain-alpha-verification-{TICKER或环节}-{YYYY-MM-DD}.md`
-- Chain Alpha summary: `output/chain-alpha/chain-alpha-{主题}-{YYYY-MM-DD}.md`
-- Chain-alpha delivery tracking: `output/monitor-chain-alpha-delivery/monitor-chain-alpha-delivery-{TICKER}-{YYYY-MM-DD}.md`
-- Company profile: `output/research-profile/research-profile-{TICKER}-{YYYY-MM-DD}.md`
-- Chain Alpha entry plan: `output/chain-alpha-entry-plan/chain-alpha-entry-plan-{TICKER}-{YYYY-MM-DD}.md`
-- Index PE sensitivity: `output/monitor-index-valuation/monitor-index-valuation-{index}-{YYYY-MM-DD}.md`
-- Index bull/bear cycles: `output/monitor-index-cycle/monitor-index-cycle-bull-{CODE}.md` and `output/monitor-index-cycle/monitor-index-cycle-bear-{CODE}.md` (stable filenames updated in place)
-- Institutional analysis: `output/research-institutional/机构操作分析-{YYYYMMDD}-{TICKER}.md`
-- Gold analysis: `output/monitor-gold/monitor-gold-{analysis-type}-{date}.md`
-- Reflexivity analysis: `output/research-reflexivity/`
-- Reportify stock analysis: `output/research-reportify/research-reportify-{TICKER}-{YYYY-MM-DD}.md`
-- Daily US market scan: `output/monitor-us-market/monitor-us-market-{YYYY-MM-DD}.md`
-- Summary report: `output/research-stock/research-stock-{TICKER}-{date}.md`
+- Chain Alpha 系列（`chain-alpha-*` 与 `chain-alpha`）：
+  - `output/chain-alpha/chain-alpha-{主题}-{YYYY-MM-DD}.md`
+  - `output/chain-alpha/chain-alpha-mismatch-{主题}-{YYYY-MM-DD}.md`
+  - `output/chain-alpha/chain-alpha-monopoly-{环节}-{YYYY-MM-DD}.md`
+  - `output/chain-alpha/chain-alpha-verification-{TICKER或环节}-{YYYY-MM-DD}.md`
+  - `output/chain-alpha/chain-alpha-entry-plan-{TICKER}-{YYYY-MM-DD}.md`
+- Research 类（单股研究流程与其子任务）：
+  - `output/research/research-stock-{TICKER}-{date}.md`
+  - `output/research/research-profile-{TICKER}-{YYYY-MM-DD}.md`
+  - `output/research/research-fundamentals-{ticker}-{company-name}-{date}.md`
+  - `output/research/research-earnings-{TICKER}-{period}-{YYYY-MM-DD}.md`
+  - `output/research/research-institutional-机构操作分析-{YYYYMMDD}-{TICKER}.md`
+  - `output/research/research-reflexivity-quick-{ticker}-{date}.md`
+  - `output/research/research-reflexivity-deep-{ticker}-{date}.md`
+  - `output/research/research-reportify-{TICKER}-{YYYY-MM-DD}.md`
+- Monitor 类：
+  - `output/monitor/monitor-chain-alpha-delivery-{TICKER}-{YYYY-MM-DD}.md`
+  - `output/monitor/monitor-ai-infrastructure-{YYYY-MM-DD}.md`
+  - `output/monitor/monitor-index-valuation-{index}-{YYYY-MM-DD}.md`
+  - `output/monitor/monitor-index-cycle-bull-{CODE}.md`
+  - `output/monitor/monitor-index-cycle-bear-{CODE}.md`（文件名稳定，原地更新）
+  - `output/monitor/monitor-gold-{analysis-type}-{date}.md`
+  - `output/monitor/monitor-us-market-{YYYY-MM-DD}.md`
 - Report index: `output/index.md` and `output/index.html`
 - Market data cache: `output/cache/market-data/`
 

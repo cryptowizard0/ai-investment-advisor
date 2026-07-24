@@ -51,7 +51,14 @@ class ReportEntry(NamedTuple):
 
 
 def normalize_report_category(directory: str) -> str:
-    return LEGACY_CATEGORY_ALIASES.get(directory, directory)
+    canonical_skill_id = LEGACY_CATEGORY_ALIASES.get(directory, directory)
+    if canonical_skill_id == "chain-alpha" or canonical_skill_id.startswith("chain-alpha-"):
+        return "chain-alpha"
+    if canonical_skill_id.startswith("monitor-"):
+        return "monitor"
+    if canonical_skill_id.startswith("research-"):
+        return "research"
+    return canonical_skill_id
 
 
 def parse_report_date(path: Path) -> str:
@@ -128,7 +135,7 @@ def render_index(reports: list[ReportEntry]) -> str:
     lines = [
         "# Output 报告索引",
         "",
-        "按 `output/` 一级目录分类，分类内按报告日期升序排列。",
+        "按 Chain Alpha、Monitor、Research 主题类分类，分类内按报告日期升序排列。",
         "",
     ]
 
