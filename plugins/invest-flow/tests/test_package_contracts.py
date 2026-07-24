@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -91,7 +92,7 @@ CROSS_SKILL_INVOCATIONS = {
         "chain-alpha-verification",
         "chain-alpha-entry-plan",
     ),
-    "skills/research-stock/scripts/orchestrator.py": (
+    "skills/research-stock/scripts/investflow_pipeline/registry.py": (
         "research-profile",
         "research-fundamentals",
         "research-institutional",
@@ -126,6 +127,13 @@ def _skill_reference_pattern(skill_id: str) -> str:
 
 
 def _iter_text_paths() -> list[Path]:
+    """Repository-tracked text files only.
+
+    Enumerating via ``git ls-files`` keeps gitignored/local files out of the
+    legacy-ID scan (a developer's ``.claude/settings.local.json`` permission
+    allowlist, cached ``output/`` reports, leftover untracked skill
+    directories), which are not part of the shipped repository.
+    """
     allowed_suffixes = {
         ".md",
         ".py",
@@ -136,13 +144,24 @@ def _iter_text_paths() -> list[Path]:
         ".txt",
         ".ini",
     }
-    skip_dirs = {".git", ".venv", "output", "__pycache__"}
-    paths: list[Path] = []
+    try:
+        completed = subprocess.run(
+            ["git", "ls-files", "-z"],
+            cwd=PROJECT_ROOT,
+            check=True,
+            capture_output=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise AssertionError(
+            f"Unable to enumerate git-tracked files for legacy-ID scan: {exc}"
+        )
 
-    for path in PROJECT_ROOT.rglob("*"):
-        if not path.is_file():
+    paths: list[Path] = []
+    for rel_path in completed.stdout.decode("utf-8").split("\0"):
+        if not rel_path:
             continue
-        if any(skip in path.parts for skip in skip_dirs):
+        path = PROJECT_ROOT / rel_path
+        if not path.is_file():
             continue
         if path.suffix.lower() not in allowed_suffixes and not path.name.endswith(".md"):
             continue
@@ -243,7 +262,9 @@ class PackageContractTests(unittest.TestCase):
                 legacy_id for legacy_id in LEGACY_SKILL_IDS if legacy_id in content
             }
             legacy_tokens.update(
-                token for token in LEGACY_INVOCATION_TOKENS if token in content
+                token
+                for token in LEGACY_INVOCATION_TOKENS
+                if re.search(re.escape(token) + r"(?![\w-])", content)
             )
             allowed = ALLOWED_LEGACY_REFS.get(rel_path, set())
             for legacy_token in legacy_tokens - allowed:

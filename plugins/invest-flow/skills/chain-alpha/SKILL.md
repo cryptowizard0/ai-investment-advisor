@@ -39,26 +39,26 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 - Codex：若当前会话暴露 subagent 派发工具，默认进入并行模式。
 - 其他情况（工具不可用、探测失败或派发失败）：串行降级模式，行为与产出格式等价。
 
-### Step 1: chain-alpha-mismatch（行业定义与增长初筛，主 agent 自己做）
+### Step 1: `chain-alpha-mismatch`（行业定义与增长初筛，主 agent 自己做）
 - 输入：大主题。
 - 产出：行业定义（含白话解释）+ 增长判断（含产业周期时间表与当前节点）+ 产业链全景列表 + 2-4 个错位环节（含错位强度评分和利润增速落点）。
 - 增长门槛：行业 / 关键环节收入增速 >20%、增长原因清楚、可持续窗口至少 6 个月；任一项失败则终止工作流，不进入 Step 2/3。
 - 漏斗规则：最多 4 个环节进入下一步；硬门槛未过的环节不得放行。
 - 全景不可分，不 fan-out。
 
-### Step 2: chain-alpha-monopoly（步内 fan-out）
+### Step 2: `chain-alpha-monopoly`（步内 fan-out）
 - 并行模式：每个错位环节派一个 subagent（按 `subagent-prompts.md` 的 Step 2 模板），N≤4（在单波 ≤6 上限内，无需分批）。
 - 串行模式：在当前会话内对每个环节顺序执行。
 - 每个工作单元产出：该环节 ≤10 家候选（30 分排序），标注上市地与可投性。
 - 主 agent 收齐各环节交接字段，汇总候选池，跨市场按 30 分排序，挑可投主板候选 top-K（默认 6）进入 Step 3。
 
-### Step 3: chain-alpha-verification（步内 fan-out，只验证不定仓）
+### Step 3: `chain-alpha-verification`（步内 fan-out，只验证不定仓）
 - 并行模式：每家入选公司派一个 subagent（按 Step 3 模板），M≤6，单波 ≤6。
 - 串行模式：在当前会话内对每家公司顺序执行。
 - 每个工作单元产出：占比双轨硬门槛 + 利润增速硬门槛 + 100 分模型四档 + 验证卡（档位 + 弹性标记，不含仓位）。
 - 主 agent 收齐验证卡交接字段，筛出"通过及以上"标的进入 Step 4。
 
-### Step 4: chain-alpha-entry-plan（步内 fan-out，入场计划）
+### Step 4: `chain-alpha-entry-plan`（步内 fan-out，入场计划）
 - 只对 Step 3 档位为 `金池子 / 通过` 的标的执行（通常 2-3 家）；`待验证 / 剔除` 不进入。
 - 并行模式：每家公司派一个 subagent（按 Step 4 模板），带入 `--grade` 与 `--elastic`。
 - 串行模式：在当前会话内顺序执行。

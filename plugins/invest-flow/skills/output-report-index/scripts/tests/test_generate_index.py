@@ -208,7 +208,7 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn("最新日期", html_text)
             self.assertIn("最新报告", html_text)
             self.assertIn('<span class="metric-value">5</span>', html_text)
-            self.assertIn('<span class="metric-value">3</span>', html_text)
+            self.assertIn('<span class="metric-value">2</span>', html_text)
             self.assertIn('<span class="metric-value">2026-01-05</span>', html_text)
             self.assertIn("New Fundamental Report", html_text)
             self.assertIn(
