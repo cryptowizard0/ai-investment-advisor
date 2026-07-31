@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import base64
+from collections import Counter
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -60,8 +61,45 @@ def create_app(
         )
 
     @app.get("/api/reports")
-    def list_reports() -> list[dict[str, str | bool]]:
-        return reports()
+    def list_reports(
+        category: list[str] | None = Query(default=None),
+        skill: list[str] | None = Query(default=None),
+        date_from: str | None = None,
+        date_to: str | None = None,
+    ) -> list[dict[str, str | bool]]:
+        items = reports()
+        if category:
+            items = [report for report in items if report["category"] in category]
+        if skill:
+            items = [report for report in items if report["skill"] in skill]
+        if date_from or date_to:
+            items = [report for report in items if report["date"]]
+        if date_from:
+            items = [report for report in items if report["date"] >= date_from]
+        if date_to:
+            items = [report for report in items if report["date"] <= date_to]
+        return items
+
+    @app.get("/api/facets")
+    def list_facets() -> dict[str, object]:
+        items = reports()
+        skill_counts = Counter(report["skill"] for report in items)
+        category_counts = Counter(report["category"] for report in items)
+        dates = [report["date"] for report in items if report["date"]]
+        return {
+            "skills": [
+                {"value": value, "count": skill_counts[value]}
+                for value in sorted(skill_counts)
+            ],
+            "categories": [
+                {"value": value, "count": category_counts[value]}
+                for value in sorted(category_counts)
+            ],
+            "dateRange": {
+                "min": min(dates, default=""),
+                "max": max(dates, default=""),
+            },
+        }
 
     @app.get("/api/reports/{requested_id}/raw", response_class=PlainTextResponse)
     def read_report(requested_id: str) -> str:

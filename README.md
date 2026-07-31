@@ -140,6 +140,8 @@ The primary local reader lives under `web/`. It scans Markdown reports in `outpu
 
 For numbered revisions such as `(1)` and `(2)`, the reader shows the highest suffix by default and keeps earlier copies available in an expandable “旧版本” list.
 
+The sidebar can narrow the report list by one or more categories and skills plus an inclusive date range; active filters can be combined or cleared together.
+
 Start the complete reader with one command:
 
 ```bash

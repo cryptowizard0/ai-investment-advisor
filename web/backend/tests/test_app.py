@@ -123,7 +123,15 @@ class ReportApiTests(unittest.TestCase):
             research_dir / "research-reportify-TSLA-2026-07-10(2).md"
         ).write_text("# TSLA 新版\n", encoding="utf-8")
 
-        response = self.client.get("/api/reports")
+        response = self.client.get(
+            "/api/reports",
+            params={
+                "category": ["research"],
+                "skill": ["research-reportify"],
+                "date_from": "2026-07-10",
+                "date_to": "2026-07-10",
+            },
+        )
 
         self.assertEqual(200, response.status_code)
         revisions = {
@@ -132,12 +140,84 @@ class ReportApiTests(unittest.TestCase):
             if report["title"] in {"TSLA 旧版", "TSLA 新版"}
         }
         self.assertEqual({"TSLA 旧版", "TSLA 新版"}, set(revisions))
+        self.assertEqual(2, len(response.json()))
         self.assertEqual(
             revisions["TSLA 旧版"]["dupeGroup"],
             revisions["TSLA 新版"]["dupeGroup"],
         )
         self.assertFalse(revisions["TSLA 旧版"]["isLatestInGroup"])
         self.assertTrue(revisions["TSLA 新版"]["isLatestInGroup"])
+
+    def test_lists_skill_category_counts_and_available_date_range(self) -> None:
+        response = self.client.get("/api/facets")
+
+        self.assertEqual(200, response.status_code)
+        facets = response.json()
+        self.assertEqual(
+            {
+                "chain-alpha-verification": 1,
+                "monitor-us-market": 1,
+                "历史/其他": 1,
+            },
+            {
+                item["value"]: item["count"]
+                for item in facets["skills"]
+            },
+        )
+        self.assertEqual(
+            {
+                "chain-alpha": 1,
+                "monitor": 1,
+                "research": 1,
+            },
+            {
+                item["value"]: item["count"]
+                for item in facets["categories"]
+            },
+        )
+        self.assertEqual(
+            {"min": "2026-07-29", "max": "2026-07-30"},
+            facets["dateRange"],
+        )
+
+    def test_filters_reports_by_combined_category_skill_and_date_range(
+        self,
+    ) -> None:
+        chain_dir = self.output_dir / "chain-alpha" / "archive"
+        monitor_dir = self.output_dir / "monitor"
+        research_dir = self.output_dir / "research"
+        (
+            monitor_dir
+            / "chain-alpha-verification-AMD-2026-07-30.md"
+        ).write_text("# AMD 验证报告\n", encoding="utf-8")
+        (
+            research_dir
+            / "chain-alpha-verification-AVGO-2026-07-30.md"
+        ).write_text("# AVGO 验证报告\n", encoding="utf-8")
+        (
+            chain_dir
+            / "chain-alpha-monopoly-CPO-2026-07-30.md"
+        ).write_text("# CPO 垄断筛选\n", encoding="utf-8")
+        (
+            chain_dir
+            / "chain-alpha-verification-MRVL-2026-07-31.md"
+        ).write_text("# MRVL 验证报告\n", encoding="utf-8")
+
+        response = self.client.get(
+            "/api/reports",
+            params={
+                "category": ["chain-alpha", "monitor"],
+                "skill": ["chain-alpha-verification"],
+                "date_from": "2026-07-30",
+                "date_to": "2026-07-30",
+            },
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            {"NVIDIA 验证报告", "AMD 验证报告"},
+            {report["title"] for report in response.json()},
+        )
 
     def test_returns_the_original_markdown_for_a_report_id(self) -> None:
         reports = self.client.get("/api/reports").json()

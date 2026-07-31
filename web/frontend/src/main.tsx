@@ -22,10 +22,54 @@ type ReportGroup = {
   older: Report[];
 };
 
+type FacetOption = {
+  value: string;
+  count: number;
+};
+
+type Facets = {
+  skills: FacetOption[];
+  categories: FacetOption[];
+  dateRange: {
+    min: string;
+    max: string;
+  };
+};
+
 const CATEGORY_ORDER = ["chain-alpha", "monitor", "research"];
+const EMPTY_FACETS: Facets = {
+  skills: [],
+  categories: [],
+  dateRange: { min: "", max: "" },
+};
 
 function reportIdFromHash(): string {
   return decodeURIComponent(window.location.hash.slice(1));
+}
+
+function toggledValues(values: string[], value: string): string[] {
+  return values.includes(value)
+    ? values.filter((item) => item !== value)
+    : [...values, value];
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+async function fetchNoStore(
+  endpoint: string,
+  signal: AbortSignal,
+  failureMessage: string,
+): Promise<Response> {
+  const response = await fetch(endpoint, {
+    cache: "no-store",
+    signal,
+  });
+  if (!response.ok) {
+    throw new Error(`${failureMessage}（${response.status}）`);
+  }
+  return response;
 }
 
 function ReportButton({
@@ -56,33 +100,124 @@ function ReportButton({
   );
 }
 
+function FacetChips({
+  label,
+  options,
+  selected,
+  onToggle,
+}: {
+  label: string;
+  options: FacetOption[];
+  selected: string[];
+  onToggle: (value: string) => void;
+}) {
+  return (
+    <div className="facet-group">
+      <p>{label}</p>
+      <div className="facet-chips">
+        {options.map((option) => {
+          const isSelected = selected.includes(option.value);
+          return (
+            <button
+              className={isSelected ? "active" : ""}
+              type="button"
+              key={option.value}
+              onClick={() => onToggle(option.value)}
+              aria-pressed={isSelected}
+            >
+              <span>{option.value}</span>
+              <span>{option.count}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [reports, setReports] = useState<Report[]>([]);
+  const [facets, setFacets] = useState<Facets>(EMPTY_FACETS);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [selectedId, setSelectedId] = useState(reportIdFromHash);
   const [markdown, setMarkdown] = useState("");
   const [listError, setListError] = useState("");
+  const [facetError, setFacetError] = useState("");
   const [readerError, setReaderError] = useState("");
   const [loadingReports, setLoadingReports] = useState(true);
   const [loadingMarkdown, setLoadingMarkdown] = useState(false);
 
+  const reportQuery = useMemo(() => {
+    const params = new URLSearchParams();
+    selectedCategories.forEach((value) => params.append("category", value));
+    selectedSkills.forEach((value) => params.append("skill", value));
+    if (dateFrom) {
+      params.set("date_from", dateFrom);
+    }
+    if (dateTo) {
+      params.set("date_to", dateTo);
+    }
+    return params.toString();
+  }, [dateFrom, dateTo, selectedCategories, selectedSkills]);
+
   useEffect(() => {
+    const controller = new AbortController();
     const loadReports = async () => {
+      setLoadingReports(true);
+      setListError("");
       try {
-        const response = await fetch("/api/reports", { cache: "no-store" });
-        if (!response.ok) {
-          throw new Error(`报告列表请求失败（${response.status}）`);
-        }
+        const endpoint = reportQuery
+          ? `/api/reports?${reportQuery}`
+          : "/api/reports";
+        const response = await fetchNoStore(
+          endpoint,
+          controller.signal,
+          "报告列表请求失败",
+        );
         setReports(await response.json());
       } catch (error) {
+        if (isAbortError(error)) {
+          return;
+        }
         setListError(
           error instanceof Error ? error.message : "无法加载报告列表",
         );
       } finally {
-        setLoadingReports(false);
+        if (!controller.signal.aborted) {
+          setLoadingReports(false);
+        }
       }
     };
 
     void loadReports();
+    return () => controller.abort();
+  }, [reportQuery]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const loadFacets = async () => {
+      try {
+        const response = await fetchNoStore(
+          "/api/facets",
+          controller.signal,
+          "筛选项请求失败",
+        );
+        setFacets(await response.json());
+      } catch (error) {
+        if (isAbortError(error)) {
+          return;
+        }
+        setFacetError(
+          error instanceof Error ? error.message : "无法加载筛选项",
+        );
+      }
+    };
+
+    void loadFacets();
+    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -100,7 +235,8 @@ function App() {
       (report) => report.id === selectedId,
     );
     if (!selectedReportExists) {
-      const firstReportId = reports[0].id;
+      const firstReportId =
+        reports.find((report) => report.isLatestInGroup)?.id ?? reports[0].id;
       setSelectedId(firstReportId);
       window.history.replaceState(
         null,
@@ -121,16 +257,14 @@ function App() {
       setLoadingMarkdown(true);
       setReaderError("");
       try {
-        const response = await fetch(
+        const response = await fetchNoStore(
           `/api/reports/${encodeURIComponent(selectedId)}/raw`,
-          { cache: "no-store", signal: controller.signal },
+          controller.signal,
+          "报告正文请求失败",
         );
-        if (!response.ok) {
-          throw new Error(`报告正文请求失败（${response.status}）`);
-        }
         setMarkdown(await response.text());
       } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") {
+        if (isAbortError(error)) {
           return;
         }
         setReaderError(
@@ -180,10 +314,23 @@ function App() {
     reports.find((report) => report.isLatestInGroup && report.date) ??
     reports.find((report) => report.isLatestInGroup);
   const latestDate = latestReport?.date || "—";
+  const hasActiveFilters = reportQuery.length > 0;
+  const activeFilterCount =
+    selectedCategories.length +
+    selectedSkills.length +
+    Number(Boolean(dateFrom)) +
+    Number(Boolean(dateTo));
 
   const selectReport = (id: string) => {
     setSelectedId(id);
     window.location.hash = encodeURIComponent(id);
+  };
+
+  const clearFilters = () => {
+    setSelectedCategories([]);
+    setSelectedSkills([]);
+    setDateFrom("");
+    setDateTo("");
   };
 
   return (
@@ -234,15 +381,86 @@ function App() {
           <div className="sidebar-heading">
             <div>
               <p className="eyebrow">REPORTS</p>
-              <h2>全部报告</h2>
+              <h2>{hasActiveFilters ? "筛选结果" : "全部报告"}</h2>
             </div>
             <span>{reports.length}</span>
           </div>
 
+          <section className="facet-panel" aria-label="报告筛选">
+            <header>
+              <div>
+                <span>筛选</span>
+                {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
+              </div>
+              <button
+                type="button"
+                onClick={clearFilters}
+                disabled={!hasActiveFilters}
+              >
+                清除
+              </button>
+            </header>
+
+            <FacetChips
+              label="主题类"
+              options={facets.categories}
+              selected={selectedCategories}
+              onToggle={(value) =>
+                setSelectedCategories(
+                  toggledValues(selectedCategories, value),
+                )
+              }
+            />
+            <FacetChips
+              label="Skill"
+              options={facets.skills}
+              selected={selectedSkills}
+              onToggle={(value) =>
+                setSelectedSkills(toggledValues(selectedSkills, value))
+              }
+            />
+
+            <div className="facet-group">
+              <p>日期区间</p>
+              <div className="date-range">
+                <label>
+                  <span>从</span>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    min={facets.dateRange.min || undefined}
+                    max={dateTo || facets.dateRange.max || undefined}
+                    onChange={(event) => setDateFrom(event.target.value)}
+                  />
+                </label>
+                <label>
+                  <span>至</span>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    min={dateFrom || facets.dateRange.min || undefined}
+                    max={facets.dateRange.max || undefined}
+                    onChange={(event) => setDateTo(event.target.value)}
+                  />
+                </label>
+              </div>
+            </div>
+
+            {facetError && (
+              <p className="facet-error" role="alert">
+                {facetError}
+              </p>
+            )}
+          </section>
+
           {loadingReports && <p className="state-message">正在扫描报告…</p>}
           {listError && <p className="state-message error">{listError}</p>}
           {!loadingReports && !listError && reports.length === 0 && (
-            <p className="state-message">当前没有 Markdown 报告。</p>
+            <p className="state-message">
+              {hasActiveFilters
+                ? "没有符合当前筛选条件的报告。"
+                : "当前没有 Markdown 报告。"}
+            </p>
           )}
 
           <nav className="report-list">
