@@ -8,6 +8,7 @@ import re
 from json import JSONDecodeError
 from pathlib import Path, PurePosixPath
 from types import ModuleType
+from typing import Any, TypedDict
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -44,6 +45,16 @@ H1_TICKER_RE = re.compile(
 FILENAME_TOKEN_RE = re.compile(r"[A-Za-z0-9]+(?:\.[A-Za-z]{1,2})?")
 FALSE_TICKER_TOKENS = {"AI", "CPO", "GRID", "HBM", "TGV"}
 UNKNOWN_TICKER_RE = re.compile(r"(?:[A-Z]{1,5}|\d{4,6}[A-Z]{1,2})")
+
+
+class ReportMetadata(TypedDict):
+    category: str
+    skill: str
+    date: str
+    title: str
+    relative_path: str
+    tickers: list[str]
+    themes: list[str]
 
 
 def normalize_alias(value: str) -> str:
@@ -136,25 +147,70 @@ def duplicate_identity(relative_path: str) -> tuple[str, int]:
     return group_path.as_posix(), int(match.group("revision"))
 
 
-def collect_report_metadata(output_dir: Path) -> list[dict[str, str | list[str]]]:
+def metadata_for_report(
+    report: Any,
+    ticker_lookup: dict[str, str],
+    theme_aliases: dict[str, list[str]],
+) -> ReportMetadata:
+    return {
+        "category": report.category,
+        "skill": report.skill,
+        "date": report.date_text,
+        "title": report.title,
+        "relative_path": report.relative_path,
+        "tickers": extract_tickers(
+            report.title,
+            report.relative_path,
+            ticker_lookup,
+        ),
+        "themes": extract_themes(
+            report.title,
+            report.relative_path,
+            theme_aliases,
+        ),
+    }
+
+
+def collect_report_metadata(output_dir: Path) -> list[ReportMetadata]:
     ticker_lookup, theme_aliases = load_aliases()
     return [
-        {
-            "category": report.category,
-            "skill": report.skill,
-            "date": report.date_text,
-            "title": report.title,
-            "relative_path": report.relative_path,
-            "tickers": extract_tickers(
-                report.title,
-                report.relative_path,
-                ticker_lookup,
-            ),
-            "themes": extract_themes(
-                report.title,
-                report.relative_path,
-                theme_aliases,
-            ),
-        }
+        metadata_for_report(report, ticker_lookup, theme_aliases)
         for report in INDEX_GENERATOR.collect_reports(output_dir)
     ]
+
+
+def report_relative_path(output_dir: Path, path: Path) -> str | None:
+    try:
+        relative_path = path.resolve().relative_to(output_dir.resolve())
+    except ValueError:
+        return None
+    if (
+        len(relative_path.parts) < 2
+        or relative_path.parts[0] not in INDEX_GENERATOR.TOPIC_CATEGORIES
+        or relative_path.suffix != ".md"
+    ):
+        return None
+    return relative_path.as_posix()
+
+
+def collect_report_metadata_for_path(
+    output_dir: Path,
+    path: Path,
+) -> ReportMetadata | None:
+    relative_path = report_relative_path(output_dir, path)
+    if relative_path is None or not path.is_file():
+        return None
+
+    ticker_lookup, theme_aliases = load_aliases()
+    category = INDEX_GENERATOR.normalize_report_category(
+        Path(relative_path).parts[0]
+    )
+    report = INDEX_GENERATOR.ReportEntry(
+        category=category,
+        skill=INDEX_GENERATOR.infer_report_skill(path.stem),
+        date_text=INDEX_GENERATOR.parse_report_date(path),
+        title=INDEX_GENERATOR.extract_title(path),
+        relative_link=INDEX_GENERATOR.markdown_link_path(Path(relative_path)),
+        relative_path=relative_path,
+    )
+    return metadata_for_report(report, ticker_lookup, theme_aliases)

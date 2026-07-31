@@ -456,6 +456,24 @@ h1 {
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
+.report-item.recent {
+  animation: report-arrival 2.4s ease-out;
+}
+
+@keyframes report-arrival {
+  0%,
+  45% {
+    border-color: #f0bd43;
+    background: #fff6d8;
+    box-shadow: inset 3px 0 0 #e6a817;
+  }
+  100% {
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
 .report-title {
   display: -webkit-box;
   overflow: hidden;
@@ -604,6 +622,28 @@ h1 {
 
 .reader-date {
   flex: 0 0 auto;
+}
+
+.refresh-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 10px 28px;
+  border-bottom: 1px solid #f1d68b;
+  color: #73510b;
+  background: #fff8df;
+  font-size: 12px;
+}
+
+.refresh-notice button {
+  padding: 5px 9px;
+  border: 1px solid #deb94f;
+  border-radius: 6px;
+  color: #684707;
+  background: #fffdf5;
+  font-weight: 650;
+  cursor: pointer;
 }
 
 .document {

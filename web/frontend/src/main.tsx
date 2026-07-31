@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useMemo, useState } from "react";
+import { StrictMode, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import Markdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -23,6 +23,11 @@ type ReportGroup = {
   id: string;
   latest: Report;
   older: Report[];
+};
+
+type ReportEvent = {
+  type: "added" | "updated" | "removed";
+  report: Report;
 };
 
 type FacetOption = {
@@ -102,16 +107,24 @@ function ReportButton({
   report,
   selectedId,
   onSelect,
+  highlightedId,
   versionLabel,
 }: {
   report: Report;
   selectedId: string;
   onSelect: (id: string) => void;
+  highlightedId: string;
   versionLabel?: string;
 }) {
   return (
     <button
-      className={`report-item${report.id === selectedId ? " active" : ""}`}
+      className={[
+        "report-item",
+        report.id === selectedId ? "active" : "",
+        report.id === highlightedId ? "recent" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       type="button"
       onClick={() => onSelect(report.id)}
       aria-current={report.id === selectedId ? "page" : undefined}
@@ -179,7 +192,18 @@ function App() {
   const [readerError, setReaderError] = useState("");
   const [loadingReports, setLoadingReports] = useState(true);
   const [loadingMarkdown, setLoadingMarkdown] = useState(false);
+  const [eventRevision, setEventRevision] = useState(0);
+  const [readerRevision, setReaderRevision] = useState(0);
+  const [highlightedId, setHighlightedId] = useState("");
+  const [staleReportId, setStaleReportId] = useState("");
+  const selectedIdRef = useRef(selectedId);
+  const listIsScopedRef = useRef(false);
+  const connectionInterruptedRef = useRef(false);
+  const highlightTimer = useRef<number | undefined>(undefined);
   const normalizedSearchQuery = searchQuery.trim();
+  const selectedReportExists = reports.some(
+    (report) => report.id === selectedId,
+  );
 
   const reportQuery = useMemo(() => {
     const params = new URLSearchParams();
@@ -240,7 +264,7 @@ function App() {
 
     void loadReports();
     return () => controller.abort();
-  }, [normalizedSearchQuery, reportQuery]);
+  }, [eventRevision, normalizedSearchQuery, reportQuery]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -264,6 +288,75 @@ function App() {
 
     void loadFacets();
     return () => controller.abort();
+  }, [eventRevision]);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
+
+  useEffect(() => {
+    listIsScopedRef.current = Boolean(normalizedSearchQuery || reportQuery);
+  }, [normalizedSearchQuery, reportQuery]);
+
+  useEffect(() => {
+    const source = new EventSource("/api/events");
+    source.onopen = () => {
+      if (connectionInterruptedRef.current && selectedIdRef.current) {
+        setStaleReportId(selectedIdRef.current);
+      }
+      connectionInterruptedRef.current = false;
+      setEventRevision((value) => value + 1);
+    };
+    source.onerror = () => {
+      connectionInterruptedRef.current = true;
+    };
+    source.onmessage = (message) => {
+      const event = JSON.parse(message.data) as ReportEvent;
+      if (!event.report?.id) {
+        return;
+      }
+
+      setReports((current) => {
+        const remaining = current.filter(
+          (report) => report.id !== event.report.id,
+        );
+        if (event.type === "removed") {
+          return remaining;
+        }
+        if (event.type === "added" && listIsScopedRef.current) {
+          return current;
+        }
+        return [...remaining, event.report].sort((left, right) =>
+          [right.date, right.title, right.id]
+            .join("\0")
+            .localeCompare([left.date, left.title, left.id].join("\0")),
+        );
+      });
+      setEventRevision((value) => value + 1);
+
+      if (event.type !== "removed") {
+        setHighlightedId(event.report.id);
+        if (highlightTimer.current !== undefined) {
+          window.clearTimeout(highlightTimer.current);
+        }
+        highlightTimer.current = window.setTimeout(() => {
+          setHighlightedId("");
+        }, 2400);
+      }
+      if (
+        event.type === "updated" &&
+        event.report.id === selectedIdRef.current
+      ) {
+        setStaleReportId(event.report.id);
+      }
+    };
+
+    return () => {
+      source.close();
+      if (highlightTimer.current !== undefined) {
+        window.clearTimeout(highlightTimer.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -277,9 +370,6 @@ function App() {
       return;
     }
 
-    const selectedReportExists = reports.some(
-      (report) => report.id === selectedId,
-    );
     if (!selectedReportExists) {
       const firstReportId =
         reports.find((report) => report.isLatestInGroup)?.id ?? reports[0].id;
@@ -290,10 +380,10 @@ function App() {
         `${window.location.pathname}${window.location.search}#${encodeURIComponent(firstReportId)}`,
       );
     }
-  }, [reports, selectedId]);
+  }, [reports, selectedId, selectedReportExists]);
 
   useEffect(() => {
-    if (!selectedId || !reports.some((report) => report.id === selectedId)) {
+    if (!selectedId || !selectedReportExists) {
       setMarkdown("");
       return;
     }
@@ -325,7 +415,7 @@ function App() {
 
     void loadMarkdown();
     return () => controller.abort();
-  }, [reports, selectedId]);
+  }, [readerRevision, selectedId, selectedReportExists]);
 
   const reportsByCategory = useMemo(() => {
     const reportsByGroup = new Map<string, Report[]>();
@@ -572,6 +662,7 @@ function App() {
                     report={report}
                     selectedId={selectedId}
                     onSelect={selectReport}
+                    highlightedId={highlightedId}
                   />
                 ))
               : reportsByCategory.map(([category, categoryGroups]) => (
@@ -586,6 +677,7 @@ function App() {
                           report={group.latest}
                           selectedId={selectedId}
                           onSelect={selectReport}
+                          highlightedId={highlightedId}
                         />
                         {group.older.length > 0 && (
                           <details className="revision-list">
@@ -600,6 +692,7 @@ function App() {
                                   report={report}
                                   selectedId={selectedId}
                                   onSelect={selectReport}
+                                  highlightedId={highlightedId}
                                   versionLabel={`旧版 ${index + 1}`}
                                 />
                               ))}
@@ -625,6 +718,21 @@ function App() {
                 {selectedReport.date || "无日期"}
               </div>
             </header>
+          )}
+
+          {staleReportId === selectedId && (
+            <div className="refresh-notice" role="status">
+              <span>这篇报告已在磁盘上更新。</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setStaleReportId("");
+                  setReaderRevision((value) => value + 1);
+                }}
+              >
+                刷新正文
+              </button>
+            </div>
           )}
 
           <div className="document">

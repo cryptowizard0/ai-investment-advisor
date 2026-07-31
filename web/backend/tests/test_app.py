@@ -47,7 +47,8 @@ class ReportApiTests(unittest.TestCase):
             encoding="utf-8",
         )
 
-        self.client = TestClient(create_app(output_dir=self.output_dir))
+        self.app = create_app(output_dir=self.output_dir)
+        self.client = TestClient(self.app)
 
     def tearDown(self) -> None:
         self.temp_dir.cleanup()
@@ -636,6 +637,193 @@ class ReportApiTests(unittest.TestCase):
         self.assertEqual(200, response.status_code)
         self.assertTrue(response.headers["content-type"].startswith("text/plain"))
         self.assertEqual(self.raw_markdown, response.text)
+
+    def test_incremental_rebuild_syncs_reports_facets_search_and_events(
+        self,
+    ) -> None:
+        self.client.get("/api/reports")
+        initial_facets = self.client.get("/api/facets").json()
+        initial_tickers = {
+            item["value"]: item["count"] for item in initial_facets["tickers"]
+        }
+        initial_themes = {
+            item["value"]: item["count"] for item in initial_facets["themes"]
+        }
+        report_path = (
+            self.output_dir
+            / "research"
+            / "research-reportify-live-2026-07-31.md"
+        )
+        report_path.write_text(
+            "# Marvell（MRVL）CPO 跟踪\n\n光互连需求持续增长。\n",
+            encoding="utf-8",
+        )
+        events = self.app.state.report_events
+        subscriber = events.subscribe()
+
+        added = self.app.state.report_catalog.rebuild_path(report_path)
+
+        self.assertEqual("added", added["type"])
+        self.assertEqual("Marvell（MRVL）CPO 跟踪", added["report"]["title"])
+        self.assertEqual(added, subscriber.get_nowait())
+        reports = self.client.get("/api/reports").json()
+        self.assertIn(added["report"]["id"], {report["id"] for report in reports})
+        facets = self.client.get("/api/facets").json()
+        self.assertEqual(
+            initial_tickers.get("MRVL", 0) + 1,
+            next(
+                item["count"]
+                for item in facets["tickers"]
+                if item["value"] == "MRVL"
+            ),
+        )
+        self.assertEqual(
+            initial_themes.get("CPO", 0) + 1,
+            next(
+                item["count"]
+                for item in facets["themes"]
+                if item["value"] == "CPO"
+            ),
+        )
+        self.assertEqual(
+            ["Marvell（MRVL）CPO 跟踪"],
+            [
+                report["title"]
+                for report in self.client.get(
+                    "/api/search",
+                    params={"q": "光互连需求"},
+                ).json()
+            ],
+        )
+
+        report_path.write_text(
+            "# NVIDIA（NVDA）MLCC 跟踪\n\n被动元件供需正在改善。\n",
+            encoding="utf-8",
+        )
+        updated = self.app.state.report_catalog.rebuild_path(report_path)
+
+        self.assertEqual("updated", updated["type"])
+        self.assertEqual(added["report"]["id"], updated["report"]["id"])
+        reports = self.client.get("/api/reports").json()
+        current = next(
+            report
+            for report in reports
+            if report["id"] == updated["report"]["id"]
+        )
+        self.assertEqual("NVIDIA（NVDA）MLCC 跟踪", current["title"])
+        facets = self.client.get("/api/facets").json()
+        ticker_counts = {
+            item["value"]: item["count"] for item in facets["tickers"]
+        }
+        theme_counts = {
+            item["value"]: item["count"] for item in facets["themes"]
+        }
+        self.assertEqual(
+            initial_tickers.get("MRVL", 0),
+            ticker_counts.get("MRVL", 0),
+        )
+        self.assertEqual(
+            initial_themes.get("CPO", 0),
+            theme_counts.get("CPO", 0),
+        )
+        self.assertEqual(
+            initial_tickers.get("NVDA", 0) + 1,
+            ticker_counts["NVDA"],
+        )
+        self.assertEqual(
+            initial_themes.get("MLCC", 0) + 1,
+            theme_counts["MLCC"],
+        )
+        self.assertEqual(
+            [],
+            self.client.get(
+                "/api/search",
+                params={"q": "光互连需求"},
+            ).json(),
+        )
+        self.assertEqual(
+            ["NVIDIA（NVDA）MLCC 跟踪"],
+            [
+                report["title"]
+                for report in self.client.get(
+                    "/api/search",
+                    params={"q": "被动元件供需"},
+                ).json()
+            ],
+        )
+
+        report_path.unlink()
+        removed = self.app.state.report_catalog.rebuild_path(report_path)
+
+        self.assertEqual("removed", removed["type"])
+        self.assertEqual(updated["report"]["id"], removed["report"]["id"])
+        self.assertNotIn(
+            removed["report"]["id"],
+            {
+                report["id"]
+                for report in self.client.get("/api/reports").json()
+            },
+        )
+        facets = self.client.get("/api/facets").json()
+        self.assertEqual(
+            initial_tickers,
+            {
+                item["value"]: item["count"]
+                for item in facets["tickers"]
+            },
+        )
+        self.assertEqual(
+            initial_themes,
+            {
+                item["value"]: item["count"]
+                for item in facets["themes"]
+            },
+        )
+        self.assertEqual(
+            [],
+            self.client.get(
+                "/api/search",
+                params={"q": "被动元件供需"},
+            ).json(),
+        )
+        self.app.state.report_events.unsubscribe(subscriber)
+
+    def test_incremental_rebuild_updates_duplicate_group_latest_marker(
+        self,
+    ) -> None:
+        base_path = (
+            self.output_dir
+            / "research"
+            / "research-reportify-TSLA-2026-07-31.md"
+        )
+        revision_path = base_path.with_name(
+            "research-reportify-TSLA-2026-07-31(1).md"
+        )
+        base_path.write_text("# TSLA 初版\n", encoding="utf-8")
+        self.client.get("/api/reports")
+
+        revision_path.write_text("# TSLA 修订版\n", encoding="utf-8")
+        self.app.state.report_catalog.rebuild_path(revision_path)
+
+        reports = {
+            report["title"]: report
+            for report in self.client.get("/api/reports").json()
+        }
+        self.assertFalse(reports["TSLA 初版"]["isLatestInGroup"])
+        self.assertTrue(reports["TSLA 修订版"]["isLatestInGroup"])
+        self.assertEqual(
+            reports["TSLA 初版"]["dupeGroup"],
+            reports["TSLA 修订版"]["dupeGroup"],
+        )
+
+        revision_path.unlink()
+        self.app.state.report_catalog.rebuild_path(revision_path)
+
+        reports = {
+            report["title"]: report
+            for report in self.client.get("/api/reports").json()
+        }
+        self.assertTrue(reports["TSLA 初版"]["isLatestInGroup"])
 
 
 if __name__ == "__main__":
