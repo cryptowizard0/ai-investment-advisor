@@ -12,6 +12,8 @@ type Report = {
   skill: string;
   date: string;
   title: string;
+  tickers: string[];
+  themes: string[];
   dupeGroup: string;
   isLatestInGroup: boolean;
 };
@@ -30,6 +32,8 @@ type FacetOption = {
 type Facets = {
   skills: FacetOption[];
   categories: FacetOption[];
+  tickers: FacetOption[];
+  themes: FacetOption[];
   dateRange: {
     min: string;
     max: string;
@@ -40,6 +44,8 @@ const CATEGORY_ORDER = ["chain-alpha", "monitor", "research"];
 const EMPTY_FACETS: Facets = {
   skills: [],
   categories: [],
+  tickers: [],
+  themes: [],
   dateRange: { min: "", max: "" },
 };
 
@@ -140,6 +146,8 @@ function App() {
   const [facets, setFacets] = useState<Facets>(EMPTY_FACETS);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedTickers, setSelectedTickers] = useState<string[]>([]);
+  const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [selectedId, setSelectedId] = useState(reportIdFromHash);
@@ -154,6 +162,8 @@ function App() {
     const params = new URLSearchParams();
     selectedCategories.forEach((value) => params.append("category", value));
     selectedSkills.forEach((value) => params.append("skill", value));
+    selectedTickers.forEach((value) => params.append("ticker", value));
+    selectedThemes.forEach((value) => params.append("theme", value));
     if (dateFrom) {
       params.set("date_from", dateFrom);
     }
@@ -161,7 +171,14 @@ function App() {
       params.set("date_to", dateTo);
     }
     return params.toString();
-  }, [dateFrom, dateTo, selectedCategories, selectedSkills]);
+  }, [
+    dateFrom,
+    dateTo,
+    selectedCategories,
+    selectedSkills,
+    selectedThemes,
+    selectedTickers,
+  ]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -318,6 +335,8 @@ function App() {
   const activeFilterCount =
     selectedCategories.length +
     selectedSkills.length +
+    selectedTickers.length +
+    selectedThemes.length +
     Number(Boolean(dateFrom)) +
     Number(Boolean(dateTo));
 
@@ -329,6 +348,8 @@ function App() {
   const clearFilters = () => {
     setSelectedCategories([]);
     setSelectedSkills([]);
+    setSelectedTickers([]);
+    setSelectedThemes([]);
     setDateFrom("");
     setDateTo("");
   };
@@ -417,6 +438,22 @@ function App() {
               selected={selectedSkills}
               onToggle={(value) =>
                 setSelectedSkills(toggledValues(selectedSkills, value))
+              }
+            />
+            <FacetChips
+              label="标的 ticker"
+              options={facets.tickers}
+              selected={selectedTickers}
+              onToggle={(value) =>
+                setSelectedTickers(toggledValues(selectedTickers, value))
+              }
+            />
+            <FacetChips
+              label="产业链主题"
+              options={facets.themes}
+              selected={selectedThemes}
+              onToggle={(value) =>
+                setSelectedThemes(toggledValues(selectedThemes, value))
               }
             />
 

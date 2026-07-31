@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 from collections import Counter
 from pathlib import Path
+from typing import TypedDict
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import PlainTextResponse
@@ -16,6 +17,18 @@ from web.backend.report_index import collect_report_metadata, duplicate_identity
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "output"
 DEFAULT_FRONTEND_DIST = REPO_ROOT / "web" / "frontend" / "dist"
+
+
+class ReportItem(TypedDict):
+    id: str
+    category: str
+    skill: str
+    date: str
+    title: str
+    tickers: list[str]
+    themes: list[str]
+    dupeGroup: str
+    isLatestInGroup: bool
 
 
 def report_id(relative_path: str) -> str:
@@ -30,7 +43,7 @@ def create_app(
     app = FastAPI(title="AI Investment Advisor Report Reader")
     resolved_output_dir = output_dir.resolve()
 
-    def reports() -> list[dict[str, str | bool]]:
+    def reports() -> list[ReportItem]:
         metadata = collect_report_metadata(resolved_output_dir)
         duplicate_details = [
             duplicate_identity(report["relative_path"]) for report in metadata
@@ -50,6 +63,8 @@ def create_app(
                     "skill": report["skill"],
                     "date": report["date"],
                     "title": report["title"],
+                    "tickers": report["tickers"],
+                    "themes": report["themes"],
                     "dupeGroup": group,
                     "isLatestInGroup": version == latest_versions[group],
                 }
@@ -64,14 +79,28 @@ def create_app(
     def list_reports(
         category: list[str] | None = Query(default=None),
         skill: list[str] | None = Query(default=None),
+        ticker: list[str] | None = Query(default=None),
+        theme: list[str] | None = Query(default=None),
         date_from: str | None = None,
         date_to: str | None = None,
-    ) -> list[dict[str, str | bool]]:
+    ) -> list[ReportItem]:
         items = reports()
         if category:
             items = [report for report in items if report["category"] in category]
         if skill:
             items = [report for report in items if report["skill"] in skill]
+        if ticker:
+            items = [
+                report
+                for report in items
+                if any(value in report["tickers"] for value in ticker)
+            ]
+        if theme:
+            items = [
+                report
+                for report in items
+                if any(value in report["themes"] for value in theme)
+            ]
         if date_from or date_to:
             items = [report for report in items if report["date"]]
         if date_from:
@@ -85,6 +114,16 @@ def create_app(
         items = reports()
         skill_counts = Counter(report["skill"] for report in items)
         category_counts = Counter(report["category"] for report in items)
+        ticker_counts = Counter(
+            ticker
+            for report in items
+            for ticker in report["tickers"]
+        )
+        theme_counts = Counter(
+            theme
+            for report in items
+            for theme in report["themes"]
+        )
         dates = [report["date"] for report in items if report["date"]]
         return {
             "skills": [
@@ -95,10 +134,26 @@ def create_app(
                 {"value": value, "count": category_counts[value]}
                 for value in sorted(category_counts)
             ],
+            "tickers": [
+                {"value": value, "count": ticker_counts[value]}
+                for value in sorted(ticker_counts)
+            ],
+            "themes": [
+                {"value": value, "count": theme_counts[value]}
+                for value in sorted(theme_counts)
+            ],
             "dateRange": {
                 "min": min(dates, default=""),
                 "max": max(dates, default=""),
             },
+        }
+
+    @app.get("/api/unresolved")
+    def list_unresolved() -> dict[str, list[ReportItem]]:
+        items = reports()
+        return {
+            "tickers": [report for report in items if not report["tickers"]],
+            "themes": [report for report in items if not report["themes"]],
         }
 
     @app.get("/api/reports/{requested_id}/raw", response_class=PlainTextResponse)

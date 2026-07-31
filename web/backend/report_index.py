@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
+from json import JSONDecodeError
 from pathlib import Path, PurePosixPath
 from types import ModuleType
 
@@ -35,6 +37,93 @@ def load_index_generator() -> ModuleType:
 
 INDEX_GENERATOR = load_index_generator()
 NUMBERED_REVISION_RE = re.compile(r"^(?P<base>.+)\((?P<revision>\d+)\)$")
+ALIASES_PATH = Path(__file__).with_name("aliases.json")
+H1_TICKER_RE = re.compile(
+    r"[\(（]([A-Za-z0-9]+(?:[.-][A-Za-z]{1,2})?)[\)）]"
+)
+FILENAME_TOKEN_RE = re.compile(r"[A-Za-z0-9]+(?:\.[A-Za-z]{1,2})?")
+FALSE_TICKER_TOKENS = {"AI", "CPO", "GRID", "HBM", "TGV"}
+UNKNOWN_TICKER_RE = re.compile(r"(?:[A-Z]{1,5}|\d{4,6}[A-Z]{1,2})")
+
+
+def normalize_alias(value: str) -> str:
+    return re.sub(r"[\W_]+", "", value.upper())
+
+
+def load_aliases() -> tuple[dict[str, str], dict[str, list[str]]]:
+    try:
+        aliases = json.loads(ALIASES_PATH.read_text(encoding="utf-8"))
+    except (OSError, JSONDecodeError) as error:
+        raise RuntimeError(
+            f"Unable to load report aliases from {ALIASES_PATH}: {error}"
+        ) from error
+    ticker_lookup = {
+        normalize_alias(alias): canonical
+        for canonical, values in aliases["tickers"].items()
+        for alias in [canonical, *values]
+    }
+    theme_aliases = {
+        canonical: [normalize_alias(alias) for alias in [canonical, *values]]
+        for canonical, values in aliases["themes"].items()
+    }
+    return ticker_lookup, theme_aliases
+
+
+def unique_values(values: list[str]) -> list[str]:
+    return list(dict.fromkeys(values))
+
+
+def extract_tickers(
+    title: str,
+    relative_path: str,
+    ticker_lookup: dict[str, str],
+) -> list[str]:
+    explicit_candidates = [
+        normalized
+        for candidate in H1_TICKER_RE.findall(title)
+        if (normalized := normalize_alias(candidate)) in ticker_lookup
+        or (
+            normalized not in FALSE_TICKER_TOKENS
+            and UNKNOWN_TICKER_RE.fullmatch(normalized)
+        )
+    ]
+    explicit_tickers = unique_values(
+        [
+            ticker_lookup[candidate]
+            for candidate in explicit_candidates
+            if candidate in ticker_lookup
+        ]
+    )
+    if explicit_candidates:
+        return explicit_tickers
+
+    filename_tokens = FILENAME_TOKEN_RE.findall(
+        PurePosixPath(relative_path).stem
+    )
+    filename_candidates = filename_tokens + [
+        f"{left}-{right}"
+        for left, right in zip(filename_tokens, filename_tokens[1:])
+    ]
+    return unique_values(
+        [
+            ticker_lookup[normalized]
+            for candidate in filename_candidates
+            if (normalized := normalize_alias(candidate)) in ticker_lookup
+        ]
+    )
+
+
+def extract_themes(
+    title: str,
+    relative_path: str,
+    theme_aliases: dict[str, list[str]],
+) -> list[str]:
+    source = normalize_alias(f"{title} {PurePosixPath(relative_path).stem}")
+    return [
+        canonical
+        for canonical, aliases in theme_aliases.items()
+        if any(alias in source for alias in aliases)
+    ]
 
 
 def duplicate_identity(relative_path: str) -> tuple[str, int]:
@@ -47,7 +136,8 @@ def duplicate_identity(relative_path: str) -> tuple[str, int]:
     return group_path.as_posix(), int(match.group("revision"))
 
 
-def collect_report_metadata(output_dir: Path) -> list[dict[str, str]]:
+def collect_report_metadata(output_dir: Path) -> list[dict[str, str | list[str]]]:
+    ticker_lookup, theme_aliases = load_aliases()
     return [
         {
             "category": report.category,
@@ -55,6 +145,16 @@ def collect_report_metadata(output_dir: Path) -> list[dict[str, str]]:
             "date": report.date_text,
             "title": report.title,
             "relative_path": report.relative_path,
+            "tickers": extract_tickers(
+                report.title,
+                report.relative_path,
+                ticker_lookup,
+            ),
+            "themes": extract_themes(
+                report.title,
+                report.relative_path,
+                theme_aliases,
+            ),
         }
         for report in INDEX_GENERATOR.collect_reports(output_dir)
     ]
