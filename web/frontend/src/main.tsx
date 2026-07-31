@@ -30,6 +30,8 @@ type ReportEvent = {
   report: Report;
 };
 
+type StreamState = "connecting" | "live" | "offline";
+
 type FacetOption = {
   value: string;
   count: number;
@@ -100,6 +102,42 @@ function HighlightedSnippet({ snippet }: { snippet: string }) {
         );
       })}
     </span>
+  );
+}
+
+function StatePanel({
+  symbol,
+  title,
+  detail,
+  tone = "neutral",
+  actionLabel,
+  onAction,
+}: {
+  symbol: string;
+  title: string;
+  detail: string;
+  tone?: "neutral" | "error";
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <section
+      className={`state-panel ${tone}`}
+      role={tone === "error" ? "alert" : "status"}
+    >
+      <span className="state-symbol" aria-hidden="true">
+        {symbol}
+      </span>
+      <div>
+        <h3>{title}</h3>
+        <p>{detail}</p>
+      </div>
+      {actionLabel && onAction && (
+        <button type="button" onClick={onAction}>
+          {actionLabel}
+        </button>
+      )}
+    </section>
   );
 }
 
@@ -191,9 +229,14 @@ function App() {
   const [facetError, setFacetError] = useState("");
   const [readerError, setReaderError] = useState("");
   const [loadingReports, setLoadingReports] = useState(true);
+  const [loadingFacets, setLoadingFacets] = useState(true);
   const [loadingMarkdown, setLoadingMarkdown] = useState(false);
   const [eventRevision, setEventRevision] = useState(0);
   const [readerRevision, setReaderRevision] = useState(0);
+  const [streamRevision, setStreamRevision] = useState(0);
+  const [streamState, setStreamState] =
+    useState<StreamState>("connecting");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [highlightedId, setHighlightedId] = useState("");
   const [staleReportId, setStaleReportId] = useState("");
   const selectedIdRef = useRef(selectedId);
@@ -269,6 +312,8 @@ function App() {
   useEffect(() => {
     const controller = new AbortController();
     const loadFacets = async () => {
+      setLoadingFacets(true);
+      setFacetError("");
       try {
         const response = await fetchNoStore(
           "/api/facets",
@@ -283,6 +328,10 @@ function App() {
         setFacetError(
           error instanceof Error ? error.message : "无法加载筛选项",
         );
+      } finally {
+        if (!controller.signal.aborted) {
+          setLoadingFacets(false);
+        }
       }
     };
 
@@ -299,16 +348,19 @@ function App() {
   }, [normalizedSearchQuery, reportQuery]);
 
   useEffect(() => {
+    setStreamState("connecting");
     const source = new EventSource("/api/events");
     source.onopen = () => {
       if (connectionInterruptedRef.current && selectedIdRef.current) {
         setStaleReportId(selectedIdRef.current);
       }
       connectionInterruptedRef.current = false;
+      setStreamState("live");
       setEventRevision((value) => value + 1);
     };
     source.onerror = () => {
       connectionInterruptedRef.current = true;
+      setStreamState("offline");
     };
     source.onmessage = (message) => {
       const event = JSON.parse(message.data) as ReportEvent;
@@ -357,7 +409,7 @@ function App() {
         window.clearTimeout(highlightTimer.current);
       }
     };
-  }, []);
+  }, [streamRevision]);
 
   useEffect(() => {
     const onHashChange = () => setSelectedId(reportIdFromHash());
@@ -474,6 +526,22 @@ function App() {
     setDateTo("");
   };
 
+  const resetDiscovery = () => {
+    setSearchQuery("");
+    clearFilters();
+  };
+
+  const facetsAreEmpty =
+    facets.skills.length === 0 &&
+    facets.categories.length === 0 &&
+    facets.tickers.length === 0 &&
+    facets.themes.length === 0;
+  const streamLabel = {
+    connecting: "正在连接",
+    live: "实时同步",
+    offline: "同步已断开",
+  }[streamState];
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -485,6 +553,18 @@ function App() {
             <p className="eyebrow">LOCAL RESEARCH LIBRARY</p>
             <h1>投资报告阅读器</h1>
           </div>
+        </div>
+        <div className={`sync-status ${streamState}`} role="status">
+          <span aria-hidden="true" />
+          <span>{streamLabel}</span>
+          {streamState === "offline" && (
+            <button
+              type="button"
+              onClick={() => setStreamRevision((value) => value + 1)}
+            >
+              重连
+            </button>
+          )}
         </div>
         <dl className="overview" aria-label="报告概览">
           <div>
@@ -530,7 +610,18 @@ function App() {
                     : "全部报告"}
               </h2>
             </div>
-            <span>{reports.length}</span>
+            <div className="sidebar-actions">
+              <button
+                className="filter-toggle"
+                type="button"
+                onClick={() => setFiltersOpen((value) => !value)}
+                aria-expanded={filtersOpen}
+                aria-controls="report-filters"
+              >
+                筛选{activeFilterCount > 0 ? ` ${activeFilterCount}` : ""}
+              </button>
+              <span>{reports.length}</span>
+            </div>
           </div>
 
           <div className="search-panel">
@@ -555,7 +646,11 @@ function App() {
             </div>
           </div>
 
-          <section className="facet-panel" aria-label="报告筛选">
+          <section
+            className={`facet-panel${filtersOpen ? " open" : ""}`}
+            id="report-filters"
+            aria-label="报告筛选"
+          >
             <header>
               <div>
                 <span>筛选</span>
@@ -570,91 +665,144 @@ function App() {
               </button>
             </header>
 
-            <FacetChips
-              label="主题类"
-              options={facets.categories}
-              selected={selectedCategories}
-              onToggle={(value) =>
-                setSelectedCategories(
-                  toggledValues(selectedCategories, value),
-                )
-              }
-            />
-            <FacetChips
-              label="Skill"
-              options={facets.skills}
-              selected={selectedSkills}
-              onToggle={(value) =>
-                setSelectedSkills(toggledValues(selectedSkills, value))
-              }
-            />
-            <FacetChips
-              label="标的 ticker"
-              options={facets.tickers}
-              selected={selectedTickers}
-              onToggle={(value) =>
-                setSelectedTickers(toggledValues(selectedTickers, value))
-              }
-            />
-            <FacetChips
-              label="产业链主题"
-              options={facets.themes}
-              selected={selectedThemes}
-              onToggle={(value) =>
-                setSelectedThemes(toggledValues(selectedThemes, value))
-              }
-            />
-
-            <div className="facet-group">
-              <p>日期区间</p>
-              <div className="date-range">
-                <label>
-                  <span>从</span>
-                  <input
-                    type="date"
-                    value={dateFrom}
-                    min={facets.dateRange.min || undefined}
-                    max={dateTo || facets.dateRange.max || undefined}
-                    onChange={(event) => setDateFrom(event.target.value)}
-                  />
-                </label>
-                <label>
-                  <span>至</span>
-                  <input
-                    type="date"
-                    value={dateTo}
-                    min={dateFrom || facets.dateRange.min || undefined}
-                    max={facets.dateRange.max || undefined}
-                    onChange={(event) => setDateTo(event.target.value)}
-                  />
-                </label>
+            {loadingFacets && facetsAreEmpty ? (
+              <div className="facet-loading" role="status">
+                <span />
+                <span />
+                <span />
               </div>
-            </div>
+            ) : (
+              <>
+                <FacetChips
+                  label="主题类"
+                  options={facets.categories}
+                  selected={selectedCategories}
+                  onToggle={(value) =>
+                    setSelectedCategories(
+                      toggledValues(selectedCategories, value),
+                    )
+                  }
+                />
+                <FacetChips
+                  label="Skill"
+                  options={facets.skills}
+                  selected={selectedSkills}
+                  onToggle={(value) =>
+                    setSelectedSkills(toggledValues(selectedSkills, value))
+                  }
+                />
+                <FacetChips
+                  label="标的 ticker"
+                  options={facets.tickers}
+                  selected={selectedTickers}
+                  onToggle={(value) =>
+                    setSelectedTickers(toggledValues(selectedTickers, value))
+                  }
+                />
+                <FacetChips
+                  label="产业链主题"
+                  options={facets.themes}
+                  selected={selectedThemes}
+                  onToggle={(value) =>
+                    setSelectedThemes(toggledValues(selectedThemes, value))
+                  }
+                />
+
+                <div className="facet-group">
+                  <p>日期区间</p>
+                  <div className="date-range">
+                    <label>
+                      <span>从</span>
+                      <input
+                        type="date"
+                        value={dateFrom}
+                        min={facets.dateRange.min || undefined}
+                        max={dateTo || facets.dateRange.max || undefined}
+                        onChange={(event) => setDateFrom(event.target.value)}
+                      />
+                    </label>
+                    <label>
+                      <span>至</span>
+                      <input
+                        type="date"
+                        value={dateTo}
+                        min={dateFrom || facets.dateRange.min || undefined}
+                        max={facets.dateRange.max || undefined}
+                        onChange={(event) => setDateTo(event.target.value)}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </>
+            )}
 
             {facetError && (
-              <p className="facet-error" role="alert">
-                {facetError}
-              </p>
+              <div className="inline-error" role="alert">
+                <span>{facetError}</span>
+                <button
+                  type="button"
+                  onClick={() => setEventRevision((value) => value + 1)}
+                >
+                  重试
+                </button>
+              </div>
             )}
           </section>
 
           {loadingReports && (
-            <p className="state-message">
-              {hasSearchQuery ? "正在搜索报告…" : "正在扫描报告…"}
-            </p>
+            <div className="list-loading" role="status">
+              <p>{hasSearchQuery ? "正在搜索报告…" : "正在载入报告库…"}</p>
+              {[0, 1, 2, 3].map((item) => (
+                <div className="report-skeleton" key={item}>
+                  <span />
+                  <span />
+                </div>
+              ))}
+            </div>
           )}
-          {listError && <p className="state-message error">{listError}</p>}
+          {!loadingReports && listError && (
+            <StatePanel
+              symbol="!"
+              title="报告列表暂时不可用"
+              detail={listError}
+              tone="error"
+              actionLabel="重新加载"
+              onAction={() => setEventRevision((value) => value + 1)}
+            />
+          )}
           {!loadingReports && !listError && reports.length === 0 && (
-            <p className="state-message">
-              {hasSearchQuery
-                ? "没有匹配当前正文片段与筛选条件的报告。"
-                : hasActiveFilters
-                ? "没有符合当前筛选条件的报告。"
-                : "当前没有 Markdown 报告。"}
-            </p>
+            <StatePanel
+              symbol={hasSearchQuery ? "⌕" : "—"}
+              title={
+                hasSearchQuery
+                  ? "没有搜索结果"
+                  : hasActiveFilters
+                    ? "没有符合筛选条件的报告"
+                    : "报告库还是空的"
+              }
+              detail={
+                hasSearchQuery
+                  ? "试试更短的关键词、ticker，或清除筛选条件。"
+                  : hasActiveFilters
+                    ? "放宽日期或分面条件，查看其他报告。"
+                    : "将 Markdown 报告写入 output/ 后会自动出现在这里。"
+              }
+              actionLabel={
+                hasSearchQuery || hasActiveFilters ? "清除搜索与筛选" : undefined
+              }
+              onAction={
+                hasSearchQuery || hasActiveFilters
+                  ? resetDiscovery
+                  : undefined
+              }
+            />
           )}
 
-          <nav className="report-list">
+          <nav
+            className="report-list"
+            aria-busy={loadingReports}
+            hidden={loadingReports || Boolean(listError)}
+          >
             {hasSearchQuery
               ? reports.map((report) => (
                   <ReportButton
@@ -737,17 +885,31 @@ function App() {
 
           <div className="document">
             {loadingMarkdown && (
-              <p className="state-message">正在打开报告…</p>
+              <div className="document-loading" role="status">
+                <span className="loading-kicker">正在打开报告</span>
+                <span className="loading-title" />
+                <span className="loading-title short" />
+                {[0, 1, 2, 3, 4].map((item) => (
+                  <span className="loading-line" key={item} />
+                ))}
+              </div>
             )}
-            {readerError && (
-              <p className="state-message error">{readerError}</p>
+            {!loadingMarkdown && readerError && (
+              <StatePanel
+                symbol="!"
+                title="报告打开失败"
+                detail={readerError}
+                tone="error"
+                actionLabel="重新读取"
+                onAction={() => setReaderRevision((value) => value + 1)}
+              />
             )}
             {!selectedReport && !loadingReports && (
-              <div className="empty-reader">
-                <span aria-hidden="true">⌘</span>
-                <h2>选择一篇报告开始阅读</h2>
-                <p>报告会在这里以完整的 GitHub Flavored Markdown 呈现。</p>
-              </div>
+              <StatePanel
+                symbol="↗"
+                title="选择一篇报告开始阅读"
+                detail="报告正文会在这里以舒适的长文版式呈现。"
+              />
             )}
             {!loadingMarkdown && !readerError && markdown && (
               <div className="markdown-body">
