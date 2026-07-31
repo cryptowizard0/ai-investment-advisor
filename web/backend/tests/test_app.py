@@ -60,10 +60,21 @@ class ReportApiTests(unittest.TestCase):
         self.assertEqual(3, len(reports))
         self.assertTrue(
             all(
-                set(report) == {"id", "category", "skill", "date", "title"}
+                set(report)
+                == {
+                    "id",
+                    "category",
+                    "skill",
+                    "date",
+                    "title",
+                    "dupeGroup",
+                    "isLatestInGroup",
+                }
                 for report in reports
             )
         )
+        self.assertEqual(3, len({report["dupeGroup"] for report in reports}))
+        self.assertTrue(all(report["isLatestInGroup"] for report in reports))
 
         by_title = {report["title"]: report for report in reports}
         self.assertEqual(
@@ -100,6 +111,33 @@ class ReportApiTests(unittest.TestCase):
                 for key in ("category", "skill", "date", "title")
             },
         )
+
+    def test_groups_numbered_revisions_and_marks_the_highest_suffix_latest(
+        self,
+    ) -> None:
+        research_dir = self.output_dir / "research"
+        (
+            research_dir / "research-reportify-TSLA-2026-07-10(1).md"
+        ).write_text("# TSLA 旧版\n", encoding="utf-8")
+        (
+            research_dir / "research-reportify-TSLA-2026-07-10(2).md"
+        ).write_text("# TSLA 新版\n", encoding="utf-8")
+
+        response = self.client.get("/api/reports")
+
+        self.assertEqual(200, response.status_code)
+        revisions = {
+            report["title"]: report
+            for report in response.json()
+            if report["title"] in {"TSLA 旧版", "TSLA 新版"}
+        }
+        self.assertEqual({"TSLA 旧版", "TSLA 新版"}, set(revisions))
+        self.assertEqual(
+            revisions["TSLA 旧版"]["dupeGroup"],
+            revisions["TSLA 新版"]["dupeGroup"],
+        )
+        self.assertFalse(revisions["TSLA 旧版"]["isLatestInGroup"])
+        self.assertTrue(revisions["TSLA 新版"]["isLatestInGroup"])
 
     def test_returns_the_original_markdown_for_a_report_id(self) -> None:
         reports = self.client.get("/api/reports").json()

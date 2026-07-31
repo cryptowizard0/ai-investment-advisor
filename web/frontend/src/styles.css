@@ -236,6 +236,10 @@ h1 {
   font-weight: 500;
 }
 
+.report-group + .report-group {
+  margin-top: 2px;
+}
+
 .report-item {
   display: block;
   width: 100%;
@@ -288,6 +292,69 @@ h1 {
 .report-meta span:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.revision-list {
+  margin: 1px 4px 6px 12px;
+  padding-left: 10px;
+  border-left: 1px solid var(--line-strong);
+}
+
+.revision-list summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  padding: 5px 7px;
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.revision-list summary::-webkit-details-marker {
+  display: none;
+}
+
+.revision-list summary::before {
+  content: "›";
+  color: var(--faint);
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 120ms ease;
+}
+
+.revision-list[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.revision-list summary:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.revision-list summary span:last-child {
+  display: grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  color: var(--faint);
+  background: var(--code);
+}
+
+.revision-items {
+  padding: 2px 0 4px;
+}
+
+.revision-items .report-item {
+  padding: 8px 9px;
+}
+
+.revision-items .report-title {
+  font-size: 12px;
 }
 
 .reader {

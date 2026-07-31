@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import importlib.util
-from pathlib import Path
+import re
+from pathlib import Path, PurePosixPath
 from types import ModuleType
 
 
@@ -33,6 +34,17 @@ def load_index_generator() -> ModuleType:
 
 
 INDEX_GENERATOR = load_index_generator()
+NUMBERED_REVISION_RE = re.compile(r"^(?P<base>.+)\((?P<revision>\d+)\)$")
+
+
+def duplicate_identity(relative_path: str) -> tuple[str, int]:
+    path = PurePosixPath(relative_path)
+    match = NUMBERED_REVISION_RE.fullmatch(path.stem)
+    if match is None:
+        return relative_path, 0
+
+    group_path = path.with_name(f"{match.group('base')}{path.suffix}")
+    return group_path.as_posix(), int(match.group("revision"))
 
 
 def collect_report_metadata(output_dir: Path) -> list[dict[str, str]]:

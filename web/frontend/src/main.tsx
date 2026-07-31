@@ -12,12 +12,48 @@ type Report = {
   skill: string;
   date: string;
   title: string;
+  dupeGroup: string;
+  isLatestInGroup: boolean;
+};
+
+type ReportGroup = {
+  id: string;
+  latest: Report;
+  older: Report[];
 };
 
 const CATEGORY_ORDER = ["chain-alpha", "monitor", "research"];
 
 function reportIdFromHash(): string {
   return decodeURIComponent(window.location.hash.slice(1));
+}
+
+function ReportButton({
+  report,
+  selectedId,
+  onSelect,
+  versionLabel,
+}: {
+  report: Report;
+  selectedId: string;
+  onSelect: (id: string) => void;
+  versionLabel?: string;
+}) {
+  return (
+    <button
+      className={`report-item${report.id === selectedId ? " active" : ""}`}
+      type="button"
+      onClick={() => onSelect(report.id)}
+      aria-current={report.id === selectedId ? "page" : undefined}
+    >
+      <span className="report-title">{report.title}</span>
+      <span className="report-meta">
+        <span>{report.date || "无日期"}</span>
+        <span>{report.skill}</span>
+        {versionLabel && <span>{versionLabel}</span>}
+      </span>
+    </button>
+  );
 }
 
 function App() {
@@ -112,12 +148,27 @@ function App() {
   }, [reports, selectedId]);
 
   const reportsByCategory = useMemo(() => {
-    const grouped = new Map<string, Report[]>();
+    const reportsByGroup = new Map<string, Report[]>();
     for (const report of reports) {
-      const categoryReports = grouped.get(report.category) ?? [];
-      categoryReports.push(report);
-      grouped.set(report.category, categoryReports);
+      const groupReports = reportsByGroup.get(report.dupeGroup) ?? [];
+      groupReports.push(report);
+      reportsByGroup.set(report.dupeGroup, groupReports);
     }
+
+    const grouped = new Map<string, ReportGroup[]>();
+    for (const [id, groupReports] of reportsByGroup) {
+      const latest =
+        groupReports.find((report) => report.isLatestInGroup) ?? groupReports[0];
+      const reportGroup = {
+        id,
+        latest,
+        older: groupReports.filter((report) => report.id !== latest.id),
+      };
+      const categoryGroups = grouped.get(latest.category) ?? [];
+      categoryGroups.push(reportGroup);
+      grouped.set(latest.category, categoryGroups);
+    }
+
     return [...grouped.entries()].sort(
       ([left], [right]) =>
         CATEGORY_ORDER.indexOf(left) - CATEGORY_ORDER.indexOf(right),
@@ -125,7 +176,9 @@ function App() {
   }, [reports]);
 
   const selectedReport = reports.find((report) => report.id === selectedId);
-  const latestReport = reports.find((report) => report.date) ?? reports[0];
+  const latestReport =
+    reports.find((report) => report.isLatestInGroup && report.date) ??
+    reports.find((report) => report.isLatestInGroup);
   const latestDate = latestReport?.date || "—";
 
   const selectReport = (id: string) => {
@@ -193,26 +246,39 @@ function App() {
           )}
 
           <nav className="report-list">
-            {reportsByCategory.map(([category, categoryReports]) => (
+            {reportsByCategory.map(([category, categoryGroups]) => (
               <section className="category-group" key={category}>
                 <div className="category-label">
                   <span>{category}</span>
-                  <span>{categoryReports.length}</span>
+                  <span>{categoryGroups.length}</span>
                 </div>
-                {categoryReports.map((report) => (
-                  <button
-                    className={`report-item${report.id === selectedId ? " active" : ""}`}
-                    key={report.id}
-                    type="button"
-                    onClick={() => selectReport(report.id)}
-                    aria-current={report.id === selectedId ? "page" : undefined}
-                  >
-                    <span className="report-title">{report.title}</span>
-                    <span className="report-meta">
-                      <span>{report.date || "无日期"}</span>
-                      <span>{report.skill}</span>
-                    </span>
-                  </button>
+                {categoryGroups.map((group) => (
+                  <div className="report-group" key={group.id}>
+                    <ReportButton
+                      report={group.latest}
+                      selectedId={selectedId}
+                      onSelect={selectReport}
+                    />
+                    {group.older.length > 0 && (
+                      <details className="revision-list">
+                        <summary>
+                          <span>旧版本</span>
+                          <span>{group.older.length}</span>
+                        </summary>
+                        <div className="revision-items">
+                          {group.older.map((report, index) => (
+                            <ReportButton
+                              key={report.id}
+                              report={report}
+                              selectedId={selectedId}
+                              onSelect={selectReport}
+                              versionLabel={`旧版 ${index + 1}`}
+                            />
+                          ))}
+                        </div>
+                      </details>
+                    )}
+                  </div>
                 ))}
               </section>
             ))}

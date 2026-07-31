@@ -138,6 +138,8 @@ For provider-backed market data, create a local `.env` from `.env_example` and a
 
 The primary local reader lives under `web/`. It scans Markdown reports in `output/{chain-alpha,monitor,research}/`, exposes report metadata and raw Markdown through FastAPI, and renders the selected report in a light React two-pane interface.
 
+For numbered revisions such as `(1)` and `(2)`, the reader shows the highest suffix by default and keeps earlier copies available in an expandable “旧版本” list.
+
 Start the complete reader with one command:
 
 ```bash

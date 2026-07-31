@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
-from web.backend.report_index import collect_report_metadata
+from web.backend.report_index import collect_report_metadata, duplicate_identity
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -29,18 +29,30 @@ def create_app(
     app = FastAPI(title="AI Investment Advisor Report Reader")
     resolved_output_dir = output_dir.resolve()
 
-    def reports() -> list[dict[str, str]]:
+    def reports() -> list[dict[str, str | bool]]:
         metadata = collect_report_metadata(resolved_output_dir)
-        items = [
-            {
-                "id": report_id(report["relative_path"]),
-                "category": report["category"],
-                "skill": report["skill"],
-                "date": report["date"],
-                "title": report["title"],
-            }
-            for report in metadata
+        duplicate_details = [
+            duplicate_identity(report["relative_path"]) for report in metadata
         ]
+        latest_versions: dict[str, int] = {}
+        for group, version in duplicate_details:
+            latest_versions[group] = max(
+                version,
+                latest_versions.get(group, version),
+            )
+        items = []
+        for report, (group, version) in zip(metadata, duplicate_details):
+            items.append(
+                {
+                    "id": report_id(report["relative_path"]),
+                    "category": report["category"],
+                    "skill": report["skill"],
+                    "date": report["date"],
+                    "title": report["title"],
+                    "dupeGroup": group,
+                    "isLatestInGroup": version == latest_versions[group],
+                }
+            )
         return sorted(
             items,
             key=lambda report: (report["date"], report["title"], report["id"]),
@@ -48,7 +60,7 @@ def create_app(
         )
 
     @app.get("/api/reports")
-    def list_reports() -> list[dict[str, str]]:
+    def list_reports() -> list[dict[str, str | bool]]:
         return reports()
 
     @app.get("/api/reports/{requested_id}/raw", response_class=PlainTextResponse)
