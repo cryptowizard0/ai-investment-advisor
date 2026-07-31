@@ -16,6 +16,7 @@ type Report = {
   themes: string[];
   dupeGroup: string;
   isLatestInGroup: boolean;
+  snippet?: string;
 };
 
 type ReportGroup = {
@@ -78,6 +79,25 @@ async function fetchNoStore(
   return response;
 }
 
+function HighlightedSnippet({ snippet }: { snippet: string }) {
+  return (
+    <span className="search-snippet">
+      {snippet.split("<mark>").map((section, index) => {
+        const closingMarker = section.indexOf("</mark>");
+        if (index === 0 || closingMarker === -1) {
+          return <span key={index}>{section}</span>;
+        }
+        return (
+          <span key={index}>
+            <mark>{section.slice(0, closingMarker)}</mark>
+            {section.slice(closingMarker + "</mark>".length)}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 function ReportButton({
   report,
   selectedId,
@@ -97,6 +117,7 @@ function ReportButton({
       aria-current={report.id === selectedId ? "page" : undefined}
     >
       <span className="report-title">{report.title}</span>
+      {report.snippet && <HighlightedSnippet snippet={report.snippet} />}
       <span className="report-meta">
         <span>{report.date || "无日期"}</span>
         <span>{report.skill}</span>
@@ -150,6 +171,7 @@ function App() {
   const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedId, setSelectedId] = useState(reportIdFromHash);
   const [markdown, setMarkdown] = useState("");
   const [listError, setListError] = useState("");
@@ -157,6 +179,7 @@ function App() {
   const [readerError, setReaderError] = useState("");
   const [loadingReports, setLoadingReports] = useState(true);
   const [loadingMarkdown, setLoadingMarkdown] = useState(false);
+  const normalizedSearchQuery = searchQuery.trim();
 
   const reportQuery = useMemo(() => {
     const params = new URLSearchParams();
@@ -186,13 +209,19 @@ function App() {
       setLoadingReports(true);
       setListError("");
       try {
-        const endpoint = reportQuery
-          ? `/api/reports?${reportQuery}`
-          : "/api/reports";
+        const params = new URLSearchParams(reportQuery);
+        if (normalizedSearchQuery) {
+          params.set("q", normalizedSearchQuery);
+        }
+        const endpoint = normalizedSearchQuery
+          ? `/api/search?${params.toString()}`
+          : reportQuery
+            ? `/api/reports?${reportQuery}`
+            : "/api/reports";
         const response = await fetchNoStore(
           endpoint,
           controller.signal,
-          "报告列表请求失败",
+          normalizedSearchQuery ? "全文搜索请求失败" : "报告列表请求失败",
         );
         setReports(await response.json());
       } catch (error) {
@@ -211,7 +240,7 @@ function App() {
 
     void loadReports();
     return () => controller.abort();
-  }, [reportQuery]);
+  }, [normalizedSearchQuery, reportQuery]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -332,6 +361,7 @@ function App() {
     reports.find((report) => report.isLatestInGroup);
   const latestDate = latestReport?.date || "—";
   const hasActiveFilters = reportQuery.length > 0;
+  const hasSearchQuery = normalizedSearchQuery.length > 0;
   const activeFilterCount =
     selectedCategories.length +
     selectedSkills.length +
@@ -402,9 +432,37 @@ function App() {
           <div className="sidebar-heading">
             <div>
               <p className="eyebrow">REPORTS</p>
-              <h2>{hasActiveFilters ? "筛选结果" : "全部报告"}</h2>
+              <h2>
+                {hasSearchQuery
+                  ? "搜索结果"
+                  : hasActiveFilters
+                    ? "筛选结果"
+                    : "全部报告"}
+              </h2>
             </div>
             <span>{reports.length}</span>
+          </div>
+
+          <div className="search-panel">
+            <label htmlFor="report-search">全文搜索</label>
+            <div>
+              <input
+                id="report-search"
+                type="search"
+                value={searchQuery}
+                placeholder="搜索正文片段或 ticker"
+                onChange={(event) => setSearchQuery(event.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  aria-label="清除搜索"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
 
           <section className="facet-panel" aria-label="报告筛选">
@@ -490,53 +548,68 @@ function App() {
             )}
           </section>
 
-          {loadingReports && <p className="state-message">正在扫描报告…</p>}
+          {loadingReports && (
+            <p className="state-message">
+              {hasSearchQuery ? "正在搜索报告…" : "正在扫描报告…"}
+            </p>
+          )}
           {listError && <p className="state-message error">{listError}</p>}
           {!loadingReports && !listError && reports.length === 0 && (
             <p className="state-message">
-              {hasActiveFilters
+              {hasSearchQuery
+                ? "没有匹配当前正文片段与筛选条件的报告。"
+                : hasActiveFilters
                 ? "没有符合当前筛选条件的报告。"
                 : "当前没有 Markdown 报告。"}
             </p>
           )}
 
           <nav className="report-list">
-            {reportsByCategory.map(([category, categoryGroups]) => (
-              <section className="category-group" key={category}>
-                <div className="category-label">
-                  <span>{category}</span>
-                  <span>{categoryGroups.length}</span>
-                </div>
-                {categoryGroups.map((group) => (
-                  <div className="report-group" key={group.id}>
-                    <ReportButton
-                      report={group.latest}
-                      selectedId={selectedId}
-                      onSelect={selectReport}
-                    />
-                    {group.older.length > 0 && (
-                      <details className="revision-list">
-                        <summary>
-                          <span>旧版本</span>
-                          <span>{group.older.length}</span>
-                        </summary>
-                        <div className="revision-items">
-                          {group.older.map((report, index) => (
-                            <ReportButton
-                              key={report.id}
-                              report={report}
-                              selectedId={selectedId}
-                              onSelect={selectReport}
-                              versionLabel={`旧版 ${index + 1}`}
-                            />
-                          ))}
-                        </div>
-                      </details>
-                    )}
-                  </div>
+            {hasSearchQuery
+              ? reports.map((report) => (
+                  <ReportButton
+                    key={report.id}
+                    report={report}
+                    selectedId={selectedId}
+                    onSelect={selectReport}
+                  />
+                ))
+              : reportsByCategory.map(([category, categoryGroups]) => (
+                  <section className="category-group" key={category}>
+                    <div className="category-label">
+                      <span>{category}</span>
+                      <span>{categoryGroups.length}</span>
+                    </div>
+                    {categoryGroups.map((group) => (
+                      <div className="report-group" key={group.id}>
+                        <ReportButton
+                          report={group.latest}
+                          selectedId={selectedId}
+                          onSelect={selectReport}
+                        />
+                        {group.older.length > 0 && (
+                          <details className="revision-list">
+                            <summary>
+                              <span>旧版本</span>
+                              <span>{group.older.length}</span>
+                            </summary>
+                            <div className="revision-items">
+                              {group.older.map((report, index) => (
+                                <ReportButton
+                                  key={report.id}
+                                  report={report}
+                                  selectedId={selectedId}
+                                  onSelect={selectReport}
+                                  versionLabel={`旧版 ${index + 1}`}
+                                />
+                              ))}
+                            </div>
+                          </details>
+                        )}
+                      </div>
+                    ))}
+                  </section>
                 ))}
-              </section>
-            ))}
           </nav>
         </aside>
 
