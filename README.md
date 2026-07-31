@@ -134,6 +134,18 @@ Use invest-flow:output-report-index to update the output report index.
 
 For provider-backed market data, create a local `.env` from `.env_example` and add the relevant API keys.
 
+## Local Report Reader
+
+The primary local reader lives under `web/`. It scans Markdown reports in `output/{chain-alpha,monitor,research}/`, exposes report metadata and raw Markdown through FastAPI, and renders the selected report in a light React two-pane interface.
+
+Start the complete reader with one command:
+
+```bash
+./web/run.sh
+```
+
+Then open `http://127.0.0.1:8000/`. The launcher ensures the `.venv` backend dependencies are present, installs locked frontend packages when needed, rebuilds a missing or stale Vite bundle, and binds uvicorn only to `127.0.0.1`.
+
 ## Output Paths
 
 Generated reports and cache files are written under `output/`:
@@ -152,14 +164,14 @@ Within each series folder, report files are distinguished by skill prefixes (e.g
 
 Report generators normally avoid overwriting and append suffixes such as `(1)` and `(2)` when needed. Index bull/bear cycle documents are the exception: their stable filenames are updated in place so each index has one current bull table and one current bear table.
 
-Open the HTML report reader through the UTF-8 report server so it can fetch Markdown files on demand and direct `.md` links render Chinese correctly:
+The generated HTML reader remains available as a legacy fallback through the UTF-8 report server:
 
 ```bash
 python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py --port 8000
 # then open http://127.0.0.1:8000/output/index.html
 ```
 
-## Report Index Reader
+## Legacy Report Index Reader
 
 `output-report-index` builds two local index files from the Markdown reports already under `output/`:
 

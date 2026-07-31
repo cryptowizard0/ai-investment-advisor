@@ -10,3 +10,5 @@ output/
 /output
 /.gstack
 /docs/superpowers/
+web/frontend/dist/
+web/frontend/node_modules/

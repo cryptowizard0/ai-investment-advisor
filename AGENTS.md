@@ -9,6 +9,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 ## Technology Stack
 
 - **Python**: 3.12.10 (virtual environment at `.venv/`)
+- **Web reader**: FastAPI + uvicorn backend, React + Vite + TypeScript frontend
 - **Agent runtimes**: Codex and Claude Code
 - **Key Python Libraries**:
   - `yfinance`
@@ -54,6 +55,10 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── research-stock/
 │           ├── output-report-index/
 │           └── market-data-router/
+├── web/
+│   ├── backend/                    # FastAPI report metadata/raw API
+│   ├── frontend/                   # React/Vite report reader
+│   └── run.sh                      # local one-command launcher
 ├── output/
 │   ├── chain-alpha/
 │   ├── research/
@@ -86,6 +91,8 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `plugins/invest-flow/skills/chain-alpha-entry-plan/scripts/generate_report.py` - Chain Alpha entry-plan report generator
 - `plugins/invest-flow/skills/output-report-index/scripts/generate_index.py` - output report index generator
 - `plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py` - UTF-8 local report static server
+- `web/backend/app.py` - local report-list/raw Markdown API and built frontend host
+- `web/run.sh` - dependency check, stale frontend build, and localhost uvicorn launcher
 
 ## Build/Test Commands
 
@@ -131,6 +138,12 @@ python plugins/invest-flow/skills/output-report-index/scripts/generate_index.py
 
 # Serve output reports with UTF-8 Markdown/HTML headers
 python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py --port 8000
+
+# Run the local FastAPI + React report reader
+./web/run.sh
+
+# Run the report reader API contract tests
+python -m unittest web/backend/tests/test_app.py
 ```
 
 ## Skill Layout
@@ -208,7 +221,7 @@ Recommended live usage is to say `使用 invest-flow:research-stock 分析 MRVL`
 - Report index: `output/index.md` and `output/index.html`
 - Market data cache: `output/cache/market-data/`
 
-Open the HTML report reader through the UTF-8 report server, for example `python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py --port 8000` from the repo root and then `http://127.0.0.1:8000/output/index.html`, so the page can fetch Markdown reports on demand and direct `.md` links render Chinese correctly.
+Open the primary local report reader with `./web/run.sh`, then visit `http://127.0.0.1:8000/`. The generated `output/index.html` remains available as a legacy fallback through `python plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py --port 8000`.
 
 If an output file already exists, scripts should append numbered suffixes like `(1)` and `(2)` instead of overwriting.
 
@@ -251,6 +264,8 @@ Install Python dependencies with:
 source .venv/bin/activate
 pip install yfinance pandas requests pyyaml
 ```
+
+The local report reader installs its backend requirements from `web/backend/requirements.txt` and its locked frontend packages from `web/frontend/package-lock.json` when `./web/run.sh` runs.
 
 ## Maintenance Guidance
 
