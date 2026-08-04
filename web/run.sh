@@ -40,4 +40,7 @@ fi
 
 cd "$REPO_ROOT"
 echo "Report reader: http://127.0.0.1:8000"
-exec "$PYTHON" -m uvicorn web.backend.app:app --host 127.0.0.1 --port 8000
+exec "$PYTHON" -m uvicorn web.backend.app:app \
+  --host 127.0.0.1 \
+  --port 8000 \
+  --timeout-graceful-shutdown 3

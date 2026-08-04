@@ -310,6 +310,8 @@ h1 {
 
 .filter-toggle {
   display: inline-flex;
+  align-items: center;
+  gap: 7px;
   padding: 5px 8px;
   border: 1px solid var(--line);
   border-radius: 7px;
@@ -317,6 +319,19 @@ h1 {
   background: var(--paper);
   font-size: 11px;
   cursor: pointer;
+}
+
+.filter-chevron {
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 160ms ease;
+}
+
+.filter-chevron.open {
+  transform: translateY(2px) rotate(-135deg);
 }
 
 .search-panel {
@@ -761,6 +776,33 @@ h1 {
   backdrop-filter: blur(10px);
   font-family: "SFMono-Regular", Consolas, monospace;
   font-size: 11px;
+}
+
+.reader-context {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.reader-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--muted);
+  background: var(--paper);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.reader-back:hover {
+  border-color: #bec9ef;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
 }
 
 .document-path {
@@ -1223,7 +1265,7 @@ h1 {
   }
 
   .document-path {
-    max-width: calc(100vw - 118px);
+    max-width: calc(100vw - 184px);
   }
 
   .refresh-notice {

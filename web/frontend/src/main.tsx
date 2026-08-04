@@ -61,6 +61,19 @@ function reportIdFromHash(): string {
   return decodeURIComponent(window.location.hash.slice(1));
 }
 
+function reportPathFromId(id: string): string | null {
+  try {
+    const base64 = id.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const bytes = Uint8Array.from(atob(padded), (character) =>
+      character.charCodeAt(0),
+    );
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
 function toggledValues(values: string[], value: string): string[] {
   return values.includes(value)
     ? values.filter((item) => item !== value)
@@ -497,6 +510,17 @@ function App() {
     );
   }, [reports]);
 
+  const reportIdByPath = useMemo(() => {
+    const idsByPath = new Map<string, string>();
+    for (const report of reports) {
+      const path = reportPathFromId(report.id);
+      if (path) {
+        idsByPath.set(path, report.id);
+      }
+    }
+    return idsByPath;
+  }, [reports]);
+
   const selectedReport = reports.find((report) => report.id === selectedId);
   const latestReport =
     reports.find((report) => report.isLatestInGroup && report.date) ??
@@ -515,6 +539,27 @@ function App() {
   const selectReport = (id: string) => {
     setSelectedId(id);
     window.location.hash = encodeURIComponent(id);
+  };
+
+  const linkedReportId = (href: string | undefined): string | undefined => {
+    if (!href || !selectedReport || href.startsWith("#")) {
+      return undefined;
+    }
+    if (/^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith("//")) {
+      return undefined;
+    }
+
+    const selectedPath = reportPathFromId(selectedReport.id);
+    if (!selectedPath) {
+      return undefined;
+    }
+
+    try {
+      const target = new URL(href, `https://reader.local/${selectedPath}`);
+      return reportIdByPath.get(decodeURIComponent(target.pathname.slice(1)));
+    } catch {
+      return undefined;
+    }
   };
 
   const clearFilters = () => {
@@ -618,7 +663,13 @@ function App() {
                 aria-expanded={filtersOpen}
                 aria-controls="report-filters"
               >
-                筛选{activeFilterCount > 0 ? ` ${activeFilterCount}` : ""}
+                <span>
+                  筛选{activeFilterCount > 0 ? ` ${activeFilterCount}` : ""}
+                </span>
+                <span
+                  className={`filter-chevron${filtersOpen ? " open" : ""}`}
+                  aria-hidden="true"
+                />
               </button>
               <span>{reports.length}</span>
             </div>
@@ -857,10 +908,21 @@ function App() {
         <article className="reader">
           {selectedReport && (
             <header className="reader-header">
-              <div className="document-path">
-                <span>{selectedReport.category}</span>
-                <span aria-hidden="true">/</span>
-                <span>{selectedReport.skill}</span>
+              <div className="reader-context">
+                <button
+                  className="reader-back"
+                  type="button"
+                  onClick={() => window.history.back()}
+                  aria-label="返回上一页"
+                >
+                  <span aria-hidden="true">←</span>
+                  返回
+                </button>
+                <div className="document-path">
+                  <span>{selectedReport.category}</span>
+                  <span aria-hidden="true">/</span>
+                  <span>{selectedReport.skill}</span>
+                </div>
               </div>
               <div className="reader-date">
                 {selectedReport.date || "无日期"}
@@ -916,6 +978,21 @@ function App() {
                 <Markdown
                   remarkPlugins={[remarkGfm]}
                   rehypePlugins={[rehypeRaw]}
+                  components={{
+                    a: ({ href, ...props }) => {
+                      const reportId = linkedReportId(href);
+                      return (
+                        <a
+                          {...props}
+                          href={
+                            reportId
+                              ? `#${encodeURIComponent(reportId)}`
+                              : href
+                          }
+                        />
+                      );
+                    },
+                  }}
                 >
                   {markdown}
                 </Markdown>
