@@ -106,6 +106,7 @@ Recurring reads that work well as scheduled tasks.
 | `monitor-ai-infrastructure` | Weekly | Material hyperscaler capex, architecture, order, or capacity changes | AI infrastructure sector scan whose handoff queue feeds `chain-alpha-mismatch` or `chain-alpha`. |
 | `monitor-index-cycle` | Lightweight check after each trading day | State change or scheduled review triggers a full report | Maintain index bull/bear cycle state using close-to-close reversal thresholds and stable reports. |
 | `monitor-index-valuation` | Monthly | Index move of at least ±5%, constituent changes, or material earnings-caliber changes | Index valuation price-sensitivity table with single-caliber guardrails and cyclical-earnings distortion checks. |
+| `monitor-nhnl-bottom` | Weekly light check | Sharp drawdowns, capitulation-like sessions, or "is this the bottom?" questions | Elder-style NH-NL breadth state machine (capitulation, bullish divergence, bull confirmation) with universe-rescaled thresholds and two-sided trigger playbooks. |
 | `monitor-gold` | Weekly | FOMC, CPI, real-rate, geopolitical, or abnormal-price events | Gold trend, bubble-risk, and macro-driver analysis. |
 | `monitor-chain-alpha-delivery` | After quarterly earnings | Material order, capacity, customer, guidance, or competitive-structure changes | Revenue/profit-delivery tracking that feeds grade changes back into Chain Alpha and can retrigger `chain-alpha-entry-plan`. |
 
@@ -127,6 +128,7 @@ Use invest-flow:chain-alpha to find investable companies in AI data center power
 Use invest-flow:research-reflexivity in quick mode to check NVIDIA's current narrative stage.
 Use invest-flow:monitor-index-valuation to build a valuation-sensitivity table for the STAR 50 index.
 Use invest-flow:monitor-index-cycle to update the SOX bull and bear market cycle tables.
+Use invest-flow:monitor-nhnl-bottom to read the SOX breadth state machine.
 Use invest-flow:chain-alpha-entry-plan to create NVDA's entry decision, position cap, entry range, and staged buying plan.
 Use invest-flow:research-earnings to analyze NVIDIA's latest earnings.
 Use invest-flow:output-report-index to update the output report index.

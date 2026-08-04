@@ -48,6 +48,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 │           ├── research-institutional/
 │           ├── monitor-index-valuation/
 │           ├── monitor-index-cycle/
+│           ├── monitor-nhnl-bottom/
 │           ├── monitor-gold/
 │           ├── research-reflexivity/
 │           ├── research-reportify/
@@ -88,6 +89,7 @@ This repository is an AI-driven investment analysis system packaged as a repo-lo
 - `plugins/invest-flow/skills/research-earnings/scripts/generate_report.py` - earnings report analysis skeleton generator
 - `plugins/invest-flow/skills/monitor-index-valuation/scripts/generate_report.py` - index valuation price-sensitivity table generator
 - `plugins/invest-flow/skills/monitor-index-cycle/scripts/calculate_cycles.py` - close-to-close threshold cycle detector for index bull/bear tables
+- `plugins/invest-flow/skills/monitor-nhnl-bottom/scripts/build_nhnl.py` - Elder NH-NL breadth state machine (capitulation/divergence/bull-confirm) calculator
 - `plugins/invest-flow/skills/chain-alpha-entry-plan/scripts/generate_report.py` - Chain Alpha entry-plan report generator
 - `plugins/invest-flow/skills/output-report-index/scripts/generate_index.py` - output report index generator
 - `plugins/invest-flow/skills/output-report-index/scripts/serve_reports.py` - UTF-8 local report static server
@@ -114,6 +116,7 @@ python -m unittest \
   plugins/invest-flow/skills/monitor-us-market/scripts/tests/test_create_report.py \
   plugins/invest-flow/skills/monitor-index-valuation/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/monitor-index-cycle/scripts/tests/test_calculate_cycles.py \
+  plugins/invest-flow/skills/monitor-nhnl-bottom/scripts/tests/test_build_nhnl.py \
   plugins/invest-flow/skills/chain-alpha-entry-plan/scripts/tests/test_generate_report.py \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py \
   plugins/invest-flow/skills/output-report-index/scripts/tests/test_serve_reports.py
@@ -129,6 +132,9 @@ python plugins/invest-flow/skills/monitor-index-valuation/scripts/generate_repor
 
 # Detect bull/bear cycles from an index EOD close CSV
 python plugins/invest-flow/skills/monitor-index-cycle/scripts/calculate_cycles.py --prices-file prices.csv --seed-kind auto --format markdown
+
+# Read the NH-NL breadth state machine for the SOX universe
+python plugins/invest-flow/skills/monitor-nhnl-bottom/scripts/build_nhnl.py --preset sox --format markdown
 
 # Generate a Chain Alpha entry-plan report
 python plugins/invest-flow/skills/chain-alpha-entry-plan/scripts/generate_report.py NVDA --company "NVIDIA" --company-type 成长 --pe-file pe_5y.csv --current-price 181.40 --max-loss-streak 0 --ref-pe 35.4 --grade 通过 --drawdown-budget 2
@@ -173,6 +179,7 @@ Active packaged skills:
 - `research-institutional` - whale accumulation/distribution analysis
 - `monitor-index-valuation` - index valuation price-sensitivity table: ±price move -> TTM P/E (整体法 aggregate caliber) -> N-year percentile, with single-caliber consistency guardrails and cyclical-earnings distortion checks
 - `monitor-index-cycle` - create and update stable per-index bull/bear cycle tables from EOD closes using close-to-close reversal thresholds, with turning-point P/E, evidence-backed causes, explicit data cutoffs, and current-cycle handling
+- `monitor-nhnl-bottom` - Elder-style NH-NL breadth state machine (Sell & Sell Short ch.10) over an index/sector universe: 250-day new-high/new-low counts, universe-size-rescaled capitulation (-0.571) / floor (-0.857) / bull-confirmation (+0.357) ratio thresholds, S1-S4 major-bottom checklist (capitulation spike -> zero recross -> valid bullish divergence -> low-volume retest), P0-P6+PX state classification with two-sided trigger playbooks, plus index-level Impulse/value-zone/false-breakout reads; ships a SOX 30-member preset and offline price-file mode
 - `monitor-gold` - gold bubble risk and macro signal analysis
 - `research-reflexivity` - Soros-style reflexivity analysis with quick (5-minute stage check) and deep (full-cycle) modes
 - `research-reportify` - fixed-template structured stock research report with a buy-side-grade decision layer (3-scenario valuation, falsifiable thesis, catalysts, tracking dashboard)
@@ -216,6 +223,7 @@ Recommended live usage is to say `使用 invest-flow:research-stock 分析 MRVL`
   - `output/monitor/monitor-index-valuation-{index}-{YYYY-MM-DD}.md`
   - `output/monitor/monitor-index-cycle-bull-{CODE}.md`
   - `output/monitor/monitor-index-cycle-bear-{CODE}.md`（文件名稳定，原地更新）
+  - `output/monitor/monitor-nhnl-bottom-{LABEL}-{YYYY-MM-DD}.md`
   - `output/monitor/monitor-gold-{analysis-type}-{date}.md`
   - `output/monitor/monitor-us-market-{YYYY-MM-DD}.md`
 - Report index: `output/index.md` and `output/index.html`

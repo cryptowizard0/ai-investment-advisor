@@ -1,0 +1,4 @@
+interface:
+  display_name: "NH-NL Breadth Bottom State Machine"
+  short_description: "Elder-style NH-NL breadth state machine for bottoms and top exhaustion"
+  default_prompt: "Use $monitor-nhnl-bottom to read the SOX breadth state machine."
