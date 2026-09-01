@@ -1190,7 +1190,7 @@ def create_report(
 
     report_body = render_template(template_path.read_text(encoding="utf-8"), replacements)
     output_dir.mkdir(parents=True, exist_ok=True)
-    filename = f"chain-alpha-entry-plan-{slugify(ticker).upper()}-{report_date.isoformat()}.md"
+    filename = f"chain-alpha-position-plan-{slugify(ticker).upper()}-{report_date.isoformat()}.md"
     output_path = find_unique_path(output_dir / filename)
     output_path.write_text(report_body, encoding="utf-8")
     return output_path

@@ -32,7 +32,7 @@ class ReportApiTests(unittest.TestCase):
         )
         (
             chain_dir
-            / "chain-alpha-verification-NVDA-20260701-2026-07-30.md"
+            / "chain-alpha-company-verification-NVDA-20260701-2026-07-30.md"
         ).write_text(self.raw_markdown, encoding="utf-8")
         (
             monitor_dir / "us-market-close-daily-20260729.md"
@@ -83,7 +83,7 @@ class ReportApiTests(unittest.TestCase):
         self.assertEqual(
             {
                 "category": "chain-alpha",
-                "skill": "chain-alpha-verification",
+                "skill": "chain-alpha-company-verification",
                 "date": "2026-07-30",
             },
             {
@@ -158,7 +158,7 @@ class ReportApiTests(unittest.TestCase):
         facets = response.json()
         self.assertEqual(
             {
-                "chain-alpha-verification": 1,
+                "chain-alpha-company-verification": 1,
                 "monitor-us-market": 1,
                 "历史/其他": 1,
             },
@@ -191,26 +191,26 @@ class ReportApiTests(unittest.TestCase):
         research_dir = self.output_dir / "research"
         (
             monitor_dir
-            / "chain-alpha-verification-AMD-2026-07-30.md"
+            / "chain-alpha-company-verification-AMD-2026-07-30.md"
         ).write_text("# AMD 验证报告\n", encoding="utf-8")
         (
             research_dir
-            / "chain-alpha-verification-AVGO-2026-07-30.md"
+            / "chain-alpha-company-verification-AVGO-2026-07-30.md"
         ).write_text("# AVGO 验证报告\n", encoding="utf-8")
         (
             chain_dir
-            / "chain-alpha-monopoly-CPO-2026-07-30.md"
+            / "chain-alpha-company-discovery-CPO-2026-07-30.md"
         ).write_text("# CPO 垄断筛选\n", encoding="utf-8")
         (
             chain_dir
-            / "chain-alpha-verification-MRVL-2026-07-31.md"
+            / "chain-alpha-company-verification-MRVL-2026-07-31.md"
         ).write_text("# MRVL 验证报告\n", encoding="utf-8")
 
         response = self.client.get(
             "/api/reports",
             params={
                 "category": ["chain-alpha", "monitor"],
-                "skill": ["chain-alpha-verification"],
+                "skill": ["chain-alpha-company-verification"],
                 "date_from": "2026-07-30",
                 "date_to": "2026-07-30",
             },
@@ -228,22 +228,22 @@ class ReportApiTests(unittest.TestCase):
         samples = [
             (
                 chain_dir
-                / "chain-alpha-verification-MRVL-CPO-2026-07-31.md",
+                / "chain-alpha-company-verification-MRVL-CPO-2026-07-31.md",
                 "MRVL CPO 验证",
             ),
             (
                 research_dir
-                / "chain-alpha-verification-MRVL-CPO-2026-07-31.md",
+                / "chain-alpha-company-verification-MRVL-CPO-2026-07-31.md",
                 "研究目录中的 MRVL CPO",
             ),
             (
                 chain_dir
-                / "chain-alpha-verification-NVDA-CPO-2026-07-31.md",
+                / "chain-alpha-company-verification-NVDA-CPO-2026-07-31.md",
                 "NVDA CPO 验证",
             ),
             (
                 chain_dir
-                / "chain-alpha-verification-MRVL-MLCC-2026-07-31.md",
+                / "chain-alpha-company-verification-MRVL-MLCC-2026-07-31.md",
                 "MRVL MLCC 验证",
             ),
         ]
@@ -254,7 +254,7 @@ class ReportApiTests(unittest.TestCase):
             "/api/reports",
             params={
                 "category": ["chain-alpha"],
-                "skill": ["chain-alpha-verification"],
+                "skill": ["chain-alpha-company-verification"],
                 "ticker": ["MRVL"],
                 "theme": ["CPO"],
                 "date_from": "2026-07-31",
@@ -421,7 +421,7 @@ class ReportApiTests(unittest.TestCase):
         ).write_text("# MLCC 产业链报告\n", encoding="utf-8")
         (
             chain_dir
-            / "chain-alpha-mismatch-MLCC产业-2026-07-31.md"
+            / "chain-alpha-industry-analysis-MLCC产业-2026-07-31.md"
         ).write_text("# 被动元件供需错配\n", encoding="utf-8")
         (
             chain_dir
@@ -531,27 +531,27 @@ class ReportApiTests(unittest.TestCase):
         samples = [
             (
                 chain_dir
-                / "chain-alpha-verification-MRVL-CPO-2026-07-31.md",
+                / "chain-alpha-company-verification-MRVL-CPO-2026-07-31.md",
                 "目标报告",
             ),
             (
                 research_dir
-                / "chain-alpha-verification-MRVL-CPO-2026-07-31.md",
+                / "chain-alpha-company-verification-MRVL-CPO-2026-07-31.md",
                 "错误分类",
             ),
             (
                 chain_dir
-                / "chain-alpha-verification-NVDA-CPO-2026-07-31.md",
+                / "chain-alpha-company-verification-NVDA-CPO-2026-07-31.md",
                 "错误标的",
             ),
             (
                 chain_dir
-                / "chain-alpha-verification-MRVL-MLCC-2026-07-31.md",
+                / "chain-alpha-company-verification-MRVL-MLCC-2026-07-31.md",
                 "错误主题",
             ),
             (
                 chain_dir
-                / "chain-alpha-verification-MRVL-CPO-2026-07-30.md",
+                / "chain-alpha-company-verification-MRVL-CPO-2026-07-30.md",
                 "错误日期",
             ),
         ]
@@ -567,7 +567,7 @@ class ReportApiTests(unittest.TestCase):
             params={
                 "q": "交付验证",
                 "category": ["chain-alpha"],
-                "skill": ["chain-alpha-verification"],
+                "skill": ["chain-alpha-company-verification"],
                 "ticker": ["MRVL"],
                 "theme": ["CPO"],
                 "date_from": "2026-07-31",

@@ -1,4 +1,4 @@
-# chain-alpha-verification 方法论
+# chain-alpha-company-verification 方法论
 
 ## 1. 市场口径
 
@@ -68,7 +68,7 @@
 
 ## 5. 与第四步的交接（本步不定仓位）
 
-仓位统一由 chain-alpha 第四步 `chain-alpha-entry-plan` 给出（仓位上限 = 回撤预算 ÷ 潜在风险）。本步只输出交接字段：
+仓位统一由 chain-alpha 第四步 `chain-alpha-position-plan` 给出（仓位上限 = 回撤预算 ÷ 潜在风险）。本步只输出交接字段：
 
 - **档位**：金池子（第四步全额档）/ 通过（第四步 ×0.5 档）/ 待验证、剔除（不进入第四步）。
 - **弹性标记**：占比 20-40% 的弹性标的必须显式标注（第四步仓位再 ×0.5）。

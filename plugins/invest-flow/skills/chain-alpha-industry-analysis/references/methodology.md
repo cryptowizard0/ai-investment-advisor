@@ -1,4 +1,4 @@
-# chain-alpha-mismatch 方法论
+# chain-alpha-industry-analysis 方法论
 
 ## 1. 行业是什么
 

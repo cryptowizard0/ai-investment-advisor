@@ -2,7 +2,7 @@
 
 - 日期：{YYYY-MM-DD}
 - 作者：InvestmentFlow
-- 输入环节：{名称}（来源：{chain-alpha-mismatch 报告路径或用户指定}）
+- 输入环节：{名称}（来源：{chain-alpha-industry-analysis 报告路径或用户指定}）
 
 ## 一、一句话结论
 

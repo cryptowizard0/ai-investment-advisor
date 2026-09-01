@@ -1,6 +1,6 @@
 ---
-name: chain-alpha-entry-plan
-description: "chain-alpha 入场计划（第四步）：在 chain-alpha-verification 之后，使用公司类型闸门、PE/PS 历史分位带、潜在回撤、增长消化和账户回撤预算，确定是否允许入场、仓位上限、买入区间、分批计划以及暂停/重新开放条件。估值与风险是内部决策引擎；仓位上限仍按回撤预算 ÷ 潜在风险计算，并叠加档位、弹性、数据不足、警戒线和增长透支折扣。也可独立用于分析相对历史估值与假设性入场计划。输出保存至 ./output/chain-alpha/。"
+name: chain-alpha-position-plan
+description: "chain-alpha 入场计划（第四步）：在 chain-alpha-company-verification 之后，使用公司类型闸门、PE/PS 历史分位带、潜在回撤、增长消化和账户回撤预算，确定是否允许入场、仓位上限、买入区间、分批计划以及暂停/重新开放条件。估值与风险是内部决策引擎；仓位上限仍按回撤预算 ÷ 潜在风险计算，并叠加档位、弹性、数据不足、警戒线和增长透支折扣。也可独立用于分析相对历史估值与假设性入场计划。输出保存至 ./output/chain-alpha/。"
 ---
 
 # Chain Alpha 入场计划（第四步）
@@ -15,7 +15,7 @@ description: "chain-alpha 入场计划（第四步）：在 chain-alpha-verifica
 
 本 skill 回答四个问题：**现在是否允许入场？最多能买多少？什么价格区间可以开始买？如何分批且不突破仓位上限？**
 
-它是 **chain-alpha 工作流的第四步**：`chain-alpha-verification`（第三步，只做验证分级）之后，对"通过及以上"档位的标的形成入场计划；也可脱离 chain-alpha 独立使用（不应用档位折扣，并明确标注未经第三步验证）。估值分位、潜在回撤和增长消化是入场决策的内部引擎，不是本 skill 的最终交付名称。
+它是 **chain-alpha 工作流的第四步**：`chain-alpha-company-verification`（第三步，只做验证分级）之后，对"通过及以上"档位的标的形成入场计划；也可脱离 chain-alpha 独立使用（不应用档位折扣，并明确标注未经第三步验证）。估值分位、潜在回撤和增长消化是入场决策的内部引擎，不是本 skill 的最终交付名称。
 
 方法为四步分析 + 一步建仓计划，前一步不通过不进入后一步：
 
@@ -32,10 +32,10 @@ description: "chain-alpha 入场计划（第四步）：在 chain-alpha-verifica
 
 ## Trigger
 
-- `使用 invest-flow:chain-alpha-entry-plan 为 NVDA 制定入场计划`
+- `使用 invest-flow:chain-alpha-position-plan 为 NVDA 制定入场计划`
 - `NVDA 现在贵不贵？跌回中位数要跌多少？最多买多少？`
 - `这家公司该看 PE 还是 PS？现在处于历史什么分位？`
-- 作为 chain-alpha 第四步被 `chain-alpha` 调用：对 `chain-alpha-verification` 给出"通过及以上"档位的标的定买点与仓位（带入 `--grade`/`--elastic`）
+- 作为 chain-alpha 第四步被 `chain-alpha` 调用：对 `chain-alpha-company-verification` 给出"通过及以上"档位的标的定买点与仓位（带入 `--grade`/`--elastic`）
 - `monitor-chain-alpha-delivery` 升档触发建仓时重跑本 skill 定仓；其引擎 C 复用本 skill 的分位带
 
 ## Workflow
@@ -58,7 +58,7 @@ description: "chain-alpha 入场计划（第四步）：在 chain-alpha-verifica
 - 当前价格用 yfinance / market-data-router。
 
 ### 4) 入场计划输入（chain-alpha 模式）
-- 从 `chain-alpha-verification` 验证卡带入：档位（`--grade 金池子/通过/待验证/剔除`）与弹性标记（`--elastic`，环节收入占比 20-40%）。
+- 从 `chain-alpha-company-verification` 验证卡带入：档位（`--grade 金池子/通过/待验证/剔除`）与弹性标记（`--elastic`，环节收入占比 20-40%）。
 - 待验证 / 剔除档不给仓位；独立使用可不传 `--grade`（不应用档位折扣，报告注明未经第三步验证）。
 - 回撤预算不设单一默认：报告输出 2%/5%/10%/20%/30%/50%/70% 全档位表，`--drawdown-budget` 只选主档（默认 2%）；类型闸门不通过等潜在风险不可用场景，可人工评估回撤后用 `--fallback-drawdown` 兜底。
 - 信号层系数（第 6 步核对后回填，均 ≤1、永不放大）：`--digestion {合理低估/可消化/部分消化/透支}` 传增速消化判定（透支 → 仓位再 ×0.5）；仅当警戒线触发且已举证一档硬证据（公司指引+在手订单/产能锁定，或 delivery-tracking 已点亮 L4 入表）+ forward PE 回线内时加 `--alert-release`（新仓由归零抬为半仓 ×0.5）。
@@ -67,7 +67,7 @@ description: "chain-alpha 入场计划（第四步）：在 chain-alpha-verifica
 序列法（chain-alpha 第四步，带档位）：
 
 ```bash
-python plugins/invest-flow/skills/chain-alpha-entry-plan/scripts/generate_report.py NVDA \
+python plugins/invest-flow/skills/chain-alpha-position-plan/scripts/generate_report.py NVDA \
   --company "NVIDIA" --company-type 成长 --type-basis "数据中心收入与利润连续高增长，无周期/一次性标签" \
   --market 美股 --pe-file pe_5y.csv --current-price 181.40 \
   --max-loss-streak 0 --ref-pe 35.4 --source "macrotrends TTM PE 周频" \
@@ -77,14 +77,14 @@ python plugins/invest-flow/skills/chain-alpha-entry-plan/scripts/generate_report
 锚点法（只有分位锚点、无完整序列时）：
 
 ```bash
-python plugins/invest-flow/skills/chain-alpha-entry-plan/scripts/generate_report.py 688017 \
+python plugins/invest-flow/skills/chain-alpha-position-plan/scripts/generate_report.py 688017 \
   --company "绿的谐波" --company-type 成长 --market A股 \
   --metric ps --ps-anchors "8.5:0,12.3:25,16.8:50,24.5:75,41.2:100" --current-ps 28.6 \
   --ref-ps 10.2 --data-span-years 4.5 --grade 金池子 --elastic \
   --current-price 98.50 --current-percentile 82.0 --source "理杏仁 PS-TTM"
 ```
 
-- 文件命名：`chain-alpha-entry-plan-{TICKER}-{YYYY-MM-DD}.md`；重名自动追加 `(1)`、`(2)`。
+- 文件命名：`chain-alpha-position-plan-{TICKER}-{YYYY-MM-DD}.md`；重名自动追加 `(1)`、`(2)`。
 
 ### 6) 增速消化核对（人工计算，填入报告第六节）
 - 从第三步交接取 g（未来利润增速数值 + 证据等级：指引/订单 > 一致预期 > 推断）与久期 N（默认保守 2 年；证据充分 3 年；在手订单/产能锁定等极强证据才 5 年）。
@@ -119,9 +119,9 @@ python plugins/invest-flow/skills/chain-alpha-entry-plan/scripts/generate_report
 
 ## 与 chain-alpha 的衔接（本 skill = 第四步）
 
-chain-alpha 四步漏斗：① `chain-alpha-mismatch` → ② `chain-alpha-monopoly` → ③ `chain-alpha-verification`（只验证分级）→ **④ `chain-alpha-entry-plan`（入场决策 + 仓位 + 买入计划）** → delivery-tracking（季度兑现循环）。
+chain-alpha 四步漏斗：① `chain-alpha-industry-analysis` → ② `chain-alpha-company-discovery` → ③ `chain-alpha-company-verification`（只验证分级）→ **④ `chain-alpha-position-plan`（入场决策 + 仓位 + 买入计划）** → delivery-tracking（季度兑现循环）。
 
-- **上游 `chain-alpha-verification`（③）**：只输出档位与弹性标记，不定仓位；"通过及以上"标的进入本 skill，档位通过 `--grade`、弹性通过 `--elastic` 带入并转成仓位折扣；增速数值 g（含证据等级）、增速久期 N 与未来收入增速随交接字段带入，供增速消化核对使用。
+- **上游 `chain-alpha-company-verification`（③）**：只输出档位与弹性标记，不定仓位；"通过及以上"标的进入本 skill，档位通过 `--grade`、弹性通过 `--elastic` 带入并转成仓位折扣；增速数值 g（含证据等级）、增速久期 N 与未来收入增速随交接字段带入，供增速消化核对使用。
 - **下游 `monitor-chain-alpha-delivery`（⑤）**：升降档回灌 ③ 的档位；升档触发建仓时重跑本 skill 定买点与仓位；其引擎 C 直接复用本 skill 的分位带（PE/PS 双轨同口径）。
 - **类型闸门不通过 ≠ 剔除标的**：chain-alpha 会捞到周期错位标的（如存储/HBM），它们在 ③ 的档位不变，只是分位法仓位框架不适用——报告明示，人工评估回撤后可用 `--fallback-drawdown` 兜底定仓。
 

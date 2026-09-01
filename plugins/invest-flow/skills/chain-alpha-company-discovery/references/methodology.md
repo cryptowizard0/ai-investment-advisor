@@ -1,4 +1,4 @@
-# chain-alpha-monopoly 方法论
+# chain-alpha-company-discovery 方法论
 
 ## 1. 子环节拆分
 

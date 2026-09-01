@@ -2,7 +2,7 @@
 
 - 日期：{YYYY-MM-DD}
 - 作者：InvestmentFlow
-- 所属环节：{环节}（来源：{chain-alpha-monopoly 报告路径或用户指定}）
+- 所属环节：{环节}（来源：{chain-alpha-company-discovery 报告路径或用户指定}）
 - 上市地/市场：{美股/ADR/A股/港股/日股/台股主板/仅粉单/未上市}
 
 ## 一、结论
@@ -11,7 +11,7 @@
 - 总分：{N}/100（含负分项 {-N}）
 - 弹性标的：{是（占比 20-40%，第四步仓位 ×0.5）/ 否}
 - 增速交接（供第四步增速消化核对）：g = {N}%（证据等级：{指引/订单 / 一致预期 / 推断}）；久期 N = {2/3/5} 年（依据：{...}）；未来收入增速 = {N}%
-- 下一步：{通过及以上 → invest-flow:chain-alpha-entry-plan 定买点与仓位（--grade {档位} {--elastic}）/ 待验证 → 观察池 + delivery-tracking / 剔除}
+- 下一步：{通过及以上 → invest-flow:chain-alpha-position-plan 定买点与仓位（--grade {档位} {--elastic}）/ 待验证 → 观察池 + delivery-tracking / 剔除}
 
 ## 二、硬门槛记录
 

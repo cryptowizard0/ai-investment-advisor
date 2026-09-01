@@ -1,4 +1,4 @@
-# chain-alpha-entry-plan 方法论
+# chain-alpha-position-plan 方法论
 
 四步分析 + 增速消化核对 + 建仓计划：类型闸门 → 选尺子（PE or PS）→ 分位带 → 潜在风险与空间 → 增速消化核对（信号层）→ 建仓计划（仓位上限 = 回撤预算 ÷ 潜在风险）。前一步不通过不进入后一步。本 skill 同时是 chain-alpha 工作流第四步（verification 之后），chain-alpha 的仓位统一由此给出。
 
@@ -201,7 +201,7 @@ TTM 分位有两类固有失真，必须用前瞻增速核对，不能机械读�
 
 | 折扣项 | 系数 | 来源 |
 |---|---|---|
-| 档位：金池子 | ×1（全额） | chain-alpha-verification 第三步档位（`--grade`） |
+| 档位：金池子 | ×1（全额） | chain-alpha-company-verification 第三步档位（`--grade`） |
 | 档位：通过 | ×0.5 | 同上 |
 | 档位：待验证 / 剔除 | 不给仓位 | 升档后再定仓 |
 | 弹性标的（环节收入占比 20-40%） | ×0.5 | verification 硬门槛记录（`--elastic`） |

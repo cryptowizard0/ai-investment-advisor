@@ -52,7 +52,7 @@ If the plugin does not appear, confirm these files exist:
 chain-alpha is InvestFlow's flagship workflow: it turns a big theme into investable companies, defines the entry plan, then keeps tracking whether revenue and profit growth actually deliver. Six skills form a closed loop, orchestrated end-to-end by `chain-alpha`:
 
 ```text
-theme ─▶ chain-alpha-mismatch ─▶ chain-alpha-monopoly ─▶ chain-alpha-verification ─▶ chain-alpha-entry-plan ⇄ monitor-chain-alpha-delivery
+theme ─▶ chain-alpha-industry-analysis ─▶ chain-alpha-company-discovery ─▶ chain-alpha-company-verification ─▶ chain-alpha-position-plan ⇄ monitor-chain-alpha-delivery
         industry + growth        sub-links +           4-tier grade               entry decision +         quarterly revenue/
         screen + mismatch        ≤10 candidates        (grading only)             staged buying plan       profit tracking
         └──────────────────── orchestrated by chain-alpha ────────────────────┘
@@ -64,7 +64,7 @@ Run the whole funnel in one command:
 Use invest-flow:chain-alpha to find investable companies in humanoid robots.
 ```
 
-Funnel discipline: industry definition and growth gate → 2-4 mismatch links → ≤10 candidates per link → top-6 into verification → pass-and-above into step-4 position sizing → 2-3 deep dives. Industry/key-link revenue growth must be >20%, have a clear driver, and last at least 6 months before the workflow enters later steps; industry and company screens must still map back to sustainable profit growth: ≥30% is preferred, 20% is the minimum gate, and <20% is screened out. Step 3 `chain-alpha-verification` only grades; positions come exclusively from step 4 `chain-alpha-entry-plan` (position cap = drawdown budget / potential risk, with grade/elastic discounts). Names left at `pending-verification` are then tracked quarterly with `monitor-chain-alpha-delivery`, whose grade changes feed back into `chain-alpha-verification` and re-trigger step-4 sizing on upgrades. Each step can also run standalone — start with `chain-alpha-mismatch` to define the industry, screen growth, and confirm mismatch links cheaply before committing to the full run.
+Funnel discipline: industry definition and growth gate → 2-4 mismatch links → ≤10 candidates per link → top-6 into verification → pass-and-above into step-4 position sizing → 2-3 deep dives. Industry/key-link revenue growth must be >20%, have a clear driver, and last at least 6 months before the workflow enters later steps; industry and company screens must still map back to sustainable profit growth: ≥30% is preferred, 20% is the minimum gate, and <20% is screened out. Step 3 `chain-alpha-company-verification` only grades; positions come exclusively from step 4 `chain-alpha-position-plan` (position cap = drawdown budget / potential risk, with grade/elastic discounts). Names left at `pending-verification` are then tracked quarterly with `monitor-chain-alpha-delivery`, whose grade changes feed back into `chain-alpha-company-verification` and re-trigger step-4 sizing on upgrades. Each step can also run standalone — start with `chain-alpha-industry-analysis` to define the industry, screen growth, and confirm mismatch links cheaply before committing to the full run.
 
 ## Skills By Category
 
@@ -76,11 +76,11 @@ Turn a big theme into investable companies. `chain-alpha` is the flagship — se
 
 | Skill | Purpose | Use when |
 |---|---|---|
-| `chain-alpha` | Orchestrates the four canonical chain-alpha steps (`chain-alpha-mismatch` → `chain-alpha-monopoly` → `chain-alpha-verification` → `chain-alpha-entry-plan`) with in-step subagent fan-out (Claude Code parallel; Codex parallel when explicitly requested and available; otherwise serial fallback) and funnel discipline. | You want the full theme-to-company-to-entry-plan workflow in one run. |
-| `chain-alpha-mismatch` | Plain-language industry definition, growth hard gate with industry-cycle staging (four-stage timeline + current-stage marker), full industry-chain panorama, and supply-demand mismatch link discovery with a profit-growth gate. | You have a big theme and need to understand what the industry actually is, which cycle stage it is in, why growth can stay high, the whole chain, and the links where demand outruns supply and can translate into profit growth. |
-| `chain-alpha-monopoly` | Sub-link breakdown and monopoly screening with CR3, margin, revenue-share, and profit-growth gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
-| `chain-alpha-verification` | 100-point four-tier company verification with profit-growth gating (grading only, no position sizing). | You have candidates and need a gold-pool/pass/pending/reject grade; pass-and-above names hand off to step 4 for sizing. |
-| `chain-alpha-entry-plan` | chain-alpha step 4: type gate → PE/PS ruler (with alert lines) → 5-year TTM percentile band → potential risk → growth-digestion check → entry decision, position cap, entry range, staged buying plan, and blocking/reopen conditions. | Verification produced a grade and you need an executable entry plan. (Also listed under category 2.) |
+| `chain-alpha` | Orchestrates the four canonical chain-alpha steps (`chain-alpha-industry-analysis` → `chain-alpha-company-discovery` → `chain-alpha-company-verification` → `chain-alpha-position-plan`) with in-step subagent fan-out (Claude Code parallel; Codex parallel when explicitly requested and available; otherwise serial fallback) and funnel discipline. | You want the full theme-to-company-to-entry-plan workflow in one run. |
+| `chain-alpha-industry-analysis` | Plain-language industry definition, growth hard gate with industry-cycle staging (four-stage timeline + current-stage marker), full industry-chain panorama, and supply-demand mismatch link discovery with a profit-growth gate. | You have a big theme and need to understand what the industry actually is, which cycle stage it is in, why growth can stay high, the whole chain, and the links where demand outruns supply and can translate into profit growth. |
+| `chain-alpha-company-discovery` | Sub-link breakdown and monopoly screening with CR3, margin, revenue-share, and profit-growth gates. | You confirmed a mismatch link and need the <=10 strongest companies in it. |
+| `chain-alpha-company-verification` | 100-point four-tier company verification with profit-growth gating (grading only, no position sizing). | You have candidates and need a gold-pool/pass/pending/reject grade; pass-and-above names hand off to step 4 for sizing. |
+| `chain-alpha-position-plan` | chain-alpha step 4: type gate → PE/PS ruler (with alert lines) → 5-year TTM percentile band → potential risk → growth-digestion check → entry decision, position cap, entry range, staged buying plan, and blocking/reopen conditions. | Verification produced a grade and you need an executable entry plan. (Also listed under category 2.) |
 
 ### 2. Research a single stock (you bring a ticker)
 
@@ -103,12 +103,12 @@ Recurring reads that work well as scheduled tasks.
 | Skill | Fixed cadence | Supplemental triggers | Purpose |
 |---|---|---|---|
 | `monitor-us-market` | After every completed US trading session | Major after-hours events | Conclusion-first Chinese US market close report with a hard length budget, dynamic sector/theme ranking, and a new-dynamics radar. |
-| `monitor-ai-infrastructure` | Weekly | Material hyperscaler capex, architecture, order, or capacity changes | AI infrastructure sector scan whose handoff queue feeds `chain-alpha-mismatch` or `chain-alpha`. |
+| `monitor-ai-infrastructure` | Weekly | Material hyperscaler capex, architecture, order, or capacity changes | AI infrastructure sector scan whose handoff queue feeds `chain-alpha-industry-analysis` or `chain-alpha`. |
 | `monitor-index-cycle` | Lightweight check after each trading day | State change or scheduled review triggers a full report | Maintain index bull/bear cycle state using close-to-close reversal thresholds and stable reports. |
 | `monitor-index-valuation` | Monthly | Index move of at least ±5%, constituent changes, or material earnings-caliber changes | Index valuation price-sensitivity table with single-caliber guardrails and cyclical-earnings distortion checks. |
 | `monitor-nhnl-bottom` | Weekly light check | Sharp drawdowns, capitulation-like sessions, or "is this the bottom?" questions | Elder-style NH-NL breadth state machine (capitulation, bullish divergence, bull confirmation) with universe-rescaled thresholds and two-sided trigger playbooks. |
 | `monitor-gold` | Weekly | FOMC, CPI, real-rate, geopolitical, or abnormal-price events | Gold trend, bubble-risk, and macro-driver analysis. |
-| `monitor-chain-alpha-delivery` | After quarterly earnings | Material order, capacity, customer, guidance, or competitive-structure changes | Revenue/profit-delivery tracking that feeds grade changes back into Chain Alpha and can retrigger `chain-alpha-entry-plan`. |
+| `monitor-chain-alpha-delivery` | After quarterly earnings | Material order, capacity, customer, guidance, or competitive-structure changes | Revenue/profit-delivery tracking that feeds grade changes back into Chain Alpha and can retrigger `chain-alpha-position-plan`. |
 
 ### Infrastructure (supporting layer, no investment view of its own)
 
@@ -129,7 +129,7 @@ Use invest-flow:research-reflexivity in quick mode to check NVIDIA's current nar
 Use invest-flow:monitor-index-valuation to build a valuation-sensitivity table for the STAR 50 index.
 Use invest-flow:monitor-index-cycle to update the SOX bull and bear market cycle tables.
 Use invest-flow:monitor-nhnl-bottom to read the SOX breadth state machine.
-Use invest-flow:chain-alpha-entry-plan to create NVDA's entry decision, position cap, entry range, and staged buying plan.
+Use invest-flow:chain-alpha-position-plan to create NVDA's entry decision, position cap, entry range, and staged buying plan.
 Use invest-flow:research-earnings to analyze NVIDIA's latest earnings.
 Use invest-flow:output-report-index to update the output report index.
 ```
@@ -166,7 +166,7 @@ Generated reports and cache files are written under `output/`:
 
 The output root is limited to these three topic directories, `cache/`, and the two root index files.
 
-Within each series folder, report files are distinguished by skill prefixes (e.g. `chain-alpha-mismatch-...`, `research-fundamentals-...`, `monitor-us-market-...`, etc.). Normal duplicate handling still applies using `(1)`, `(2)` suffixes.
+Within each series folder, report files are distinguished by skill prefixes (e.g. `chain-alpha-industry-analysis-...`, `research-fundamentals-...`, `monitor-us-market-...`, etc.). Normal duplicate handling still applies using `(1)`, `(2)` suffixes.
 
 Report generators normally avoid overwriting and append suffixes such as `(1)` and `(2)` when needed. Index bull/bear cycle documents are the exception: their stable filenames are updated in place so each index has one current bull table and one current bear table.
 

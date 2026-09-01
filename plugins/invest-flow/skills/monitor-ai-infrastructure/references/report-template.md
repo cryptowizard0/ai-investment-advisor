@@ -42,7 +42,7 @@
 
 | 优先级 | 后续命令 | discovery_score | 触发阈值 | 核心证据 | 需要 chain-alpha 验证的问题 |
 |--------|----------|-----------------|----------|----------|------------------------|
-| P1 | `使用 invest-flow:chain-alpha-mismatch 分析 {{板块}}` | {{分数}} | {{例如 backlog YoY > 30%; lead time > 20 weeks}} | {{证据}} | {{供给是否扩不快/公司谁真受益/市场是否定价}} |
+| P1 | `使用 invest-flow:chain-alpha-industry-analysis 分析 {{板块}}` | {{分数}} | {{例如 backlog YoY > 30%; lead time > 20 weeks}} | {{证据}} | {{供给是否扩不快/公司谁真受益/市场是否定价}} |
 
 ## 观察池
 

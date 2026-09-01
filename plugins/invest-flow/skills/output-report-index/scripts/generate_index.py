@@ -22,12 +22,16 @@ HISTORICAL_FILENAME_PREFIX_ALIASES: dict[str, str] = {
     "ai-infrastructure-scarcity-radar": "monitor-ai-infrastructure",
     "ai-infrastructure-sector-discovery": "monitor-ai-infrastructure",
     "chain-alpha-delivery-tracking": "monitor-chain-alpha-delivery",
-    "chain-alpha-mismatch-discovery": "chain-alpha-mismatch",
-    "chain-alpha-monopoly-screen": "chain-alpha-monopoly",
+    "chain-alpha-entry-plan": "chain-alpha-position-plan",
+    "chain-alpha-mismatch": "chain-alpha-industry-analysis",
+    "chain-alpha-mismatch-discovery": "chain-alpha-industry-analysis",
+    "chain-alpha-monopoly": "chain-alpha-company-discovery",
+    "chain-alpha-monopoly-screen": "chain-alpha-company-discovery",
     "chain-alpha-pipeline": "chain-alpha",
-    "company-buyability-score": "chain-alpha-entry-plan",
+    "chain-alpha-verification": "chain-alpha-company-verification",
+    "company-buyability-score": "chain-alpha-position-plan",
     "company-profile": "research-profile",
-    "company-valuation-risk": "chain-alpha-entry-plan",
+    "company-valuation-risk": "chain-alpha-position-plan",
     "daily-us-market-scan": "monitor-us-market",
     "earnings-report-analysis": "research-earnings",
     "fundamental-analysis": "research-fundamentals",
@@ -37,7 +41,7 @@ HISTORICAL_FILENAME_PREFIX_ALIASES: dict[str, str] = {
     "institutional-accumulation-analysis": "research-institutional",
     "gie-investment-framework": "research-stock",
     "industry-chain-analysis": "research-stock",
-    "non-consensus-company-discovery": "chain-alpha-mismatch",
+    "non-consensus-company-discovery": "chain-alpha-industry-analysis",
     "professional-investment-analyst": "research-stock",
     "reflexivity-deep-analysis": "research-reflexivity",
     "reflexivity-quick-scan": "research-reflexivity",
@@ -53,10 +57,10 @@ HISTORICAL_FILENAME_PREFIX_ALIASES: dict[str, str] = {
     "综合分析": "research-stock",
 }
 CANONICAL_SKILL_IDS = (
-    "chain-alpha-entry-plan",
-    "chain-alpha-verification",
-    "chain-alpha-monopoly",
-    "chain-alpha-mismatch",
+    "chain-alpha-position-plan",
+    "chain-alpha-company-verification",
+    "chain-alpha-company-discovery",
+    "chain-alpha-industry-analysis",
     "chain-alpha",
     "monitor-chain-alpha-delivery",
     "monitor-ai-infrastructure",
@@ -101,13 +105,10 @@ def matches_filename_prefix(stem: str, prefix: str) -> bool:
 
 
 def infer_report_skill(stem: str) -> str:
-    for skill_id in sorted(CANONICAL_SKILL_IDS, key=len, reverse=True):
-        if matches_filename_prefix(stem, skill_id):
-            return skill_id
-
-    for prefix in sorted(HISTORICAL_FILENAME_PREFIX_ALIASES, key=len, reverse=True):
+    prefixes = (*CANONICAL_SKILL_IDS, *HISTORICAL_FILENAME_PREFIX_ALIASES)
+    for prefix in sorted(prefixes, key=len, reverse=True):
         if matches_filename_prefix(stem, prefix):
-            return HISTORICAL_FILENAME_PREFIX_ALIASES[prefix]
+            return HISTORICAL_FILENAME_PREFIX_ALIASES.get(prefix, prefix)
 
     return HISTORICAL_OTHER
 

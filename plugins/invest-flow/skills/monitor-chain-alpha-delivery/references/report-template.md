@@ -9,7 +9,7 @@
 |---|---|
 | 标的 | {公司} |
 | Ticker | {TICKER}（{美股/ADR/A股/港股/日股/台股主板}） |
-| 所属环节 | {环节}（来源：{chain-alpha-monopoly / verification 报告路径或用户指定}） |
+| 所属环节 | {环节}（来源：{chain-alpha-company-discovery / verification 报告路径或用户指定}） |
 | 本期日期 | {YYYY-MM-DD} |
 | 上次复盘日期 | {YYYY-MM-DD 或 首次复盘} |
 
@@ -130,8 +130,8 @@ Forward 估值口径与预期收益率（通用；确定性=验证链点亮级�
 | Step 4 重跑触发 | {—} | {是（升/降档）/ 否（维持）} | {} |
 
 - 触发项：{导致档位变更的具体项}
-- 仓位归属：本 skill **不自行折算仓位**。档位变化（尤其升档、涉及建仓/加减仓）即触发第四步 `chain-alpha-entry-plan` 重跑；仓位上限 = 回撤预算 ÷ 潜在风险 × 档位/弹性/数据不足折扣 × 信号层系数，**由第四步唯一给出**，不在本卡另算第二套仓位。
-- 第四步重跑报告：{output/chain-alpha/chain-alpha-entry-plan-{TICKER}-{YYYY-MM-DD}.md 或 "本期维持、未触发重跑"}
+- 仓位归属：本 skill **不自行折算仓位**。档位变化（尤其升档、涉及建仓/加减仓）即触发第四步 `chain-alpha-position-plan` 重跑；仓位上限 = 回撤预算 ÷ 潜在风险 × 档位/弹性/数据不足折扣 × 信号层系数，**由第四步唯一给出**，不在本卡另算第二套仓位。
+- 第四步重跑报告：{output/chain-alpha/chain-alpha-position-plan-{TICKER}-{YYYY-MM-DD}.md 或 "本期维持、未触发重跑"}
 - 对应 verification 验证卡：{路径}（**仅同步档位**；verification 只管分级、不含仓位）
 
 ## 十、反证条件更新 + 下次复盘
@@ -151,4 +151,4 @@ Forward 估值口径与预期收益率（通用；确定性=验证链点亮级�
 |---|---|---|---|---|
 | {} | {公司公告/财报分部/电话会/IR / 交易所披露 / 行业数据·产业链调研 / market-data-router} | {YYYY-MM-DD} | {事实/推断/假设} | {高/中/低} |
 
-- 取数说明：PS/PE 历史分位、价格回撤经 market-data-router 取数；降级取数时降低置信度并标注。各市场口径沿用 chain-alpha-verification（A 股比 A 股、日股比日股，历史分位用该股本地市场数据）。
+- 取数说明：PS/PE 历史分位、价格回撤经 market-data-router 取数；降级取数时降低置信度并标注。各市场口径沿用 chain-alpha-company-verification（A 股比 A 股、日股比日股，历史分位用该股本地市场数据）。

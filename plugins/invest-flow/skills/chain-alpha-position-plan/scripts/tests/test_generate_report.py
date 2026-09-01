@@ -329,8 +329,8 @@ class CreateReportTests(unittest.TestCase):
             first_path = generator.create_report(**kwargs)
             second_path = generator.create_report(**kwargs)
 
-            self.assertEqual(first_path.name, "chain-alpha-entry-plan-NVDA-2026-07-17.md")
-            self.assertEqual(second_path.name, "chain-alpha-entry-plan-NVDA-2026-07-17(1).md")
+            self.assertEqual(first_path.name, "chain-alpha-position-plan-NVDA-2026-07-17.md")
+            self.assertEqual(second_path.name, "chain-alpha-position-plan-NVDA-2026-07-17(1).md")
 
             text = first_path.read_text(encoding="utf-8")
             self.assertIn("## 七、入场计划", text)
@@ -800,7 +800,7 @@ class OutputDefaultsTests(unittest.TestCase):
                     Path(tmpdir)
                     / "output"
                     / "chain-alpha"
-                    / "chain-alpha-entry-plan-MU-2026-07-24.md"
+                    / "chain-alpha-position-plan-MU-2026-07-24.md"
                 ).exists()
             )
 

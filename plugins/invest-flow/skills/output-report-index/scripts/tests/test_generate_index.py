@@ -63,7 +63,7 @@ class GenerateIndexTests(unittest.TestCase):
             )
             (
                 chain_dir
-                / "chain-alpha-verification-NVDA-2026-01-13.md"
+                / "chain-alpha-company-verification-NVDA-2026-01-13.md"
             ).write_text(
                 "# Current verification\n",
                 encoding="utf-8",
@@ -79,7 +79,7 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn("## monitor\n", index_text)
             self.assertIn("### monitor-us-market\n", index_text)
             self.assertIn("## chain-alpha\n", index_text)
-            self.assertIn("### chain-alpha-verification\n", index_text)
+            self.assertIn("### chain-alpha-company-verification\n", index_text)
             self.assertIn(
                 "| 2026-01-10 | Current profile | [原文](./research/research-profile-TSLA-2026-01-10.md) |",
                 index_text,
@@ -155,7 +155,7 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn("## chain-alpha\n", index_text)
             self.assertIn("### monitor-us-market\n", index_text)
             self.assertIn("### research-fundamentals\n", index_text)
-            self.assertIn("### chain-alpha-mismatch\n", index_text)
+            self.assertIn("### chain-alpha-industry-analysis\n", index_text)
             self.assertIn("### monitor-ai-infrastructure\n", index_text)
             self.assertIn(
                 "| 2026-01-11 | Legacy monitor report | [原文](./monitor/us-market-close-daily-2026-01-11.md) |",
@@ -178,7 +178,7 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn('"category": "chain-alpha"', html_text)
             self.assertIn('"skill": "monitor-us-market"', html_text)
             self.assertIn('"skill": "research-fundamentals"', html_text)
-            self.assertIn('"skill": "chain-alpha-mismatch"', html_text)
+            self.assertIn('"skill": "chain-alpha-industry-analysis"', html_text)
             self.assertIn("\"monitor/us-market-close-daily-2026-01-11.md\"", html_text)
             self.assertIn("\"monitor/ai-infrastructure-sector-discovery-2026-01-14.md\"", html_text)
             self.assertEqual(
@@ -195,6 +195,22 @@ class GenerateIndexTests(unittest.TestCase):
             self.assertIn(
                 "fundamental-analysis",
                 generator.HISTORICAL_FILENAME_PREFIX_ALIASES,
+            )
+            self.assertEqual(
+                generator.infer_report_skill("chain-alpha-mismatch-AI-2026-01-01"),
+                "chain-alpha-industry-analysis",
+            )
+            self.assertEqual(
+                generator.infer_report_skill("chain-alpha-monopoly-CPO-2026-01-01"),
+                "chain-alpha-company-discovery",
+            )
+            self.assertEqual(
+                generator.infer_report_skill("chain-alpha-verification-NVDA-2026-01-01"),
+                "chain-alpha-company-verification",
+            )
+            self.assertEqual(
+                generator.infer_report_skill("chain-alpha-entry-plan-NVDA-2026-01-01"),
+                "chain-alpha-position-plan",
             )
 
     def test_ignores_markdown_outside_topic_directories(self) -> None:

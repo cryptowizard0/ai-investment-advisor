@@ -84,7 +84,7 @@ Python 脚本仅保留为 prompt plan / handoff 汇总辅助能力，不负责�
 使用 invest-flow:research-earnings 分析 {ticker} / {company} 的指定财报期或最新财报事件；必须生成并保存 Markdown 子报告到 output/research/，并在回复末尾明确写出 report_path
 ```
 
-`research-earnings` 不属于默认五阶段。默认流程也不得调用 `chain-alpha-entry-plan`；后者只在已有 Chain Alpha verification 档位或用户明确要求执行 Chain Alpha 建仓流程时运行。
+`research-earnings` 不属于默认五阶段。默认流程也不得调用 `chain-alpha-position-plan`；后者只在已有 Chain Alpha verification 档位或用户明确要求执行 Chain Alpha 建仓流程时运行。
 
 执行每个子 skill 后，先确认 `report_path` 指向已保存的 Markdown 子报告，再提取以下 handoff 字段：
 
