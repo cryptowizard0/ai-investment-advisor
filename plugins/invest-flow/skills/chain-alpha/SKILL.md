@@ -68,6 +68,9 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 
 ### Step 5: 汇总（主 agent）
 - 使用 `references/report-template.md` 生成最终中文汇总报告。
+- 收集本次流程实际生成的全部 `report_path`：Step 1 一份、Step 2 每个环节、Step 3 每家公司、Step 4 每家通过及以上公司；失败或被门槛截停而未生成的报告不得伪造链接。
+- 在汇总报告顶部生成“报告导航”，按 Step 1 -> Step 2 -> Step 3 -> Step 4 排序。每份已生成报告必须使用相对于汇总报告目录的 Markdown 链接（例如 `[Step 2 · CPO](./chain-alpha-company-discovery-CPO-2026-08-03.md)`），不得只写裸路径或绝对路径，确保本地阅读器可直接点击跳转。
+- 若流程提前终止，报告导航只列出终止前实际生成的报告，并在对应步骤注明未继续的原因。
 - 深挖档位最高的 2-3 家（含其 Step 4 入场决策、仓位上限、买入区间与分批计划）。
 - 保存至 `./output/chain-alpha/chain-alpha-{主题}-{YYYY-MM-DD}.md`。
 - 文件已存在时追加 `(1)`, `(2)`，不覆盖。
@@ -91,7 +94,7 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 - 每步必须遵守对应步骤 skill 的硬门槛；编排层不得放宽。
 - 并行与串行两模式的硬门槛、交接字段、报告格式必须一致。
 - subagent 失败不整体中止：按 `methodology.md` 第 5 节标注并降级。
-- 各步骤的独立报告照常保存到各自输出目录，汇总报告引用其文件路径。
+- 各步骤的独立报告照常保存到各自输出目录；汇总报告必须以相对 Markdown 链接引用本次流程实际生成的每一份独立报告。
 - 中文输出；最终输出是研究与跟踪优先级，不是自动交易指令。
 
 ## Resources
@@ -103,4 +106,4 @@ description: "chain-alpha 产业链选股工作流编排：主 agent 跨步串�
 Step 2 / Step 3 / Step 4 的 subagent 派发模板与交接字段契约，含 Codex 并行约束与串行降级说明。
 
 ### references/report-template.md
-最终汇总报告模板：主题、全景摘要、错位环节、候选漏斗、Top 2-3 深挖卡（含 Step 4 入场计划）、金池子/通过清单、跟踪计划。
+最终汇总报告模板：全流程报告导航、主题、全景摘要、错位环节、候选漏斗、Top 2-3 深挖卡（含 Step 4 入场计划）、金池子/通过清单、跟踪计划。
