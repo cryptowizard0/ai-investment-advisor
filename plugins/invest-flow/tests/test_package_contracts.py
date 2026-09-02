@@ -15,16 +15,17 @@ SKILLS_ROOT = PLUGIN_ROOT / "skills"
 
 EXPECTED_SKILLS = {
     "chain-alpha",
-    "chain-alpha-entry-plan",
-    "chain-alpha-mismatch",
-    "chain-alpha-monopoly",
-    "chain-alpha-verification",
+    "chain-alpha-position-plan",
+    "chain-alpha-industry-analysis",
+    "chain-alpha-company-discovery",
+    "chain-alpha-company-verification",
     "market-data-router",
     "monitor-ai-infrastructure",
     "monitor-chain-alpha-delivery",
     "monitor-gold",
     "monitor-index-cycle",
     "monitor-index-valuation",
+    "monitor-nhnl-bottom",
     "monitor-us-market",
     "output-report-index",
     "research-earnings",
@@ -40,9 +41,13 @@ HISTORICAL_REPORT_ALIASES = {
     "ai-infrastructure-scarcity-radar",
     "ai-infrastructure-sector-discovery",
     "chain-alpha-delivery-tracking",
-    "chain-alpha-pipeline",
+    "chain-alpha-entry-plan",
+    "chain-alpha-mismatch",
     "chain-alpha-mismatch-discovery",
+    "chain-alpha-monopoly",
     "chain-alpha-monopoly-screen",
+    "chain-alpha-pipeline",
+    "chain-alpha-verification",
     "company-buyability-score",
     "company-profile",
     "company-valuation-risk",
@@ -67,7 +72,11 @@ ALLOWED_LEGACY_REFS = {
     "plugins/invest-flow/skills/output-report-index/scripts/generate_index.py": HISTORICAL_REPORT_ALIASES,
     "plugins/invest-flow/skills/output-report-index/scripts/tests/test_generate_index.py": {
         "ai-infrastructure-sector-discovery",
+        "chain-alpha-entry-plan",
+        "chain-alpha-mismatch",
         "chain-alpha-mismatch-discovery",
+        "chain-alpha-monopoly",
+        "chain-alpha-verification",
         "company-profile",
         "daily-us-market-scan",
         "fundamental-analysis",
@@ -75,23 +84,24 @@ ALLOWED_LEGACY_REFS = {
     "plugins/invest-flow/tests/test_package_contracts.py": (
         HISTORICAL_REPORT_ALIASES | LEGACY_INVOCATION_TOKENS
     ),
+    "web/backend/tests/test_app.py": {"chain-alpha-pipeline"},
 }
 
 CHAIN_ALPHA_SEQUENCE = (
-    "chain-alpha-mismatch",
-    "chain-alpha-monopoly",
-    "chain-alpha-verification",
-    "chain-alpha-entry-plan",
+    "chain-alpha-industry-analysis",
+    "chain-alpha-company-discovery",
+    "chain-alpha-company-verification",
+    "chain-alpha-position-plan",
 )
 
 CROSS_SKILL_INVOCATIONS = {
     "skills/monitor-ai-infrastructure/SKILL.md": (
-        "chain-alpha-mismatch",
+        "chain-alpha-industry-analysis",
         "chain-alpha",
     ),
     "skills/monitor-chain-alpha-delivery/SKILL.md": (
-        "chain-alpha-verification",
-        "chain-alpha-entry-plan",
+        "chain-alpha-company-verification",
+        "chain-alpha-position-plan",
     ),
     "skills/research-stock/scripts/investflow_pipeline/registry.py": (
         "research-profile",

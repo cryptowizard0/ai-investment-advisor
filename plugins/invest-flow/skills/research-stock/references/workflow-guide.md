@@ -41,7 +41,7 @@ Registry 为五个默认维度生成 prompt template：
 
 这些 prompt 由当前 agent 会话依次执行。Python 层不会启动外部 agent 进程。
 
-用户明确指定报告期或出现相关新财报事件时，可额外调用 `research-earnings`。它不属于默认五阶段。默认流程不得调用 `chain-alpha-entry-plan`。
+用户明确指定报告期或出现相关新财报事件时，可额外调用 `research-earnings`。它不属于默认五阶段。默认流程不得调用 `chain-alpha-position-plan`。
 
 实际执行时，每个 prompt 都必须附加落盘要求：保存 Markdown 子报告到共享 `output/research/` 目录，并在回复末尾明确写出 `report_path`。只返回对话内容或 handoff 不能算该维度完成。
 

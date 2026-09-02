@@ -1,6 +1,6 @@
 ---
 name: monitor-ai-infrastructure
-description: "Use when discovering, ranking, or weekly-scanning AI infrastructure sectors, typically as a scheduled weekly tracking task. Use for AI infrastructure sector candidate pools, quantifiable sector indicators, discovery scores, threshold-based screening, and handoff queues that feed chain-alpha (chain-alpha-mismatch or chain-alpha) for deeper research."
+description: "Use when discovering, ranking, or weekly-scanning AI infrastructure sectors, typically as a scheduled weekly tracking task. Use for AI infrastructure sector candidate pools, quantifiable sector indicators, discovery scores, threshold-based screening, and handoff queues that feed chain-alpha (chain-alpha-industry-analysis or chain-alpha) for deeper research."
 ---
 
 # AI 基建板块发现
@@ -13,7 +13,7 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 
 ## Overview
 
-本 skill 属于**日常市场跟踪类**，适合配置为每周定时任务，用于每周扫描 AI 基建候选板块，回答“这一周最值得研究哪些板块”。它不做公司深度研究，也不直接给买卖建议；它只输出可量化板块指标、`discovery_score`、触发阈值和后续深挖命令。**达标板块交接给 chain-alpha 工作流**（轻量确认用 `chain-alpha-mismatch`，完整“拆链 -> 找垄断 -> 验证定仓”用 `chain-alpha`）。
+本 skill 属于**日常市场跟踪类**，适合配置为每周定时任务，用于每周扫描 AI 基建候选板块，回答“这一周最值得研究哪些板块”。它不做公司深度研究，也不直接给买卖建议；它只输出可量化板块指标、`discovery_score`、触发阈值和后续深挖命令。**达标板块交接给 chain-alpha 工作流**（轻量确认用 `chain-alpha-industry-analysis`，完整“拆链 -> 找垄断 -> 验证定仓”用 `chain-alpha`）。
 
 默认输出目录：`./output/monitor/`
 
@@ -21,7 +21,7 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 
 - **固定频率**：每周执行一次完整 AI 基建板块扫描。
 - **补充触发**：hyperscaler capex 出现重大变化、AI 架构或产品路线发生实质调整、关键订单/backlog 明显变化、关键环节产能或扩产计划发生重大变化时，提前重跑。
-- 补充扫描沿用同一评分与交接门槛；达标板块仍只交接给 `chain-alpha-mismatch` 或完整 `chain-alpha`。
+- 补充扫描沿用同一评分与交接门槛；达标板块仍只交接给 `chain-alpha-industry-analysis` 或完整 `chain-alpha`。
 
 ## Trigger
 
@@ -65,9 +65,9 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 
 ### 4) 生成 chain-alpha handoff queue
 - 所有 `discovery_score >= 70` 的板块进入 handoff queue。
-- 每个进入队列的板块必须给出后续命令：轻量确认错位用 `chain-alpha-mismatch`，走完整漏斗用 `chain-alpha`。例如：
-  - `使用 invest-flow:chain-alpha-mismatch 分析 CPO 光互联`
-  - `使用 invest-flow:chain-alpha-mismatch 分析 AI 数据中心变压器`
+- 每个进入队列的板块必须给出后续命令：轻量确认错位用 `chain-alpha-industry-analysis`，走完整漏斗用 `chain-alpha`。例如：
+  - `使用 invest-flow:chain-alpha-industry-analysis 分析 CPO 光互联`
+  - `使用 invest-flow:chain-alpha-industry-analysis 分析 AI 数据中心变压器`
   - `使用 invest-flow:chain-alpha 分析 液冷 CDU`
 - 每个命令旁必须列出触发阈值和核心证据。
 
@@ -87,7 +87,7 @@ description: "Use when discovering, ranking, or weekly-scanning AI infrastructur
 - 必须区分“新增动态板块”和“固定种子板块”。
 - 必须输出变化方向：上升 / 持平 / 下降 / 新增。
 - 必须输出证据置信度：低 / 中 / 高。
-- 只做板块发现和排序；环节与公司深研交给 chain-alpha 工作流（`chain-alpha-mismatch` / `chain-alpha`）。
+- 只做板块发现和排序；环节与公司深研交给 chain-alpha 工作流（`chain-alpha-industry-analysis` / `chain-alpha`）。
 
 ## Resources
 
