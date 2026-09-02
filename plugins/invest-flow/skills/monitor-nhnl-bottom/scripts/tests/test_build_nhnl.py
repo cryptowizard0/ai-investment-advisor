@@ -127,6 +127,21 @@ class ClassifyTests(unittest.TestCase):
         frame = breadth_frame(targets, nh, nl)
         self.assertEqual(bn.classify(frame, None)["state"], "P0")
 
+    def test_prior_bull_confirmation_with_intact_breadth_is_p6(self) -> None:
+        targets = [0.1] * 8 + [0.5] + [0.1] * 12
+        frame = breadth_frame(targets, [2] * 21, [1] * 21)
+        self.assertEqual(bn.classify(frame, None)["state"], "P6")
+
+    def test_non_extreme_breadth_is_neutral(self) -> None:
+        frame = breadth_frame([0.1] * 12, [2] * 12, [1] * 12)
+        self.assertEqual(bn.classify(frame, None)["state"], "NEUTRAL")
+
+    def test_less_than_eight_weeks_is_neutral_with_reason(self) -> None:
+        frame = breadth_frame([0.1] * 7, [2] * 7, [1] * 7)
+        result = bn.classify(frame, None)
+        self.assertEqual(result["state"], "NEUTRAL")
+        self.assertIn("样本不足", result["reasons"][0])
+
 
 class CliTests(unittest.TestCase):
     def test_offline_json_run(self) -> None:
