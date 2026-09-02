@@ -94,13 +94,16 @@ class ReportCatalog:
                 return
             for metadata in collect_report_metadata(self.output_dir):
                 relative_path = str(metadata["relative_path"])
+                try:
+                    body = (self.output_dir / relative_path).read_text(
+                        encoding="utf-8"
+                    )
+                except (OSError, UnicodeDecodeError):
+                    continue
                 item = self._build_item(metadata)
                 self._items_by_path[relative_path] = item
                 self._paths_by_id[item["id"]] = relative_path
-                self._insert_search_row(
-                    item["id"],
-                    (self.output_dir / relative_path).read_text(encoding="utf-8"),
-                )
+                self._insert_search_row(item["id"], body)
             self._refresh_all_duplicate_groups()
             self._loaded = True
 

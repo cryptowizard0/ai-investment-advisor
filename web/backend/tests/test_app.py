@@ -638,6 +638,27 @@ class ReportApiTests(unittest.TestCase):
         self.assertTrue(response.headers["content-type"].startswith("text/plain"))
         self.assertEqual(self.raw_markdown, response.text)
 
+    def test_missing_report_id_returns_404(self) -> None:
+        response = self.client.get("/api/reports/not-a-report/raw")
+
+        self.assertEqual(404, response.status_code)
+        self.assertEqual("Report not found", response.json()["detail"])
+
+    def test_incremental_rebuild_ignores_unsupported_and_bad_files(self) -> None:
+        unsupported_dir = self.output_dir / "notes"
+        unsupported_dir.mkdir()
+        unsupported_markdown = unsupported_dir / "note.md"
+        unsupported_markdown.write_text("# ignored\n", encoding="utf-8")
+        unsupported_text = self.output_dir / "monitor" / "note.txt"
+        unsupported_text.write_text("ignored\n", encoding="utf-8")
+        invalid_utf8 = self.output_dir / "monitor" / "broken.md"
+        invalid_utf8.write_bytes(b"\xff")
+
+        catalog = self.app.state.report_catalog
+        self.assertIsNone(catalog.rebuild_path(unsupported_markdown))
+        self.assertIsNone(catalog.rebuild_path(unsupported_text))
+        self.assertIsNone(catalog.rebuild_path(invalid_utf8))
+
     def test_incremental_rebuild_syncs_reports_facets_search_and_events(
         self,
     ) -> None:
