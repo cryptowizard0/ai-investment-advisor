@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 import base64
+import os
 import sqlite3
+import stat
+from contextlib import ExitStack
 from pathlib import Path
 from queue import Empty, Full, Queue
 from threading import RLock
@@ -11,8 +14,8 @@ from typing import Literal, NotRequired, TypedDict
 
 from web.backend.report_index import (
     ReportMetadata,
-    collect_report_metadata,
     collect_report_metadata_for_path,
+    collect_report_paths,
     duplicate_identity,
     report_relative_path,
 )
@@ -92,13 +95,18 @@ class ReportCatalog:
         with self._lock:
             if self._loaded:
                 return
-            for metadata in collect_report_metadata(self.output_dir):
-                relative_path = str(metadata["relative_path"])
+            for relative_path in collect_report_paths(self.output_dir):
                 try:
-                    body = (self.output_dir / relative_path).read_text(
-                        encoding="utf-8"
-                    )
+                    body = self._read_relative_path(relative_path)
                 except (OSError, UnicodeDecodeError):
+                    continue
+                path = self.output_dir / relative_path
+                metadata = collect_report_metadata_for_path(
+                    self.output_dir,
+                    path,
+                    title=self._title_from_body(body, path.stem),
+                )
+                if metadata is None:
                     continue
                 item = self._build_item(metadata)
                 self._items_by_path[relative_path] = item
@@ -128,6 +136,25 @@ class ReportCatalog:
             return None
         return self.output_dir / relative_path
 
+    def read_report(self, requested_id: str) -> str | None:
+        self.load()
+        with self._lock:
+            relative_path = self._paths_by_id.get(requested_id)
+            expected_item = (
+                self._items_by_path.get(relative_path)
+                if relative_path is not None
+                else None
+            )
+        if relative_path is None:
+            return None
+
+        try:
+            body = self._read_relative_path(relative_path)
+        except (OSError, UnicodeDecodeError):
+            self._evict_path(relative_path, requested_id, expected_item)
+            return None
+        return body
+
     def search(self, query: str) -> list[tuple[str, str]]:
         self.load()
         literal_query = '"' + query.replace('"', '""') + '"'
@@ -154,12 +181,13 @@ class ReportCatalog:
         with self._lock:
             previous = self._items_by_path.get(relative_path)
             try:
-                metadata = collect_report_metadata_for_path(self.output_dir, path)
-                body = path.read_text(encoding="utf-8") if metadata else None
+                body = self._read_relative_path(relative_path)
+                metadata = collect_report_metadata_for_path(
+                    self.output_dir,
+                    path,
+                    title=self._title_from_body(body, path.stem),
+                )
             except (OSError, UnicodeDecodeError):
-                return None
-
-            if metadata is None:
                 if previous is None:
                     return None
                 self._delete_item(relative_path, previous)
@@ -168,21 +196,90 @@ class ReportCatalog:
                     "type": "removed",
                     "report": dict(previous),
                 }
+
             else:
-                if previous is not None:
-                    self._delete_search_row(previous["id"])
-                item = self._build_item(metadata)
-                self._items_by_path[relative_path] = item
-                self._paths_by_id[item["id"]] = relative_path
-                self._insert_search_row(item["id"], body or "")
-                self._refresh_duplicate_group(item["dupeGroup"])
-                event = {
-                    "type": "updated" if previous else "added",
-                    "report": dict(self._items_by_path[relative_path]),
-                }
+                if metadata is None:
+                    if previous is None:
+                        return None
+                    self._delete_item(relative_path, previous)
+                    self._refresh_duplicate_group(previous["dupeGroup"])
+                    event = {
+                        "type": "removed",
+                        "report": dict(previous),
+                    }
+                else:
+                    if previous is not None:
+                        self._delete_search_row(previous["id"])
+                    item = self._build_item(metadata)
+                    self._items_by_path[relative_path] = item
+                    self._paths_by_id[item["id"]] = relative_path
+                    self._insert_search_row(item["id"], body or "")
+                    self._refresh_duplicate_group(item["dupeGroup"])
+                    event = {
+                        "type": "updated" if previous else "added",
+                        "report": dict(self._items_by_path[relative_path]),
+                    }
 
         self.events.publish(event)
         return event
+
+    def _read_relative_path(self, relative_path: str) -> str:
+        parts = Path(relative_path).parts
+        directory_flags = (
+            os.O_RDONLY
+            | getattr(os, "O_DIRECTORY", 0)
+            | getattr(os, "O_NOFOLLOW", 0)
+        )
+        file_flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+
+        with ExitStack() as stack:
+            directory_fd = os.open(self.output_dir, directory_flags)
+            stack.callback(os.close, directory_fd)
+            for part in parts[:-1]:
+                directory_fd = os.open(
+                    part,
+                    directory_flags,
+                    dir_fd=directory_fd,
+                )
+                stack.callback(os.close, directory_fd)
+
+            file_fd = os.open(parts[-1], file_flags, dir_fd=directory_fd)
+            if not stat.S_ISREG(os.fstat(file_fd).st_mode):
+                os.close(file_fd)
+                raise OSError("Report path is not a regular file")
+            with os.fdopen(file_fd, "r", encoding="utf-8") as report_file:
+                return report_file.read()
+
+    @staticmethod
+    def _title_from_body(body: str, fallback: str) -> str:
+        return next(
+            (
+                line.strip()[2:].strip()
+                for line in body.splitlines()
+                if line.strip().startswith("# ") and len(line.strip()) > 2
+            ),
+            fallback,
+        )
+
+    def _evict_path(
+        self,
+        relative_path: str,
+        requested_id: str,
+        expected_item: ReportItem | None,
+    ) -> None:
+        with self._lock:
+            if self._paths_by_id.get(requested_id) != relative_path:
+                return
+            previous = self._items_by_path.get(relative_path)
+            if previous is None or previous is not expected_item:
+                return
+            self._delete_item(relative_path, previous)
+            self._refresh_duplicate_group(previous["dupeGroup"])
+            event: ReportEvent = {
+                "type": "removed",
+                "report": dict(previous),
+            }
+        self.events.publish(event)
 
     def _build_item(self, metadata: ReportMetadata) -> ReportItem:
         relative_path = str(metadata["relative_path"])

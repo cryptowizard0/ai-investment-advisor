@@ -237,11 +237,11 @@ def create_app(
 
     @app.get("/api/reports/{requested_id}/raw", response_class=PlainTextResponse)
     def read_report(requested_id: str) -> str:
-        path = report_catalog.path_for_id(requested_id)
-        if path is None or not path.is_file():
+        body = report_catalog.read_report(requested_id)
+        if body is None:
             raise HTTPException(status_code=404, detail="Report not found")
 
-        return path.read_text(encoding="utf-8")
+        return body
 
     @app.get("/api/events")
     def stream_report_events() -> StreamingResponse:

@@ -179,6 +179,24 @@ def collect_report_metadata(output_dir: Path) -> list[ReportMetadata]:
     ]
 
 
+def collect_report_paths(output_dir: Path) -> list[str]:
+    paths: list[str] = []
+    resolved_output_dir = output_dir.resolve()
+    for directory in sorted(INDEX_GENERATOR.TOPIC_CATEGORIES):
+        topic_dir = output_dir / directory
+        if not topic_dir.is_dir():
+            continue
+        for path in sorted(topic_dir.rglob("*.md")):
+            if not path.is_file():
+                continue
+            try:
+                path.resolve().relative_to(resolved_output_dir)
+            except (OSError, ValueError):
+                continue
+            paths.append(path.relative_to(output_dir).as_posix())
+    return paths
+
+
 def report_relative_path(output_dir: Path, path: Path) -> str | None:
     try:
         relative_path = path.resolve().relative_to(output_dir.resolve())
@@ -196,6 +214,8 @@ def report_relative_path(output_dir: Path, path: Path) -> str | None:
 def collect_report_metadata_for_path(
     output_dir: Path,
     path: Path,
+    *,
+    title: str | None = None,
 ) -> ReportMetadata | None:
     relative_path = report_relative_path(output_dir, path)
     if relative_path is None or not path.is_file():
@@ -209,7 +229,11 @@ def collect_report_metadata_for_path(
         category=category,
         skill=INDEX_GENERATOR.infer_report_skill(path.stem),
         date_text=INDEX_GENERATOR.parse_report_date(path),
-        title=INDEX_GENERATOR.extract_title(path),
+        title=(
+            title
+            if title is not None
+            else INDEX_GENERATOR.extract_title(path)
+        ),
         relative_link=INDEX_GENERATOR.markdown_link_path(Path(relative_path)),
         relative_path=relative_path,
     )

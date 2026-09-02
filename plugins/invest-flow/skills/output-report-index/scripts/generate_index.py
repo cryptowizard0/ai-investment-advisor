@@ -136,7 +136,7 @@ def extract_title(path: Path) -> str:
                 stripped = line.strip()
                 if stripped.startswith("# ") and len(stripped) > 2:
                     return stripped[2:].strip()
-    except UnicodeDecodeError:
+    except (OSError, UnicodeDecodeError):
         return path.stem
 
     return path.stem

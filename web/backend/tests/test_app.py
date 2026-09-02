@@ -5,9 +5,11 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
+from web.backend import report_catalog as report_catalog_module
 from web.backend.app import create_app
 
 
@@ -644,6 +646,109 @@ class ReportApiTests(unittest.TestCase):
         self.assertEqual(404, response.status_code)
         self.assertEqual("Report not found", response.json()["detail"])
 
+    def test_raw_report_rejects_symlink_swapped_after_indexing(self) -> None:
+        reports = self.client.get("/api/reports").json()
+        report = next(
+            item for item in reports if item["title"] == "NVIDIA 验证报告"
+        )
+        report_path = (
+            self.output_dir
+            / "chain-alpha"
+            / "archive"
+            / "chain-alpha-company-verification-NVDA-20260701-2026-07-30.md"
+        )
+        secret_path = Path(self.temp_dir.name) / "secret.md"
+        secret_path.write_text("TOP SECRET", encoding="utf-8")
+        report_path.unlink()
+        report_path.symlink_to(secret_path)
+
+        response = self.client.get(f"/api/reports/{report['id']}/raw")
+
+        self.assertEqual(404, response.status_code)
+        self.assertNotIn(
+            report["id"],
+            {item["id"] for item in self.client.get("/api/reports").json()},
+        )
+
+    def test_initial_catalog_skips_report_when_title_read_fails(self) -> None:
+        unreadable_path = self.output_dir / "monitor" / "unreadable.md"
+        unreadable_path.write_text("# unreadable\n", encoding="utf-8")
+        original_open = Path.open
+        original_os_open = report_catalog_module.os.open
+
+        def guarded_open(path: Path, *args: object, **kwargs: object):
+            if path == unreadable_path:
+                raise PermissionError("unreadable report")
+            return original_open(path, *args, **kwargs)
+
+        def guarded_os_open(path: object, *args: object, **kwargs: object):
+            if path == unreadable_path.name:
+                raise PermissionError("unreadable report")
+            return original_os_open(path, *args, **kwargs)
+
+        with (
+            patch.object(Path, "open", guarded_open),
+            patch.object(report_catalog_module.os, "open", guarded_os_open),
+        ):
+            fresh_app = create_app(output_dir=self.output_dir)
+            fresh_client = TestClient(fresh_app)
+            reports = fresh_client.get("/api/reports").json()
+
+        self.assertNotIn("unreadable", {report["title"] for report in reports})
+
+    def test_initial_catalog_uses_secure_body_for_title_and_search(self) -> None:
+        report_path = self.output_dir / "monitor" / "startup-race.md"
+        report_path.write_text(
+            "# Safe startup title\n\nSAFE STARTUP BODY\n",
+            encoding="utf-8",
+        )
+        secret_path = Path(self.temp_dir.name) / "startup-secret.md"
+        secret_path.write_text(
+            "# SECRET STARTUP TITLE\n\nSECRET STARTUP BODY\n",
+            encoding="utf-8",
+        )
+        original_collect = (
+            report_catalog_module.collect_report_metadata_for_path
+        )
+        swapped = False
+
+        def swap_after_metadata(*args: object, **kwargs: object):
+            nonlocal swapped
+            metadata = original_collect(*args, **kwargs)
+            path = args[1]
+            if path == report_path and not swapped:
+                swapped = True
+                report_path.unlink()
+                report_path.symlink_to(secret_path)
+            return metadata
+
+        with patch.object(
+            report_catalog_module,
+            "collect_report_metadata_for_path",
+            swap_after_metadata,
+        ):
+            fresh_app = create_app(output_dir=self.output_dir)
+            fresh_client = TestClient(fresh_app)
+            reports = fresh_client.get("/api/reports").json()
+            safe_search = fresh_client.get(
+                "/api/search",
+                params={"q": "SAFE STARTUP BODY"},
+            ).json()
+            secret_search = fresh_client.get(
+                "/api/search",
+                params={"q": "SECRET STARTUP BODY"},
+            ).json()
+
+        self.assertIn(
+            "Safe startup title",
+            {report["title"] for report in reports},
+        )
+        self.assertEqual(
+            ["Safe startup title"],
+            [item["title"] for item in safe_search],
+        )
+        self.assertEqual([], secret_search)
+
     def test_incremental_rebuild_ignores_unsupported_and_bad_files(self) -> None:
         unsupported_dir = self.output_dir / "notes"
         unsupported_dir.mkdir()
@@ -658,6 +763,137 @@ class ReportApiTests(unittest.TestCase):
         self.assertIsNone(catalog.rebuild_path(unsupported_markdown))
         self.assertIsNone(catalog.rebuild_path(unsupported_text))
         self.assertIsNone(catalog.rebuild_path(invalid_utf8))
+
+    def test_incremental_rebuild_evicts_report_that_becomes_invalid(self) -> None:
+        reports = self.client.get("/api/reports").json()
+        report = next(
+            item for item in reports if item["title"] == "NVIDIA 验证报告"
+        )
+        report_path = (
+            self.output_dir
+            / "chain-alpha"
+            / "archive"
+            / "chain-alpha-company-verification-NVDA-20260701-2026-07-30.md"
+        )
+        events = self.app.state.report_events
+        subscriber = events.subscribe()
+        report_path.write_bytes(b"\xff")
+
+        removed = self.app.state.report_catalog.rebuild_path(report_path)
+
+        self.assertEqual("removed", removed["type"])
+        self.assertEqual(report["id"], removed["report"]["id"])
+        self.assertEqual(removed, subscriber.get_nowait())
+        self.assertNotIn(
+            report["id"],
+            {item["id"] for item in self.client.get("/api/reports").json()},
+        )
+        self.assertEqual(
+            [],
+            self.client.get("/api/search", params={"q": "目标价"}).json(),
+        )
+        self.assertEqual(
+            404,
+            self.client.get(f"/api/reports/{report['id']}/raw").status_code,
+        )
+        events.unsubscribe(subscriber)
+
+    def test_incremental_rebuild_does_not_index_symlink_swap_content(
+        self,
+    ) -> None:
+        self.client.get("/api/reports")
+        report_path = (
+            self.output_dir
+            / "chain-alpha"
+            / "archive"
+            / "chain-alpha-company-verification-NVDA-20260701-2026-07-30.md"
+        )
+        report_path.write_text(
+            "# Safe update\n\nSAFE REBUILD CONTENT\n",
+            encoding="utf-8",
+        )
+        secret_path = Path(self.temp_dir.name) / "secret.md"
+        secret_path.write_text(
+            "# Secret title\n\nEXTERNAL SECRET CONTENT\n",
+            encoding="utf-8",
+        )
+        original_collect = (
+            report_catalog_module.collect_report_metadata_for_path
+        )
+
+        def swap_after_metadata(*args: object, **kwargs: object):
+            metadata = original_collect(*args, **kwargs)
+            report_path.unlink()
+            report_path.symlink_to(secret_path)
+            return metadata
+
+        with patch.object(
+            report_catalog_module,
+            "collect_report_metadata_for_path",
+            swap_after_metadata,
+        ):
+            rebuilt = self.app.state.report_catalog.rebuild_path(report_path)
+
+        self.assertEqual("updated", rebuilt["type"])
+        self.assertEqual(
+            [],
+            self.client.get(
+                "/api/search",
+                params={"q": "EXTERNAL SECRET CONTENT"},
+            ).json(),
+        )
+        self.assertEqual(
+            ["Safe update"],
+            [
+                report["title"]
+                for report in self.client.get(
+                    "/api/search",
+                    params={"q": "SAFE REBUILD CONTENT"},
+                ).json()
+            ],
+        )
+
+    def test_failed_raw_read_does_not_evict_concurrent_rebuild(self) -> None:
+        reports = self.client.get("/api/reports").json()
+        report = next(
+            item for item in reports if item["title"] == "NVIDIA 验证报告"
+        )
+        report_path = (
+            self.output_dir
+            / "chain-alpha"
+            / "archive"
+            / "chain-alpha-company-verification-NVDA-20260701-2026-07-30.md"
+        )
+        catalog = self.app.state.report_catalog
+        original_read = catalog._read_relative_path
+        first_read = True
+
+        def fail_after_rebuild(relative_path: str) -> str:
+            nonlocal first_read
+            if first_read:
+                first_read = False
+                report_path.write_text(
+                    "# Refreshed report\n\nNEW CONTENT\n",
+                    encoding="utf-8",
+                )
+                catalog.rebuild_path(report_path)
+                raise OSError("stale read failed")
+            return original_read(relative_path)
+
+        with patch.object(catalog, "_read_relative_path", fail_after_rebuild):
+            failed_response = self.client.get(
+                f"/api/reports/{report['id']}/raw"
+            )
+
+        self.assertEqual(404, failed_response.status_code)
+        self.assertIn(
+            report["id"],
+            {item["id"] for item in self.client.get("/api/reports").json()},
+        )
+        self.assertEqual(
+            "# Refreshed report\n\nNEW CONTENT\n",
+            self.client.get(f"/api/reports/{report['id']}/raw").text,
+        )
 
     def test_incremental_rebuild_syncs_reports_facets_search_and_events(
         self,
