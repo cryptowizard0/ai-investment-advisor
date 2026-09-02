@@ -66,6 +66,7 @@ CANONICAL_SKILL_IDS = (
     "monitor-ai-infrastructure",
     "monitor-index-valuation",
     "monitor-index-cycle",
+    "monitor-nhnl-bottom",
     "monitor-us-market",
     "monitor-gold",
     "research-institutional",
@@ -159,6 +160,7 @@ def html_text(value: str) -> str:
 
 def collect_reports(output_dir: Path) -> list[ReportEntry]:
     reports: list[ReportEntry] = []
+    resolved_output_dir = output_dir.resolve()
 
     for directory in sorted(TOPIC_CATEGORIES):
         topic_dir = output_dir / directory
@@ -166,6 +168,10 @@ def collect_reports(output_dir: Path) -> list[ReportEntry]:
             continue
         for path in sorted(topic_dir.rglob("*.md")):
             if not path.is_file():
+                continue
+            try:
+                path.resolve().relative_to(resolved_output_dir)
+            except ValueError:
                 continue
 
             relative_path = path.relative_to(output_dir)

@@ -2,6 +2,7 @@ import { StrictMode, useEffect, useMemo, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import Markdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 
 import "./styles.css";
@@ -58,7 +59,11 @@ const EMPTY_FACETS: Facets = {
 };
 
 function reportIdFromHash(): string {
-  return decodeURIComponent(window.location.hash.slice(1));
+  try {
+    return decodeURIComponent(window.location.hash.slice(1));
+  } catch {
+    return "";
+  }
 }
 
 function reportPathFromId(id: string): string | null {
@@ -228,6 +233,7 @@ function FacetChips({
 
 function App() {
   const [reports, setReports] = useState<Report[]>([]);
+  const [catalogReports, setCatalogReports] = useState<Report[]>([]);
   const [facets, setFacets] = useState<Facets>(EMPTY_FACETS);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -257,7 +263,7 @@ function App() {
   const connectionInterruptedRef = useRef(false);
   const highlightTimer = useRef<number | undefined>(undefined);
   const normalizedSearchQuery = searchQuery.trim();
-  const selectedReportExists = reports.some(
+  const selectedReportExists = [...catalogReports, ...reports].some(
     (report) => report.id === selectedId,
   );
 
@@ -321,6 +327,27 @@ function App() {
     void loadReports();
     return () => controller.abort();
   }, [eventRevision, normalizedSearchQuery, reportQuery]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const loadCatalog = async () => {
+      try {
+        const response = await fetchNoStore(
+          "/api/reports",
+          controller.signal,
+          "完整报告目录请求失败",
+        );
+        setCatalogReports(await response.json());
+      } catch (error) {
+        if (!isAbortError(error)) {
+          setCatalogReports([]);
+        }
+      }
+    };
+
+    void loadCatalog();
+    return () => controller.abort();
+  }, [eventRevision]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -512,16 +539,18 @@ function App() {
 
   const reportIdByPath = useMemo(() => {
     const idsByPath = new Map<string, string>();
-    for (const report of reports) {
+    for (const report of catalogReports.length ? catalogReports : reports) {
       const path = reportPathFromId(report.id);
       if (path) {
         idsByPath.set(path, report.id);
       }
     }
     return idsByPath;
-  }, [reports]);
+  }, [catalogReports, reports]);
 
-  const selectedReport = reports.find((report) => report.id === selectedId);
+  const selectedReport =
+    catalogReports.find((report) => report.id === selectedId) ??
+    reports.find((report) => report.id === selectedId);
   const latestReport =
     reports.find((report) => report.isLatestInGroup && report.date) ??
     reports.find((report) => report.isLatestInGroup);
@@ -977,7 +1006,7 @@ function App() {
               <div className="markdown-body">
                 <Markdown
                   remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeRaw]}
+                  rehypePlugins={[rehypeRaw, rehypeSanitize]}
                   components={{
                     a: ({ href, ...props }) => {
                       const reportId = linkedReportId(href);

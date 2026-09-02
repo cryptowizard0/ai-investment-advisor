@@ -212,6 +212,24 @@ class GenerateIndexTests(unittest.TestCase):
                 generator.infer_report_skill("chain-alpha-entry-plan-NVDA-2026-01-01"),
                 "chain-alpha-position-plan",
             )
+            self.assertEqual(
+                generator.infer_report_skill("monitor-nhnl-bottom-SOX-2026-01-01"),
+                "monitor-nhnl-bottom",
+            )
+
+    def test_ignores_markdown_symlinks_that_escape_output_directory(self) -> None:
+        generator = load_generator_module()
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            output_dir = root / "output"
+            research_dir = output_dir / "research"
+            research_dir.mkdir(parents=True)
+            outside = root / "outside.md"
+            outside.write_text("# Outside secret\n", encoding="utf-8")
+            (research_dir / "leak.md").symlink_to(outside)
+
+            self.assertEqual([], generator.collect_reports(output_dir))
 
     def test_ignores_markdown_outside_topic_directories(self) -> None:
         generator = load_generator_module()
