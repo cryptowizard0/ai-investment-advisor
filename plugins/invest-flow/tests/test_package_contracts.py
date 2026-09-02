@@ -25,6 +25,7 @@ EXPECTED_SKILLS = {
     "monitor-gold",
     "monitor-index-cycle",
     "monitor-index-valuation",
+    "monitor-nhnl-bottom",
     "monitor-us-market",
     "output-report-index",
     "research-earnings",
